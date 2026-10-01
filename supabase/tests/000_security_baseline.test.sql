@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(9);
+select plan(17);
 
 -- Every table in the API-exposed schema has RLS enabled.
 select is_empty(
@@ -114,6 +114,96 @@ select ok(
   and not has_table_privilege('authenticated', 'public.__default_privileges_probe', 'truncate'),
   'a newly created table grants authenticated nothing until a migration does'
 );
+
+-- ---------------------------------------------------------------------------
+-- Review gates: a new table or privileged function fails this file until it has been
+-- reviewed (policies, grants, tests) and added here.
+-- ---------------------------------------------------------------------------
+
+select results_eq(
+  $$ select c.relname::text collate "default" from pg_class c join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relkind in ('r', 'p')
+        and c.relname <> '__default_privileges_probe' -- created earlier in this file
+      order by c.relname::text collate "C" $$,
+  $$ values ('activity_history'), ('deficiencies'), ('electrical_installations'), ('log_entries'),
+            ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
+            ('scheduled_activities'), ('sites') $$,
+  'public tables are exactly the reviewed set'
+);
+
+select results_eq(
+  $$ select p.oid::regprocedure::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname in ('public', 'private') and p.prosecdef order by 1 $$,
+  $$ values
+       ('accept_invitation(text)'),
+       ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
+       ('create_invitation(uuid,text,org_role)'),
+       ('create_organisation(text,text)'),
+       ('invitation_preview(text)'),
+       ('private.co_member_ids()'),
+       ('private.deficiency_before_insert()'),
+       ('private.ensure_site_active()'),
+       ('private.handle_new_user()'),
+       ('private.has_org_role(uuid,org_role)'),
+       ('private.log_entry_before_insert()'),
+       ('private.org_ids(org_role)'),
+       ('private.protect_last_owner()'),
+       ('private.record_history()'),
+       ('private.sync_profile_email()'),
+       ('resolve_deficiency(uuid,text,log_entry_type,timestamp with time zone,text)'),
+       ('revoke_invitation(uuid)') $$,
+  'security definer functions are exactly the reviewed set'
+);
+
+-- Tenant tables: every policy is scoped through private.org_ids() (members are also
+-- allowed to remove themselves), and every tenant table has a select policy.
+select is_empty(
+  $$ select tablename || '.' || policyname from pg_policies
+      where schemaname = 'public'
+        and tablename in (select table_name from information_schema.columns
+                           where table_schema = 'public' and column_name = 'organisation_id')
+        and coalesce(qual, '') || coalesce(with_check, '') not like '%org_ids%' $$,
+  'every policy on a tenant table is scoped through private.org_ids()'
+);
+select is_empty(
+  $$ select c.table_name from information_schema.columns c
+      join information_schema.tables t
+        on t.table_schema = c.table_schema and t.table_name = c.table_name and t.table_type = 'BASE TABLE'
+      where c.table_schema = 'public' and c.column_name = 'organisation_id'
+        and not exists (select 1 from pg_policies p
+                         where p.schemaname = 'public' and p.tablename = c.table_name and p.cmd = 'SELECT') $$,
+  'every tenant table has a select policy'
+);
+select is_empty(
+  $$ select policyname from pg_policies
+      where schemaname = 'public' and tablename = 'organisations'
+        and coalesce(qual, '') || coalesce(with_check, '') not like '%org_ids%' $$,
+  'organisations policies are scoped through private.org_ids()'
+);
+
+-- Records that must never change or disappear, at the privilege level.
+select ok(
+  -- has_any_column_privilege also catches column-level grants.
+  not has_any_column_privilege('authenticated', 'public.log_entries', 'update')
+  and not has_table_privilege('authenticated', 'public.log_entries', 'delete')
+  and not has_table_privilege('authenticated', 'public.deficiencies', 'delete')
+  and not has_any_column_privilege('authenticated', 'public.activity_history', 'insert')
+  and not has_any_column_privilege('authenticated', 'public.activity_history', 'update')
+  and not has_table_privilege('authenticated', 'public.activity_history', 'delete'),
+  'append-only and never-deleted tables grant no write paths'
+);
+select ok(
+  not has_column_privilege('authenticated', 'public.log_entries', 'created_by', 'insert')
+  and not has_column_privilege('authenticated', 'public.log_entries', 'scheduled_activity_id', 'insert')
+  and not has_column_privilege('authenticated', 'public.log_entries', 'deficiency_id', 'insert')
+  and not has_column_privilege('authenticated', 'public.deficiencies', 'resolution', 'update')
+  and not has_column_privilege('authenticated', 'public.scheduled_activities', 'anchor_on', 'update')
+  and not has_column_privilege('authenticated', 'public.organisations', 'slug', 'update'),
+  'server-owned columns are not client-writable'
+);
+
+-- Storage (Phase 7 will add a private bucket): nothing may ever be public.
+select is_empty($$ select id from storage.buckets where public $$, 'no public storage buckets');
 
 select * from finish();
 rollback;
