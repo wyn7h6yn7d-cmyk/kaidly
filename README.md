@@ -42,17 +42,48 @@ npm run db:types      # regenerate lib/supabase/database.types.ts
 npm run db:stop
 ```
 
+### Development seed (local only)
+
+`npm run db:reset` also loads `supabase/seed.sql`: a fictional demo organisation
+("Näidis Elektritööd OÜ", `/o/naidis-elektritood-demo`) with two sites, five installations,
+log entries, scheduled activities and deficiencies. Demo accounts — password
+`kaidly-demo-parool`:
+
+| Email | Role |
+|---|---|
+| `omanik@kaidly.test` | owner |
+| `admin@kaidly.test` | admin |
+| `kaitaja@kaidly.test` | operator |
+| `vaataja@kaidly.test` | viewer |
+
+The seed only ever runs against the local database (`supabase db push` never runs seeds).
+To browse it, run the app against the local stack: `npm run dev:local`.
+
+### End-to-end tests (local only)
+
+```bash
+npm run db:start          # local Supabase must be running
+npx playwright install chromium   # once
+npm run test:e2e          # starts its own dev server on port 3100 against the local stack
+```
+
+The Playwright suite (`e2e/`) refuses to run against anything but `localhost`. Test users
+are created through the local auth admin API and fixture rows with SQL as the local
+`postgres` user; the service-role key is read from `supabase status` at runtime and never
+stored. Every test runs on desktop (1440 px); tests tagged `@responsive` also run on a
+phone (375 px) and a tablet (768 px).
+
 Full check before every commit:
 
 ```bash
 npm run check         # lint, typecheck, unit tests, database tests, production build
+npm run test:e2e      # browser tests (local Supabase running)
 ```
 
-To run the app against the local stack instead of the development project, start it with
-the local values (`npx supabase status -o env` → `API_URL`, `PUBLISHABLE_KEY`):
+To run the app against the local stack instead of the development project:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=<API_URL> NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<PUBLISHABLE_KEY> npm run dev
+npm run dev:local        # http://localhost:3000, reads the local values from `supabase status`
 ```
 
 Local auth emails are caught by Mailpit (URL in `npx supabase status`).

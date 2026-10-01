@@ -16,7 +16,9 @@
     "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"tests/unit/**/*.test.ts\"",
     "test:db": "supabase test db",
-    "check": "npm run lint && npm run typecheck && npm test && npm run test:db && npm run build"
+    "check": "npm run lint && npm run typecheck && npm test && npm run test:db && npm run build",
+    "dev:local": "node scripts/dev-local.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "2.1.24",
@@ -34,6 +36,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@types/node": "20.19.43",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
