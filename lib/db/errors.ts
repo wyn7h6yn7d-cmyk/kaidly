@@ -26,6 +26,10 @@ const RAISED: Record<string, ErrorCode> = {
   activity_archived: "activity_archived",
   activity_already_completed: "activity_already_completed",
   next_due_required: "next_due_required",
+  deficiency_resolved: "deficiency_resolved",
+  deficiency_already_resolved: "deficiency_already_resolved",
+  deficiency_resolve_via_rpc: "deficiency_resolve_via_rpc",
+  resolution_required: "resolution_required",
 };
 
 export function dbErrorCode(error: unknown): ErrorCode {

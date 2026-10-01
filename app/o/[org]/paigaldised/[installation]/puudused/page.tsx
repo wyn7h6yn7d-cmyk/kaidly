@@ -1,21 +1,85 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Plus } from "lucide-react";
 import { OrgPage } from "@/components/app/org-page";
-import { ComingSoon } from "@/components/app/states";
+import { EmptyState } from "@/components/app/states";
+import { DeficiencyList } from "@/components/deficiencies/deficiency-list";
+import { Button } from "@/components/ui/button";
+import { hasRole } from "@/lib/auth/roles";
+import { listInstallationDeficiencies } from "@/lib/data/deficiencies";
 import { getInstallation } from "@/lib/data/sites";
 import { t } from "@/lib/i18n";
+import { todayInTallinn } from "@/lib/time";
 
-export const metadata: Metadata = { title: t.app.installations.tabs.deficiencies };
+export const metadata: Metadata = { title: t.app.deficiencies.title };
 
-// Placeholder: this section is built in a later phase. Access is still checked.
-export default function Page({ params }: { params: Promise<{ org: string; installation: string }> }) {
+export default function InstallationDeficienciesPage({
+  params,
+}: {
+  params: Promise<{ org: string; installation: string }>;
+}) {
   return (
     <OrgPage
       params={params}
-      render={async ({ org }) => {
-        const { installation } = await params;
-        if (!(await getInstallation(org.id, installation))) notFound();
-        return <ComingSoon title={t.app.installations.tabs.deficiencies} />;
+      render={async ({ org, role }) => {
+        const { installation: id } = await params;
+        const installation = await getInstallation(org.id, id);
+        if (!installation) notFound();
+        const { active, resolved } = await listInstallationDeficiencies(org.id, installation.id);
+        const canAdd = hasRole(role, "operator") && !installation.archivedAt;
+        const addHref = `/o/${org.slug}/puudused/uus?paigaldis=${installation.id}`;
+        const copy = t.app.deficiencies;
+        const today = todayInTallinn();
+
+        return (
+          <>
+            {active.length === 0 ? (
+              <EmptyState
+                title={resolved.length === 0 ? copy.empty : copy.emptyActive}
+                action={
+                  canAdd ? (
+                    <Button asChild>
+                      <Link href={addHref}>
+                        <Plus aria-hidden="true" />
+                        {copy.add}
+                      </Link>
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              <>
+                {canAdd && (
+                  <div className="mb-4 flex justify-end">
+                    <Button asChild variant="outline">
+                      <Link href={addHref}>
+                        <Plus aria-hidden="true" />
+                        {copy.add}
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+                <DeficiencyList items={active} orgSlug={org.slug} today={today} />
+              </>
+            )}
+            {resolved.length > 0 && (
+              <details className="mt-8">
+                <summary className="flex h-11 cursor-pointer items-center font-semibold text-k-green">
+                  {copy.resolvedSection(resolved.length)}
+                </summary>
+                <div className="mt-3">
+                  <DeficiencyList
+                    items={resolved}
+                    orgSlug={org.slug}
+                    today={today}
+                    label={copy.resolvedSection(resolved.length)}
+                  />
+                </div>
+              </details>
+            )}
+          </>
+        );
       }}
     />
   );

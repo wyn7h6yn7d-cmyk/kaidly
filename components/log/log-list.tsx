@@ -38,6 +38,11 @@ export function LogList({
                 <span className="text-sm font-semibold text-k-green sm:mt-1 sm:block">
                   {copy.types[item.entryType]}
                 </span>
+                {(item.scheduledActivityId || item.deficiencyId) && (
+                  <span className="text-xs font-semibold uppercase tracking-wider text-k-muted sm:mt-1 sm:block">
+                    {item.scheduledActivityId ? copy.fromActivity : copy.fromDeficiency}
+                  </span>
+                )}
               </div>
               <div className="min-w-0">
                 {context && <p className="mb-1 truncate text-sm text-k-muted">{context}</p>}

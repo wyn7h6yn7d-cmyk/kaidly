@@ -93,7 +93,12 @@ anchored to the schedule (not "completion date + interval"), as required by the 
 - Organisation-wide `/kaidukava` grouped by derived state: Hilinenud · Tähtaeg läheneb · Tulemas · Tehtud.
 - pgTAP: role matrix; operator can complete but not edit; RPC advances dates correctly for day/week/month/year and month-end edge cases (31 Jan + 1 month).
 
-## Phase 6 — Deficiencies (puudused)
+## Phase 6 — Deficiencies (puudused) ✅ implemented
+
+As built: DATABASE.md §13. Routes `/o/[org]/puudused` (filters: site, installation, status,
+severity, overdue; default = active), `/puudused/uus`, `/puudused/[deficiency]` (+ `/lahenda`,
+`/muuda`), `/paigaldised/[installation]/puudused` (active first, resolved in a separate section).
+
 
 - Migration `deficiencies` (status `open` / `in_progress` / `resolved`) + RPC `resolve_deficiency`.
 - Create from an installation or from the log-entry form ("Leidsin puuduse").

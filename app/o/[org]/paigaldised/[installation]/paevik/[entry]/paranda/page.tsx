@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { OrgPage } from "@/components/app/org-page";
-import { ForbiddenState } from "@/components/app/states";
+import { NoticeState } from "@/components/app/states";
 import { LogEntryForm } from "@/components/log/log-entry-form";
 import { getLogEntry } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
@@ -23,7 +23,15 @@ export default function CorrectLogEntryPage({
         const { installation: installationId, entry: entryId } = await params;
         const installation = await getInstallation(org.id, installationId);
         if (!installation) notFound();
-        if (installation.archivedAt) return <ForbiddenState orgSlug={org.slug} />;
+        if (installation.archivedAt) {
+          return (
+            <NoticeState
+              message={t.errors.installation_archived}
+              href={`/o/${org.slug}/paigaldised/${installation.id}/paevik`}
+              linkLabel={t.app.log.title}
+            />
+          );
+        }
         const entry = await getLogEntry(org.id, installation.id, entryId);
         if (!entry) notFound();
         const { current } = entry;

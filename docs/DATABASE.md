@@ -801,3 +801,47 @@ operator+; viewer read-only. Operators cannot change any scheduling field.
 **Tests:** `supabase/tests/060_scheduled_activities.test.sql` (46). Mutation-tested:
 operators allowed to manage, completion allowed for viewers, drifting recurrence, removed
 duplicate protection — each fails tests.
+
+## 13. Implemented: Phase 6 deficiencies (puudused)
+
+Migration `supabase/migrations/20261001174810_deficiencies.sql` (local only).
+
+**`deficiencies`**
+
+| column | notes |
+|---|---|
+| `organisation_id`, `site_id`, `electrical_installation_id` | composite FKs as on `log_entries` |
+| `title` (1–200), `description` (1–5000) | both required |
+| `severity` | `low` Madal · `medium` Keskmine · `high` Kõrge · `critical` Kriitiline — descriptive, not legal classifications |
+| `detected_at` | default now; not in the future |
+| `responsible_person_name`, `due_on` | optional |
+| `status` | `open` Avatud · `in_progress` Töös · `resolved` Lahendatud |
+| `resolution`, `resolved_at`, `resolved_by`, `resolved_by_name` | all set together, only when resolved (checks); not client-writable |
+| `created_by`, `created_by_name` | from the session (trigger); no FK, names snapshotted |
+
+**Lifecycle (decided):** `open ⇄ in_progress → resolved`. Operators and above create and
+edit deficiencies and move them between open and in progress. Resolving only through
+`resolve_deficiency(id, resolution, entry_type, occurred_at, performed_by_name)`
+(operator+): locks the row; same `not_found` for unknown and not-allowed ids; refuses an
+already resolved deficiency; requires a non-empty resolution; writes an operating-log entry
+(`deficiency_id` set, description = resolution, default type Remont) and marks the
+deficiency resolved with who and when — one transaction.
+
+- A resolved deficiency is **final**: any update is rejected (`deficiency_resolved`).
+  A recurring problem is recorded as a new deficiency. (Reopening is an open product question.)
+- Deficiencies are **never deleted**: no delete grant or policy, and delete/truncate triggers
+  reject even the table owner.
+- Every change, including each status transition, is in `activity_history` with the acting
+  user and the previous state.
+- Archived installations take no new deficiencies.
+
+**`log_entries` additions:** `deficiency_id` (not insertable by clients; corrections never
+carry it), composite FK to the deficiency in the same installation, unique per deficiency
+(one resolution entry). `log_entry_current` exposes it.
+
+**Permission note (differs from the original plan):** the original matrix let admins delete
+deficiencies; the Phase 6 brief requires that they never disappear, so nobody can delete.
+
+**Tests:** `supabase/tests/070_deficiencies.test.sql` (39). Mutation-tested: viewers allowed
+to update, resolved records editable / resolvable by plain update, deletion allowed, history
+trigger removed — each fails tests.

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { ForbiddenState } from "@/components/app/states";
+import { NoticeState } from "@/components/app/states";
 import { CompleteActivityForm } from "@/components/schedule/complete-form";
 import { getActivity } from "@/lib/data/schedule";
 import { formatDate, t } from "@/lib/i18n";
@@ -23,8 +23,16 @@ export default function CompleteActivityPage({
         const { activity: id } = await params;
         const activity = await getActivity(org.id, id);
         if (!activity) notFound();
-        if (activity.archivedAt || activity.nextDueOn === null) return <ForbiddenState orgSlug={org.slug} />;
         const href = `/o/${org.slug}/kaidukava/${activity.id}`;
+        if (activity.archivedAt || activity.nextDueOn === null) {
+          return (
+            <NoticeState
+              message={activity.archivedAt ? t.errors.activity_archived : t.errors.activity_already_completed}
+              href={href}
+              linkLabel={activity.title}
+            />
+          );
+        }
 
         return (
           <>

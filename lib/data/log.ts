@@ -20,10 +20,12 @@ export type LogListItem = {
   isCorrected: boolean;
   correctedAt: string | null;
   correctedByName: string | null;
+  scheduledActivityId: string | null;
+  deficiencyId: string | null;
 };
 
 const LIST_COLUMNS =
-  "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, recorded_by_name, is_corrected, corrected_at, corrected_by_name";
+  "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, recorded_by_name, is_corrected, corrected_at, corrected_by_name, scheduled_activity_id, deficiency_id";
 
 type ViewRow = {
   id: string | null;
@@ -38,6 +40,8 @@ type ViewRow = {
   is_corrected: boolean | null;
   corrected_at: string | null;
   corrected_by_name: string | null;
+  scheduled_activity_id: string | null;
+  deficiency_id: string | null;
 };
 
 function toItem(row: ViewRow): LogListItem {
@@ -54,6 +58,8 @@ function toItem(row: ViewRow): LogListItem {
     isCorrected: row.is_corrected ?? false,
     correctedAt: row.corrected_at,
     correctedByName: row.corrected_by_name,
+    scheduledActivityId: row.scheduled_activity_id,
+    deficiencyId: row.deficiency_id,
   };
 }
 
@@ -158,6 +164,9 @@ export type LogEntryWithHistory = {
   id: string;
   siteId: string;
   installationId: string;
+  scheduledActivityId: string | null;
+  scheduledDueOn: string | null;
+  deficiencyId: string | null;
   original: LogEntryVersion;
   /** Oldest first. The last one is the current state. */
   corrections: LogEntryVersion[];
@@ -175,7 +184,7 @@ export async function getLogEntry(
   const { data, error } = await supabase
     .from("log_entries")
     .select(
-      "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, created_by_name, created_at, correction_of_id, correction_reason",
+      "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, created_by_name, created_at, correction_of_id, correction_reason, scheduled_activity_id, scheduled_due_on, deficiency_id",
     )
     .eq("organisation_id", organisationId)
     .eq("electrical_installation_id", installationId)
@@ -203,6 +212,9 @@ export async function getLogEntry(
     id: originalRow.id,
     siteId: originalRow.site_id,
     installationId: originalRow.electrical_installation_id,
+    scheduledActivityId: originalRow.scheduled_activity_id,
+    scheduledDueOn: originalRow.scheduled_due_on,
+    deficiencyId: originalRow.deficiency_id,
     original,
     corrections,
     current: corrections.at(-1) ?? original,

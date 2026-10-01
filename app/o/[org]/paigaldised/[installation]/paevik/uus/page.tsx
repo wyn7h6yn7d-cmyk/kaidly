@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { OrgPage } from "@/components/app/org-page";
 import { LogEntryForm } from "@/components/log/log-entry-form";
-import { hasRole } from "@/lib/auth/roles";
 import { getInstallation } from "@/lib/data/sites";
 import { t } from "@/lib/i18n";
 import { toLocalInput } from "@/lib/time";
-import { ForbiddenState } from "@/components/app/states";
+import { NoticeState } from "@/components/app/states";
 
 export const metadata: Metadata = { title: t.app.log.newTitle };
 
@@ -19,12 +18,14 @@ export default function NewLogEntryPage({
     <OrgPage
       params={params}
       minRole="operator"
-      render={async ({ org, role, user }) => {
+      render={async ({ org, user }) => {
         const { installation: id } = await params;
         const installation = await getInstallation(org.id, id);
         if (!installation) notFound();
-        if (!hasRole(role, "operator") || installation.archivedAt) return <ForbiddenState orgSlug={org.slug} />;
         const logHref = `/o/${org.slug}/paigaldised/${installation.id}/paevik`;
+        if (installation.archivedAt) {
+          return <NoticeState message={t.errors.installation_archived} href={logHref} linkLabel={t.app.log.title} />;
+        }
 
         return (
           <>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
 import { getLogEntry, type LogEntryVersion } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { formatDate, t } from "@/lib/i18n";
 import { formatDateTime } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -95,6 +95,36 @@ export default function LogEntryPage({
 
             <DetailList
               items={[
+                ...(entry.scheduledActivityId
+                  ? [
+                      {
+                        label: copy.linkedActivity,
+                        value: (
+                          <Link
+                            href={`/o/${org.slug}/kaidukava/${entry.scheduledActivityId}`}
+                            className="font-semibold text-k-green underline underline-offset-4"
+                          >
+                            {t.app.schedule.dueOnLabel(formatDate(entry.scheduledDueOn ?? ""))}
+                          </Link>
+                        ),
+                      },
+                    ]
+                  : []),
+                ...(entry.deficiencyId
+                  ? [
+                      {
+                        label: copy.linkedDeficiency,
+                        value: (
+                          <Link
+                            href={`/o/${org.slug}/puudused/${entry.deficiencyId}`}
+                            className="font-semibold text-k-green underline underline-offset-4"
+                          >
+                            {copy.fromDeficiency}
+                          </Link>
+                        ),
+                      },
+                    ]
+                  : []),
                 { label: copy.fields.type, value: copy.types[current.entryType] },
                 { label: copy.fields.occurredAt, value: formatDateTime(current.occurredAt) },
                 { label: copy.fields.description, value: current.description },

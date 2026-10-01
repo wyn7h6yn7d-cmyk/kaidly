@@ -35,6 +35,26 @@ export function ForbiddenState({ orgSlug }: { orgSlug: string }) {
   );
 }
 
+/** A clear "this can't be done any more" notice with a way back — not a permission error. */
+export function NoticeState({
+  message,
+  href,
+  linkLabel,
+}: {
+  message: string;
+  href: string;
+  linkLabel: string;
+}) {
+  return (
+    <section className="max-w-xl border-l-4 border-k-grey bg-k-surface p-5">
+      <p>{message}</p>
+      <Button asChild variant="outline" className="mt-4">
+        <Link href={href}>{linkLabel}</Link>
+      </Button>
+    </section>
+  );
+}
+
 /** Placeholder for a module that arrives in a later phase. Clearly not a fake feature. */
 export function ComingSoon({ title, children }: { title: string; children?: React.ReactNode }) {
   return (

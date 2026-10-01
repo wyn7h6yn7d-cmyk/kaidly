@@ -59,6 +59,7 @@ select results_eq(
        ('invitation_preview(text)'),
        ('private.co_member_ids()'),
        ('private.org_ids(org_role)'),
+       ('resolve_deficiency(uuid,text,log_entry_type,timestamp with time zone,text)'),
        ('revoke_invitation(uuid)') $$,
   'authenticated can execute exactly the reviewed functions'
 );

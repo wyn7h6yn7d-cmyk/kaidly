@@ -78,6 +78,101 @@ export type Database = {
           },
         ]
       }
+      deficiencies: {
+        Row: {
+          created_at: string
+          created_by: string
+          created_by_name: string
+          description: string
+          detected_at: string
+          due_on: string | null
+          electrical_installation_id: string
+          id: string
+          organisation_id: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          resolved_by_name: string | null
+          responsible_person_name: string | null
+          severity: Database["public"]["Enums"]["deficiency_severity"]
+          site_id: string
+          status: Database["public"]["Enums"]["deficiency_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          description: string
+          detected_at?: string
+          due_on?: string | null
+          electrical_installation_id: string
+          id?: string
+          organisation_id: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_by_name?: string | null
+          responsible_person_name?: string | null
+          severity: Database["public"]["Enums"]["deficiency_severity"]
+          site_id: string
+          status?: Database["public"]["Enums"]["deficiency_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          description?: string
+          detected_at?: string
+          due_on?: string | null
+          electrical_installation_id?: string
+          id?: string
+          organisation_id?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_by_name?: string | null
+          responsible_person_name?: string | null
+          severity?: Database["public"]["Enums"]["deficiency_severity"]
+          site_id?: string
+          status?: Database["public"]["Enums"]["deficiency_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deficiencies_electrical_installation_id_organisation_id_fkey"
+            columns: ["electrical_installation_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "deficiencies_electrical_installation_id_site_id_fkey"
+            columns: ["electrical_installation_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "site_id"]
+          },
+          {
+            foreignKeyName: "deficiencies_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deficiencies_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
       electrical_installations: {
         Row: {
           archived_at: string | null
@@ -164,6 +259,7 @@ export type Database = {
           created_at: string
           created_by: string
           created_by_name: string
+          deficiency_id: string | null
           description: string
           electrical_installation_id: string
           entry_type: Database["public"]["Enums"]["log_entry_type"]
@@ -182,6 +278,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           created_by_name?: string
+          deficiency_id?: string | null
           description: string
           electrical_installation_id: string
           entry_type: Database["public"]["Enums"]["log_entry_type"]
@@ -200,6 +297,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           created_by_name?: string
+          deficiency_id?: string | null
           description?: string
           electrical_installation_id?: string
           entry_type?: Database["public"]["Enums"]["log_entry_type"]
@@ -225,6 +323,13 @@ export type Database = {
             columns: ["correction_of_id", "electrical_installation_id"]
             isOneToOne: false
             referencedRelation: "log_entry_current"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_deficiency_fkey"
+            columns: ["deficiency_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "deficiencies"
             referencedColumns: ["id", "electrical_installation_id"]
           },
           {
@@ -613,6 +718,7 @@ export type Database = {
           corrected_by_name: string | null
           correction_count: number | null
           correction_reason: string | null
+          deficiency_id: string | null
           description: string | null
           electrical_installation_id: string | null
           entry_type: Database["public"]["Enums"]["log_entry_type"] | null
@@ -629,6 +735,13 @@ export type Database = {
           site_id: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "log_entries_deficiency_fkey"
+            columns: ["deficiency_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "deficiencies"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
           {
             foreignKeyName: "log_entries_electrical_installation_id_organisation_id_fkey"
             columns: ["electrical_installation_id", "organisation_id"]
@@ -698,6 +811,16 @@ export type Database = {
         Returns: string
       }
       invitation_preview: { Args: { p_token: string }; Returns: Json }
+      resolve_deficiency: {
+        Args: {
+          p_deficiency_id: string
+          p_entry_type: Database["public"]["Enums"]["log_entry_type"]
+          p_occurred_at: string
+          p_performed_by_name?: string
+          p_resolution: string
+        }
+        Returns: string
+      }
       revoke_invitation: {
         Args: { p_invitation_id: string }
         Returns: undefined
@@ -706,6 +829,8 @@ export type Database = {
     Enums: {
       activity_frequency: "once" | "recurring"
       activity_priority: "low" | "normal" | "high"
+      deficiency_severity: "low" | "medium" | "high" | "critical"
+      deficiency_status: "open" | "in_progress" | "resolved"
       installation_status: "in_service" | "out_of_service"
       installation_type:
         | "building"
@@ -858,6 +983,8 @@ export const Constants = {
     Enums: {
       activity_frequency: ["once", "recurring"],
       activity_priority: ["low", "normal", "high"],
+      deficiency_severity: ["low", "medium", "high", "critical"],
+      deficiency_status: ["open", "in_progress", "resolved"],
       installation_status: ["in_service", "out_of_service"],
       installation_type: [
         "building",
