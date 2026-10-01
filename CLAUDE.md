@@ -48,6 +48,9 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Tenant isolation is enforced by RLS. Frontend filtering is convenience only.
 - Never use the `service_role` / secret key in the app, and never add it to env files.
 - Elevated operations are `security definer` functions with `set search_path = ''` and an explicit role check.
+- `security definer` BEFORE triggers run before RLS and foreign keys: check membership of
+  `new.organisation_id` first and scope every lookup to it, so errors never hint at another
+  tenant's records (`supabase/tests/100_cross_tenant_oracles.test.sql`).
 - Every table change ships with pgTAP tests covering the role matrix and cross-tenant access.
 - New tables get **no** privileges by default (foundation migration). Each migration grants
   `authenticated` exactly the table/column privileges it needs; never grant to `anon`.

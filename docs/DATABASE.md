@@ -310,6 +310,13 @@ No UPDATE policy: objects are never overwritten or replaced. Nothing for `anon`.
 Errors never reveal another organisation's objects: foreign and unknown documents both
 give 404 / `not_found`.
 
+**No cross-tenant oracles in triggers** (migration `harden_insert_triggers`). Security
+definer BEFORE triggers run before RLS and the foreign keys. Each one therefore first
+refuses non-members of the row's organisation with the plain RLS error, and scopes every
+lookup to `new.organisation_id`. Naming another tenant's record gives the generic
+foreign-key error whether or not it exists, and whatever its state. New definer triggers
+must follow the same pattern.
+
 ## 10a. Dashboard view (Phase 8)
 
 `public.site_attention` (`security_invoker`): one row per **active** site with
@@ -322,7 +329,7 @@ The dashboard's other sections are bounded queries (`limit 5` + exact count) on 
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 368 tests in 10 files, using the shared fixture
+`npm run test:db` runs pgTAP: 377 tests in 11 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -338,6 +345,7 @@ a user in both) and `helpers/sites.psql`.
 | `070_deficiencies` | 39 | roles, lifecycle, resolution → log, no double resolution, no deletion, history |
 | `080_documents` | 43 | metadata isolation, roles (viewer can't upload, operator scope, admin-only general documents), forged/foreign paths and parents, SVG/size/filename rules, attachment windows, storage read/upload/overwrite/delete across tenants, pending objects unreadable, finalize (missing object, size mismatch, foreign caller), historical files immutable and undeletable, archive/restore, anon reads nothing |
 | `090_dashboard` | 12 | `site_attention` counts, isolation per role, member of two organisations, outsider and anon, archived sites, `security_invoker` |
+| `100_cross_tenant_oracles` | 9 | naming another tenant's archived/resolved/correction records gives the generic FK error, non-members get the plain RLS error, Storage refuses another tenant's existing path like an unknown one and lists nothing |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

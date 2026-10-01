@@ -312,6 +312,7 @@ select lives_ok(
             (pg_temp.org('a'), pg_temp.site('a'), 'Ilma tähiseta 2', 'other') $$,
   'the identifier stays optional'
 );
+select pg_temp.logout(); -- clear a_admin's claims: this insert is maintenance, not a session
 reset role;
 select lives_ok(
   $$ insert into public.electrical_installations (organisation_id, site_id, name, identifier, installation_type)

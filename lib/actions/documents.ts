@@ -156,7 +156,10 @@ export async function discardUpload(orgSlug: string, documentId: string): Promis
     .neq("status", "ready")
     .maybeSingle();
   if (!doc) return failure("not_found");
-  await supabase.storage.from("documents").remove([doc.storage_path]);
+  // Remove the object first; if that fails, keep the row so the leftover stays visible in
+  // the storage report instead of becoming an object nobody can trace.
+  const { error: removeError } = await supabase.storage.from("documents").remove([doc.storage_path]);
+  if (removeError) return failure("unknown");
   const { error } = await supabase.from("documents").delete().eq("id", doc.id);
   if (error) return failure(dbErrorCode(error));
   return { ok: true };
