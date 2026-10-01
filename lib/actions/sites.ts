@@ -1,15 +1,14 @@
 "use server";
 
 import { refresh } from "next/cache";
-import type { ZodError } from "zod";
 import { redirect } from "next/navigation";
 import { dbErrorCode } from "@/lib/db/errors";
 import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
-import { field, fieldErrors } from "@/lib/validation/common";
+import { field } from "@/lib/validation/common";
 import { installationSchema, isUuid, siteSchema } from "@/lib/validation/sites";
 import { actionContext } from "./context";
-import { type ActionState, failure } from "./state";
+import { type ActionState, failure, invalidInput } from "./state";
 
 function siteInput(formData: FormData) {
   return siteSchema.safeParse({
@@ -35,18 +34,12 @@ function installationInput(formData: FormData) {
   });
 }
 
-function invalid(error: ZodError): ActionState {
-  const fields = fieldErrors(error);
-  const future = error.issues.some((issue) => issue.message === "future");
-  return { ok: false, error: future ? t.app.installations.futureDate : t.errors.invalid_input, fields };
-}
-
 export async function createSite(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = siteInput(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -71,7 +64,7 @@ export async function updateSite(_prev: ActionState, formData: FormData): Promis
   const siteId = field(formData, "siteId");
   if (!isUuid(siteId)) return failure("not_found");
   const parsed = siteInput(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -121,7 +114,7 @@ export async function createInstallation(
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = installationInput(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
   const input = parsed.data;
 
   const supabase = await createClient();
@@ -156,7 +149,7 @@ export async function updateInstallation(
   const installationId = field(formData, "installationId");
   if (!isUuid(installationId)) return failure("not_found");
   const parsed = installationInput(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
   const input = parsed.data;
 
   const supabase = await createClient();
@@ -177,11 +170,9 @@ export async function updateInstallation(
     .eq("organisation_id", ctx.org.id)
     .eq("id", installationId)
     .select("id");
-  if (error) {
-    // The site of an installation with operating records can't change (their history
-    // stays with the site where it happened).
-    return failure(dbErrorCode(error));
-  }
+  // Moving an installation that has operating records to another site fails with
+  // has_dependent_records: its history stays with the site where it happened.
+  if (error) return failure(dbErrorCode(error));
   if (!data?.length) return failure("not_found");
   redirect(`/o/${ctx.org.slug}/paigaldised/${installationId}`);
 }

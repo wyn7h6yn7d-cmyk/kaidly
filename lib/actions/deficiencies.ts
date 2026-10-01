@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
-import { z, type ZodError } from "zod";
+import { z } from "zod";
 import { getDeficiency } from "@/lib/data/deficiencies";
 import { getInstallation } from "@/lib/data/sites";
 import { dbErrorCode } from "@/lib/db/errors";
@@ -13,7 +13,7 @@ import { deficiencySchema, progressStatusSchema } from "@/lib/validation/deficie
 import { LOG_ENTRY_TYPES, occurredAt } from "@/lib/validation/log";
 import { isUuid } from "@/lib/validation/sites";
 import { actionContext } from "./context";
-import { type ActionState, failure } from "./state";
+import { type ActionState, failure, invalidInput } from "./state";
 
 function input(formData: FormData) {
   return deficiencySchema.safeParse({
@@ -27,17 +27,12 @@ function input(formData: FormData) {
   });
 }
 
-function invalid(error: ZodError): ActionState {
-  const future = error.issues.some((issue) => issue.message === "future");
-  return { ok: false, error: future ? t.app.log.futureTime : t.errors.invalid_input, fields: fieldErrors(error) };
-}
-
 export async function createDeficiency(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = input(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.log.futureTime });
   const d = parsed.data;
 
   const installation = await getInstallation(ctx.org.id, d.installationId);
@@ -70,7 +65,7 @@ export async function updateDeficiency(_prev: ActionState, formData: FormData): 
   const deficiencyId = field(formData, "deficiencyId");
   if (!isUuid(deficiencyId)) return failure("not_found");
   const parsed = input(formData);
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.log.futureTime });
   const d = parsed.data;
 
   const supabase = await createClient();
@@ -136,7 +131,7 @@ export async function resolveDeficiency(_prev: ActionState, formData: FormData):
     if (parsed.error.issues.some((issue) => issue.path[0] === "resolution")) {
       return failure("resolution_required", fieldErrors(parsed.error));
     }
-    return invalid(parsed.error);
+    return invalidInput(parsed.error, { future: t.app.log.futureTime });
   }
   const r = parsed.data;
   const deficiency = await getDeficiency(ctx.org.id, r.deficiencyId);

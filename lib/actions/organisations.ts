@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { dbErrorCode } from "@/lib/db/errors";
 import { createClient } from "@/lib/supabase/server";
-import { field, fieldErrors } from "@/lib/validation/common";
+import { field } from "@/lib/validation/common";
 import {
   invitationIdSchema,
   invitationSchema,
@@ -15,7 +15,7 @@ import {
   organisationSchema,
   profileSchema,
 } from "@/lib/validation/organisations";
-import { type ActionState, failure } from "./state";
+import { type ActionState, failure, invalidInput } from "./state";
 
 // Every action re-reads the session through the Supabase server client and runs as the
 // user, so RLS decides what is allowed. A write that RLS filters out affects zero rows;
@@ -30,7 +30,7 @@ export async function createOrganisation(
     name: field(formData, "name"),
     registryCode: field(formData, "registryCode"),
   });
-  if (!parsed.success) return failure("invalid_input", fieldErrors(parsed.error));
+  if (!parsed.success) return invalidInput(parsed.error);
 
   const supabase = await createClient();
   const { data: slug, error } = await supabase.rpc("create_organisation", {
@@ -51,7 +51,7 @@ export async function updateOrganisation(
     name: field(formData, "name"),
     registryCode: field(formData, "registryCode"),
   });
-  if (!parsed.success) return failure("invalid_input", fieldErrors(parsed.error));
+  if (!parsed.success) return invalidInput(parsed.error);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -138,7 +138,7 @@ export async function createInvitation(
     email: field(formData, "email"),
     role: field(formData, "role"),
   });
-  if (!parsed.success) return failure("invalid_input", fieldErrors(parsed.error));
+  if (!parsed.success) return invalidInput(parsed.error);
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -193,7 +193,7 @@ export async function updateProfile(_prev: ActionState, formData: FormData): Pro
     fullName: field(formData, "fullName"),
     phone: field(formData, "phone"),
   });
-  if (!parsed.success) return failure("invalid_input", fieldErrors(parsed.error));
+  if (!parsed.success) return invalidInput(parsed.error);
 
   const supabase = await createClient();
   const { data, error } = await supabase

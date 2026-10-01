@@ -1,15 +1,16 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { ZodError } from "zod";
 import { getInstallation } from "@/lib/data/sites";
 import { dbErrorCode } from "@/lib/db/errors";
 import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
-import { field, fieldErrors } from "@/lib/validation/common";
+import { field } from "@/lib/validation/common";
 import { correctionSchema, logEntrySchema } from "@/lib/validation/log";
 import { actionContext } from "./context";
-import { type ActionState, failure } from "./state";
+import { type ActionState, failure, invalidInput } from "./state";
+
+const LOG_TIME_MESSAGES = { future: t.app.log.futureTime, time: t.app.log.invalidTime };
 
 // Organisation, site and installation are never taken from the form: the organisation
 // comes from the URL slug (RLS), the installation is looked up inside it, and the site is
@@ -26,23 +27,13 @@ function input(formData: FormData) {
   };
 }
 
-function invalid(error: ZodError): ActionState {
-  const messages = error.issues.map((issue) => issue.message);
-  const message = messages.includes("future")
-    ? t.app.log.futureTime
-    : messages.includes("time")
-      ? t.app.log.invalidTime
-      : t.errors.invalid_input;
-  return { ok: false, error: message, fields: fieldErrors(error) };
-}
-
 export async function createLogEntry(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
 
   const parsed = logEntrySchema.safeParse(input(formData));
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, LOG_TIME_MESSAGES);
   const entry = parsed.data;
 
   const installation = await getInstallation(ctx.org.id, entry.installationId);
@@ -74,7 +65,7 @@ export async function correctLogEntry(_prev: ActionState, formData: FormData): P
     correctionOfId: field(formData, "correctionOfId"),
     correctionReason: field(formData, "correctionReason"),
   });
-  if (!parsed.success) return invalid(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, LOG_TIME_MESSAGES);
   const entry = parsed.data;
 
   const supabase = await createClient();

@@ -51,8 +51,6 @@ export const installationSchema = z.object({
   notes: optionalText(5000),
 });
 
-export const recordIdSchema = uuid;
-
 export function isUuid(value: string): boolean {
   return uuid.safeParse(value).success;
 }
