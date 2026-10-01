@@ -65,7 +65,7 @@ export default function InstallationDocumentsPage({
                     doc.logEntryId ? copy.linkedLogEntry : doc.deficiencyId ? copy.linkedDeficiency : null
                   }
                 />
-                <Pager page={documents.page} hasMore={documents.hasMore} hrefFor={(p) => `${base}?lk=${p}`} />
+                <Pager generic page={documents.page} hasMore={documents.hasMore} hrefFor={(p) => `${base}?lk=${p}`} />
               </>
             )}
           </>

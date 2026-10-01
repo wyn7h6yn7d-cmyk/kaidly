@@ -104,3 +104,25 @@ test.describe("Puudused", () => {
     await expect(page.getByRole("heading", { name: "Ligipääs puudub" })).toBeVisible();
   });
 });
+
+test("resolved deficiencies are paginated, with the total shown on the installation", async ({ page }) => {
+  const org = await createOrg();
+  const site = await createSite(org, "Objekt");
+  const installation = await createInstallation(org, site, "Kilp");
+  sql(`insert into public.deficiencies (organisation_id, site_id, electrical_installation_id, title, description, severity,
+                                        status, resolution, resolved_at, resolved_by, resolved_by_name, created_by)
+       select '${org.id}', '${site}', '${installation}', 'Lahendatud ' || lpad(n::text, 2, '0'), 'x', 'low',
+              'resolved', 'Korras', now() - make_interval(hours => n), '${org.users.operator.id}', 'Kati', '${org.users.operator.id}'
+         from generate_series(1, 51) n;`);
+  await login(page, org.users.viewer, `/o/${org.slug}/paigaldised/${installation}/puudused`);
+  await page.getByText("Lahendatud (51)").click();
+  await page.getByRole("link", { name: "Näita kõiki (51)" }).click();
+
+  const list = page.getByRole("list", { name: "Puudused" });
+  await expect(list.getByRole("listitem")).toHaveCount(50);
+  await page.getByRole("link", { name: "Järgmine lehekülg" }).click();
+  await expect(page).toHaveURL(/seis=resolved/);
+  await expect(page).toHaveURL(/lk=2/);
+  await expect(list.getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Eelmine lehekülg" })).toBeVisible();
+});

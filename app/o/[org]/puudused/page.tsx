@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
 import { DeficiencyList } from "@/components/deficiencies/deficiency-list";
 import { Field } from "@/components/forms/field";
+import { Pager, pageHref, parsePage } from "@/components/log/log-list";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { hasRole } from "@/lib/auth/roles";
@@ -31,9 +32,11 @@ export default function DeficienciesPage({
     <OrgPage
       params={params}
       render={async ({ org, role }) => {
-        const filters = parseDeficiencyFilters(await searchParams);
+        const query = await searchParams;
+        const filters = parseDeficiencyFilters(query);
+        const page = parsePage(query.lk);
         const [deficiencies, installations, sites] = await Promise.all([
-          listDeficiencies(org.id, filters),
+          listDeficiencies(org.id, filters, page),
           listInstallationOptions(org.id),
           listActiveSiteOptions(org.id),
         ]);
@@ -114,22 +117,30 @@ export default function DeficienciesPage({
               </label>
             </FilterPanel>
 
-            {deficiencies.length === 0 ? (
+            {deficiencies.items.length === 0 && page === 1 ? (
               activeCount > 0 ? (
                 <p className="text-k-muted">{copy.noResults}</p>
               ) : (
                 <EmptyState title={copy.emptyActive} />
               )
             ) : (
-              <DeficiencyList
-                items={deficiencies}
-                orgSlug={org.slug}
-                today={todayInTallinn()}
-                contextFor={(item) => {
-                  const i = byId.get(item.installationId);
-                  return i ? installationLabel(i) : null;
-                }}
-              />
+              <>
+                <DeficiencyList
+                  items={deficiencies.items}
+                  orgSlug={org.slug}
+                  today={todayInTallinn()}
+                  contextFor={(item) => {
+                    const i = byId.get(item.installationId);
+                    return i ? installationLabel(i) : null;
+                  }}
+                />
+                <Pager
+                  generic
+                  page={deficiencies.page}
+                  hasMore={deficiencies.hasMore}
+                  hrefFor={(p) => pageHref(base, query, p)}
+                />
+              </>
             )}
           </>
         );

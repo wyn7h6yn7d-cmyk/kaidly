@@ -106,11 +106,14 @@ export function parseActivityFilters(
   };
 }
 
-/** Activities ordered by next due date (done last). */
+export const ACTIVITIES_PAGE_SIZE = 50;
+
+/** Activities ordered by next due date (done last); paginated (done one-time ones accumulate). */
 export async function listActivities(
   organisationId: string,
   filters: ActivityFilters = {},
-): Promise<Activity[]> {
+  page = 1,
+): Promise<{ items: Activity[]; hasMore: boolean; page: number }> {
   const supabase = await createClient();
   let query = supabase.from("scheduled_activities").select(COLUMNS).eq("organisation_id", organisationId);
   query = filters.archived ? query.not("archived_at", "is", null) : query.is("archived_at", null);
@@ -126,13 +129,20 @@ export async function listActivities(
   }
   const { data, error } = await query
     .order("next_due_on", { ascending: true, nullsFirst: false })
-    .order("title");
+    .order("title")
+    .order("id")
+    .range((page - 1) * ACTIVITIES_PAGE_SIZE, page * ACTIVITIES_PAGE_SIZE); // one extra row → hasMore
   if (error) throw error;
+  const rows = data.slice(0, ACTIVITIES_PAGE_SIZE);
   const latest = await lastCompletions(
     organisationId,
-    data.map((row) => row.id),
+    rows.map((row) => row.id),
   );
-  return data.map((row) => toActivity(row, latest.get(row.id) ?? null));
+  return {
+    items: rows.map((row) => toActivity(row, latest.get(row.id) ?? null)),
+    hasMore: data.length > ACTIVITIES_PAGE_SIZE,
+    page,
+  };
 }
 
 export async function getActivity(organisationId: string, activityId: string): Promise<Activity | null> {

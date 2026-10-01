@@ -26,7 +26,7 @@ export default function InstallationDeficienciesPage({
         const { installation: id } = await params;
         const installation = await getInstallation(org.id, id);
         if (!installation) notFound();
-        const { active, resolved } = await listInstallationDeficiencies(org.id, installation.id);
+        const { active, resolved, resolvedTotal } = await listInstallationDeficiencies(org.id, installation.id);
         const canAdd = hasRole(role, "operator") && !installation.archivedAt;
         const addHref = `/o/${org.slug}/puudused/uus?paigaldis=${installation.id}`;
         const copy = t.app.deficiencies;
@@ -66,15 +66,25 @@ export default function InstallationDeficienciesPage({
             {resolved.length > 0 && (
               <details className="mt-8">
                 <summary className="flex h-11 cursor-pointer items-center font-semibold text-k-green">
-                  {copy.resolvedSection(resolved.length)}
+                  {copy.resolvedSection(resolvedTotal)}
                 </summary>
                 <div className="mt-3">
                   <DeficiencyList
                     items={resolved}
                     orgSlug={org.slug}
                     today={today}
-                    label={copy.resolvedSection(resolved.length)}
+                    label={copy.resolvedSection(resolvedTotal)}
                   />
+                  {resolvedTotal > resolved.length && (
+                    <p className="mt-3">
+                      <Link
+                        href={`/o/${org.slug}/puudused?paigaldis=${installation.id}&seis=resolved`}
+                        className="inline-flex h-11 items-center font-semibold text-k-green underline underline-offset-4"
+                      >
+                        {t.app.dashboard.showAll(resolvedTotal)}
+                      </Link>
+                    </p>
+                  )}
                 </div>
               </details>
             )}

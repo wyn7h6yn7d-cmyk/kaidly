@@ -6,6 +6,7 @@ import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
 import { Field } from "@/components/forms/field";
+import { Pager, pageHref, parsePage } from "@/components/log/log-list";
 import { ActivityList } from "@/components/schedule/activity-list";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -31,9 +32,11 @@ export default function SchedulePage({
     <OrgPage
       params={params}
       render={async ({ org, role }) => {
-        const filters = parseActivityFilters(await searchParams);
+        const query = await searchParams;
+        const filters = parseActivityFilters(query);
+        const page = parsePage(query.lk);
         const [activities, installations, sites] = await Promise.all([
-          listActivities(org.id, filters),
+          listActivities(org.id, filters, page),
           listInstallationOptions(org.id),
           listActiveSiteOptions(org.id),
         ]);
@@ -107,7 +110,7 @@ export default function SchedulePage({
               </FilterPanel>
             )}
 
-            {activities.length === 0 ? (
+            {activities.items.length === 0 && page === 1 ? (
               activeCount > 0 || filters.archived ? (
                 <p className="text-k-muted">{copy.noResults}</p>
               ) : (
@@ -127,16 +130,24 @@ export default function SchedulePage({
                 />
               )
             ) : (
-              <ActivityList
-                items={activities}
-                today={todayInTallinn()}
-                orgSlug={org.slug}
-                canComplete={hasRole(role, "operator")}
-                contextFor={(item) => {
-                  const i = byId.get(item.installationId);
-                  return i ? installationLabel(i) : null;
-                }}
-              />
+              <>
+                <ActivityList
+                  items={activities.items}
+                  today={todayInTallinn()}
+                  orgSlug={org.slug}
+                  canComplete={hasRole(role, "operator")}
+                  contextFor={(item) => {
+                    const i = byId.get(item.installationId);
+                    return i ? installationLabel(i) : null;
+                  }}
+                />
+                <Pager
+                  generic
+                  page={activities.page}
+                  hasMore={activities.hasMore}
+                  hrefFor={(p) => pageHref(base, query, p)}
+                />
+              </>
             )}
 
             {!filters.archived && (

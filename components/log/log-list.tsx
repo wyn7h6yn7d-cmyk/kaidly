@@ -80,24 +80,28 @@ export function Pager({
   page,
   hasMore,
   hrefFor,
+  generic,
 }: {
   page: number;
   hasMore: boolean;
   hrefFor: (page: number) => string;
+  /** Plain "previous/next page" labels for lists that aren't the operating log. */
+  generic?: boolean;
 }) {
+  const labels = generic ? t.app.pagination : { previous: t.app.log.newer, next: t.app.log.older };
   if (page <= 1 && !hasMore) return null;
   return (
     <nav aria-label={t.app.log.pagination} className="mt-6 flex justify-between gap-4">
       {page > 1 ? (
         <Link href={hrefFor(page - 1)} className="font-semibold text-k-green underline underline-offset-4">
-          {t.app.log.newer}
+          {labels.previous}
         </Link>
       ) : (
         <span />
       )}
       {hasMore && (
         <Link href={hrefFor(page + 1)} className="font-semibold text-k-green underline underline-offset-4">
-          {t.app.log.older}
+          {labels.next}
         </Link>
       )}
     </nav>
@@ -107,4 +111,19 @@ export function Pager({
 export function parsePage(value: string | string[] | undefined): number {
   const n = typeof value === "string" ? Number.parseInt(value, 10) : 1;
   return Number.isFinite(n) && n > 0 && n < 10000 ? n : 1;
+}
+
+/** Link to another page of a filtered list, keeping the current filters. */
+export function pageHref(
+  base: string,
+  query: Record<string, string | string[] | undefined>,
+  page: number,
+): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (key !== "lk" && typeof value === "string") params.set(key, value);
+  }
+  if (page > 1) params.set("lk", String(page));
+  const search = params.toString();
+  return search ? `${base}?${search}` : base;
 }

@@ -223,6 +223,7 @@ export const et = {
     back: "Tagasi",
     you: "Sina",
     optional: "valikuline",
+    pagination: { previous: "Eelmine lehekülg", next: "Järgmine lehekülg" },
     comingSoon: {
       title: "Tuleb peagi",
       phase: (name: string) => `${name} lisandub järgmistes arendusetappides.`,

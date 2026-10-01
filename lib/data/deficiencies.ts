@@ -92,11 +92,14 @@ export function parseDeficiencyFilters(
   };
 }
 
-/** Most severe first, then earliest due date. */
+export const DEFICIENCIES_PAGE_SIZE = 50;
+
+/** Most severe first, then earliest due date; paginated (resolved ones accumulate). */
 export async function listDeficiencies(
   organisationId: string,
   filters: DeficiencyFilters = {},
-): Promise<Deficiency[]> {
+  page = 1,
+): Promise<{ items: Deficiency[]; hasMore: boolean; page: number }> {
   const supabase = await createClient();
   let query = supabase.from("deficiencies").select(COLUMNS).eq("organisation_id", organisationId);
   if (filters.siteId) query = query.eq("site_id", filters.siteId);
@@ -107,28 +110,52 @@ export async function listDeficiencies(
   const { data, error } = await query
     .order("severity", { ascending: false })
     .order("due_on", { ascending: true, nullsFirst: false })
-    .order("detected_at", { ascending: false });
+    .order("detected_at", { ascending: false })
+    .order("id")
+    .range((page - 1) * DEFICIENCIES_PAGE_SIZE, page * DEFICIENCIES_PAGE_SIZE); // one extra row → hasMore
   if (error) throw error;
-  return data.map(toDeficiency);
+  return {
+    items: data.slice(0, DEFICIENCIES_PAGE_SIZE).map(toDeficiency),
+    hasMore: data.length > DEFICIENCIES_PAGE_SIZE,
+    page,
+  };
 }
 
-/** All deficiencies of one installation: active first, then resolved (newest first). */
+export const INSTALLATION_RESOLVED_SHOWN = 50;
+
+/**
+ * Deficiencies of one installation: all active ones (most severe first) and the latest
+ * resolved ones with their total — resolved ones accumulate, the full list is paginated
+ * on the organisation page.
+ */
 export async function listInstallationDeficiencies(organisationId: string, installationId: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("deficiencies")
-    .select(COLUMNS)
-    .eq("organisation_id", organisationId)
-    .eq("electrical_installation_id", installationId)
-    .order("severity", { ascending: false })
-    .order("detected_at", { ascending: false });
-  if (error) throw error;
-  const all = data.map(toDeficiency);
+  const [active, resolved] = await Promise.all([
+    supabase
+      .from("deficiencies")
+      .select(COLUMNS)
+      .eq("organisation_id", organisationId)
+      .eq("electrical_installation_id", installationId)
+      .neq("status", "resolved")
+      .order("severity", { ascending: false })
+      .order("detected_at", { ascending: false })
+      .order("id"),
+    supabase
+      .from("deficiencies")
+      .select(COLUMNS, { count: "exact" })
+      .eq("organisation_id", organisationId)
+      .eq("electrical_installation_id", installationId)
+      .eq("status", "resolved")
+      .order("resolved_at", { ascending: false })
+      .order("id")
+      .limit(INSTALLATION_RESOLVED_SHOWN),
+  ]);
+  if (active.error) throw active.error;
+  if (resolved.error) throw resolved.error;
   return {
-    active: all.filter((d) => d.status !== "resolved"),
-    resolved: all
-      .filter((d) => d.status === "resolved")
-      .sort((a, b) => (b.resolvedAt ?? "").localeCompare(a.resolvedAt ?? "")),
+    active: active.data.map(toDeficiency),
+    resolved: resolved.data.map(toDeficiency),
+    resolvedTotal: resolved.count ?? resolved.data.length,
   };
 }
 

@@ -141,6 +141,7 @@ export default function DocumentsPage({
                   }}
                 />
                 <Pager
+                  generic
                   page={documents.page}
                   hasMore={documents.hasMore}
                   hrefFor={(p) => {
