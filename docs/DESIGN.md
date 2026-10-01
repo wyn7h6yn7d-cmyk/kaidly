@@ -177,6 +177,25 @@ requests to Google).
 - **Lists, not tables**: organisation-wide lists are two-column rows on desktop (time/state
   left, content right) that stack on phones. No tables, no card grids.
 - **Filters**: a collapsed "Filtrid" panel (GET form, URL parameters), open when filters are active.
+- **Pagination**: "Uuemad / Vanemad sissekanded" in the operating log, "Eelmine / Järgmine
+  lehekülg" elsewhere; filters stay in the links.
+- **Overview ("Mis vajab tähelepanu")**: a three-figure strip (Üle tähtaja · Tähtaeg 14
+  päeva jooksul · Kõrged ja kriitilised puudused), each figure a link to the filtered list;
+  red only when the figure is above zero. Below, four short lists (5 rows each, count at
+  right, "Näita kõiki (n)") — on desktop in two columns, on phones stacked in order of
+  urgency — then "Objektid, kus on lahtisi asju" as text counts per site. Real data only:
+  no charts, no trends, no percentages.
+- **First use**: a numbered checklist (Lisa esimene objekt → Lisa paigaldis → Tee esimene
+  käidupäeviku sissekanne); done steps get a green check, the current step shows one
+  button. Members who can't create sites see who does it. No tours, no modals.
+- **Documents and attachments**: documents are list rows (icon, title, category · date ·
+  size, context) with "Ava" at right. Photos on a record are square thumbnails in a grid
+  (3 per row on phones) under the heading "Fotod"; other files as rows. Historical files
+  carry a green-bordered note that they can't be changed. The upload control is an
+  outlined button with a camera icon ("Pildista või vali fotod"); each chosen file is a
+  row with size, state (Ootel · Laadin üles… 40% · Üles laaditud · Üleslaadimine
+  ebaõnnestus) and a 44 px remove button; a thin progress bar while uploading. Refused
+  files are listed in an alert with the reason.
 
 ## 5a. Public landing page (implemented)
 
@@ -223,7 +242,9 @@ not a different product.
 
 - Bottom tab bar on mobile (thumb zone): **Ülevaade · Käidupäevik · Käidukava · Puudused · Rohkem**
   (Rohkem = Objektid, Dokumendid, Seaded). Sites are listed on the overview.
-- A full-width volt **"+ Lisa sissekanne"** button in the installation header on phones.
+- A full-width volt **"+ Lisa sissekanne"** button in the installation header on phones
+  (hidden while the entry form itself is open), on the overview and on the organisation log.
+  Outside an installation it opens the quick-entry picker.
 - Desktop: deep green left sidebar (as on the board): Ülevaade · Objektid · Käidupäevik ·
   Käidukava · Puudused · Dokumendid · Seaded, organisation switcher at the top (Phase 2),
   account menu at the bottom.
@@ -243,11 +264,16 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
 - Description is focused on open; result, time and performer sit in a disclosure that
   starts with sensible defaults (now, the user's name).
 - Measured: from the installation page, two taps (Lisa sissekanne → type chip) plus typing
-  and Salvesta.
+  and Salvesta. From the overview: Lisa sissekanne → recently used installation → type chip.
+- **Photos** sit under the description: "Pildista või vali fotod" opens the camera or the
+  gallery; photos are resized on the phone and upload after the entry is saved, with
+  progress per file. If an upload fails, the saved entry stays on screen with "Proovi
+  uuesti" and "Jätka ilma nende failideta". More photos can be added from the entry page
+  for an hour; later ones go on a correction.
 
-**Not built yet (planned):** an installation picker with recently used installations
-(entry point from the overview), photo capture (Phase 7), device-side drafts for poor
-signal (Phase 9), "Leidsin puuduse" shortcut that creates a deficiency from an entry.
+**Not built yet (planned):** device-side drafts for poor signal (Phase 9), "Leidsin
+puuduse" shortcut that creates a deficiency from an entry, photos in the deficiency
+creation form (today: add them on the deficiency page right after saving).
 
 ### Completing planned work and resolving deficiencies
 
@@ -262,7 +288,8 @@ signal (Phase 9), "Leidsin puuduse" shortcut that creates a deficiency from an e
 - Touch targets ≥ 44 × 44 px, ≥ 8 px apart; primary buttons 48 px high.
 - Works with gloves: no small icon-only controls for primary actions; no swipe-only gestures.
 - High contrast; nothing relies on hover.
-- Slow network: optimistic pending state on save, clear retry on failure, text never lost.
+- Slow network: pending state on save, per-file upload progress, clear retry on failure;
+  text is never lost after a validation or upload error (device drafts: Phase 9).
 - Respects `prefers-reduced-motion`; motion is minimal anyway (≤ 150 ms fades).
 
 ## 7. Copy

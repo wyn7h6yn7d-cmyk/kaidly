@@ -33,6 +33,7 @@ npm run db:start       # local Supabase (needs a running Docker-compatible runti
 npm run db:reset       # rebuild local DB from migrations + seed
 npm run test:db        # pgTAP database/RLS tests (supabase/tests)
 npm run db:types       # regenerate lib/supabase/database.types.ts from the local DB
+npm run db:seed-files  # sample documents/photos for the local demo org (after db:reset)
 npm run build
 npm run test:e2e       # Playwright, local stack only (own dev server on :3100)
 npm run check          # lint, typecheck, unit, database tests, build
@@ -63,6 +64,10 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   deleted; history is written by triggers only. Don't add update/delete paths.
 - After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
+- Files: one private bucket; object paths come from the database; browsers upload only to
+  their own registered pending path; files are read through short-lived signed URLs from
+  the access-checked route. Attachments on log entries and deficiencies are never changed
+  or deleted. No `service_role` anywhere, including scripts that upload.
 
 **Database**
 - All schema, policy and bucket changes go through `supabase/migrations/`. No manual dashboard changes.
@@ -77,6 +82,8 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   keeps hidden copies of visited pages). Selects and radio groups get a `key` from the value.
 - Server Components read through `lib/data/*` (`server-only`); writes are Server Actions in `lib/actions/*` that validate input on the server.
 - Select explicit columns. Map database errors to Estonian user messages.
+- Lists that grow over time are paginated with a deterministic order (id tie-break); no
+  per-row queries (N+1) and no signing URLs for whole lists.
 - UI strings in `lib/i18n/et.ts`, used via `t` from `@/lib/i18n`. No hard-coded user-facing text in components.
 - User-facing errors are application-controlled codes mapped to messages (`lib/auth/errors.ts`,
   `t.errors`). Never display or put provider/database error text in URLs.
@@ -94,6 +101,6 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 
 ## Definition of done
 
-`npm run check` and `npm run test:e2e` pass; RLS tests cover touched tables; the feature
+`npm run check` and `npm run test:e2e` pass (CI runs the same); RLS tests cover touched tables; the feature
 works at 375 px (no horizontal scroll, 44 px targets); docs updated if behaviour or schema
 changed.

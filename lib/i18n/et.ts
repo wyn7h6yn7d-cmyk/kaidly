@@ -224,10 +224,6 @@ export const et = {
     you: "Sina",
     optional: "valikuline",
     pagination: { previous: "Eelmine lehekülg", next: "Järgmine lehekülg" },
-    comingSoon: {
-      title: "Tuleb peagi",
-      phase: (name: string) => `${name} lisandub järgmistes arendusetappides.`,
-    },
     forbidden: {
       title: "Ligipääs puudub",
       body: "Sinu roll selles organisatsioonis ei võimalda seda lehte vaadata.",

@@ -59,6 +59,19 @@ log entries, scheduled activities and deficiencies. Demo accounts — password
 The seed only ever runs against the local database (`supabase db push` never runs seeds).
 To browse it, run the app against the local stack: `npm run dev:local`.
 
+Sample documents and photos (generated locally, no downloads) go through the normal upload
+flow, signed in as the demo users — run after each reset:
+
+```bash
+npm run db:seed-files
+```
+
+Storage consistency (stale pending uploads, orphaned objects; read-only):
+
+```bash
+docker exec -i supabase_db_kaidly psql -U postgres < supabase/maintenance/storage_report.sql
+```
+
 ### End-to-end tests (local only)
 
 ```bash
@@ -87,6 +100,14 @@ npm run dev:local        # http://localhost:3000, reads the local values from `s
 ```
 
 Local auth emails are caught by Mailpit (URL in `npx supabase status`).
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on pull requests and on pushes to every branch except
+`main`: lint, typecheck, unit tests and build; database tests on a fresh local Supabase stack
+inside the runner (plus a check that `lib/supabase/database.types.ts` matches the
+migrations); and the Playwright suite. It needs no secrets and never touches a hosted
+project. Traces of failed browser tests are kept as a build artifact for 7 days.
 
 ## Database changes
 

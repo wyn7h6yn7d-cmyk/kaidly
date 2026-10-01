@@ -99,20 +99,23 @@ app/
     not-found.tsx              "organisation not found" (unknown or not a member)
     [org]/
       layout.tsx               app shell, membership check
-      page.tsx                 overview
+      page.tsx                 overview: what needs attention, first-use checklist
+      sissekanne/              quick entry: pick an installation → its entry form
       objektid/                sites: list, uus, [site], [site]/muuda
       paigaldised/             installations: uus, [installation] (+ layout with tabs),
                                [installation]/{muuda, paevik, kaidukava, puudused, dokumendid}
       paevik/                  organisation operating log with filters
       kaidukava/               plan: list, uus, [activity], [activity]/{tehtud, muuda}
       puudused/                deficiencies: list, uus, [deficiency], [deficiency]/{lahenda, muuda}
-      dokumendid/              placeholder (Phase 7)
+      dokumendid/              documents: list, uus, [document], [document]/ava (route handler → signed URL)
       seaded/                  organisation settings, liikmed (members + invitations)
 components/
   ui/                          primitives (button, input, select, textarea, label, dropdown)
   app/                         shell, page header, states, filter panel, org page wrapper
   forms/                       field, messages, confirm form, useFormAction, useFieldId
   auth/ organisations/ sites/ log/ schedule/ deficiencies/   feature components
+  documents/                   upload queue hook, picker, uploader, lists, upload/edit forms
+  dashboard/                   attention sections, onboarding checklist
   brand/                       provisional logo
 lib/
   supabase/                    clients (browser, server, proxy), generated database.types.ts
@@ -122,11 +125,13 @@ lib/
   validation/                  zod schemas
   db/errors.ts                 database error → application error code
   i18n/                        et.ts (all UI strings), index.ts
+  documents/                   rules.ts (types, size, filenames — shared), upload-client.ts (browser: resize, XHR upload)
   schedule.ts, time.ts, labels.ts, env.ts
-scripts/                       local-supabase.mjs, dev-local.mjs (local stack only)
+scripts/                       local-supabase.mjs, dev-local.mjs, seed-files.mjs (local stack only)
+.github/workflows/ci.yml       CI: verify, database, e2e jobs
 tests/unit/                    node --test unit tests
 e2e/                           Playwright suite + support/fixtures.ts
-supabase/                      migrations, seed (local only), pgTAP tests, config
+supabase/                      migrations, seed (local only), pgTAP tests, maintenance/ (read-only reports), config
 ```
 
 URL segments are Estonian (`objektid`, `paigaldised`, `paevik`, `kaidukava`, `puudused`);
@@ -139,25 +144,30 @@ code identifiers are English.
 | `/`, `/auth/*` | landing, authentication | public |
 | `/invite/[token]` | invitation preview and accept | signed in |
 | `/o`, `/o/uus`, `/konto` | organisation picker, create, own profile | signed in |
-| `/o/[org]` | overview: real counts and sites | viewer |
+| `/o/[org]` | overview: what needs attention (overdue, due soon, high/critical deficiencies, latest entries, sites with open items), first-use checklist | viewer |
+| `/o/[org]/sissekanne` | quick entry: recently used installations first, then by site; one installation → straight to its form | operator |
 | `/o/[org]/objektid` (+ `?arhiiv`) | sites | viewer |
 | `/o/[org]/objektid/uus`, `/[site]/muuda` | create/edit/archive site | admin |
 | `/o/[org]/objektid/[site]` | site with its installations | viewer |
 | `/o/[org]/paigaldised/uus?objekt=` | new installation | admin |
-| `/o/[org]/paigaldised/[installation]` | tabs: Ülevaade · Käidupäevik · Käidukava · Puudused · Dokumendid (placeholder) | viewer |
+| `/o/[org]/paigaldised/[installation]` | tabs: Ülevaade (status, first-entry prompt) · Käidupäevik · Käidukava · Puudused · Dokumendid | viewer |
 | `/o/[org]/paigaldised/[installation]/muuda` | edit/archive installation | admin |
 | `…/[installation]/paevik` (+ `/uus`, `/[entry]`, `/[entry]/paranda`) | installation log, new entry, entry history, correction | viewer / operator |
 | `/o/[org]/paevik` | organisation log; filters `objekt`, `paigaldis`, `liik`, `alates`, `kuni`; `lk` page | viewer |
-| `/o/[org]/kaidukava` (+ `?arhiiv`) | plan; filters `objekt`, `paigaldis`, `seis`, `prioriteet` | viewer |
+| `/o/[org]/kaidukava` (+ `?arhiiv`) | plan; filters `objekt`, `paigaldis`, `seis`, `prioriteet`; `lk` page | viewer |
 | `/o/[org]/kaidukava/uus?paigaldis=`, `/[activity]/muuda` | create/edit/archive activity | admin |
 | `/o/[org]/kaidukava/[activity]` (+ `/tehtud`) | activity and completion history; "Märgi tehtuks" | viewer / operator |
 | `…/[installation]/kaidukava` | installation plan | viewer |
-| `/o/[org]/puudused` | deficiencies (default: active); filters `objekt`, `paigaldis`, `seis`, `raskus`, `tahtaeg=uletatud` | viewer |
+| `/o/[org]/puudused` | deficiencies (default: active); filters `objekt`, `paigaldis`, `seis`, `raskus`, `tahtaeg=uletatud`; `lk` page | viewer |
 | `/o/[org]/puudused/uus?paigaldis=`, `/[deficiency]/muuda`, `/lahenda` | record, edit, resolve | operator |
 | `/o/[org]/puudused/[deficiency]` | detail; Märgi töös / Lahenda puudus | viewer |
-| `…/[installation]/puudused` | active first, resolved in a separate section | viewer |
+| `…/[installation]/puudused` | active first; latest 50 resolved with the total and a link to the full list | viewer |
 | `/o/[org]/seaded`, `/seaded/liikmed` | settings (owner edits), members and invitations | viewer (admin manages) |
-| `/o/[org]/dokumendid` | placeholder (Phase 7) | viewer |
+| `/o/[org]/dokumendid` (+ `?arhiiv=1`) | ready documents; filters `objekt`, `paigaldis`, `liik`, `alates`, `kuni`; `lk` page | viewer |
+| `/o/[org]/dokumendid/uus?paigaldis=` / `?objekt=` | upload a general document (operators: installations only) | operator |
+| `/o/[org]/dokumendid/[document]` | details, open/download; admins rename, recategorise, archive/restore general documents | viewer |
+| `/o/[org]/dokumendid/[document]/ava` (+ `?lae=1`) | route handler: access check → 302 to a 60-second signed URL; 404 for unknown, foreign or incomplete | viewer |
+| `…/[installation]/dokumendid` | all ready documents of the installation incl. entry/deficiency attachments | viewer |
 
 Every page re-checks membership (`OrgPage`) and scopes every query to the organisation
 from the URL. Unknown or foreign record ids render "Lehte ei leitud"; insufficient roles
@@ -183,8 +193,24 @@ archived) render a clear notice instead of a permission error.
    `{ ok, error, fields }`; the client keeps typed values on failure (`useFormAction`),
 5. redirects or calls `refresh()`.
 
-The browser talks to Supabase directly only for **auth** (the auth forms). File uploads
-will also go straight to Storage in Phase 7, covered by storage policies.
+The browser talks to Supabase directly only for **auth** (the auth forms) and for **file
+bytes**: an upload goes straight to Storage with the user's own session, so files never
+pass through the app server.
+
+**Upload flow** (`components/documents/use-upload-queue.ts`):
+1. `registerUpload` (Server Action) validates type, extension, size and filename, resolves
+   the target (organisation, site, installation, log entry or deficiency) through RLS and
+   inserts a `pending` documents row; the database generates the object path.
+2. The browser resizes photos (≤ 2048 px, JPEG ~0.82; PNG stays PNG; HEIC from Safari is
+   converted) and uploads with `XMLHttpRequest` for progress, `x-upsert: false`.
+3. `finalizeUpload` → `finalize_document` checks the object and marks it `ready`.
+4. On any failure `discardUpload` removes the object and the pending row; the file stays in
+   the list with "Proovi uuesti".
+Log-entry photos: the form saves the entry first (the action returns its id instead of
+redirecting when files are queued), then uploads to it. If an upload fails the entry is
+already saved; the form keeps its values and offers retry or "continue without".
+Files are opened through `/o/[org]/dokumendid/[id]/ava`, which signs one 60-second URL on
+demand — nothing is pre-signed for lists, and thumbnails load lazily through the same route.
 
 **Authorisation layers**, from strongest to weakest:
 1. Postgres RLS + storage policies — the real boundary.
@@ -259,8 +285,12 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 - No client-side data-fetching libraries; Server Components render lists.
 - Client components only where interaction needs them (forms with photo upload, org switcher, filters).
 - Images: user photos are resized in the browser (canvas → JPEG, longest side 2048 px,
-  quality ~0.8) before upload. Saves data on site and storage cost.
-- Log entry drafts are kept in `localStorage` per installation until saved successfully.
+  quality ~0.82) before upload. Saves data on site and storage cost. Thumbnails are the
+  resized originals (no image transformation service); fine for a handful per record.
+- Lists that grow are paginated (50, deterministic order, one extra row to detect more):
+  log, documents, deficiencies, activities. Dashboard sections are `limit 5` + exact count;
+  per-site counts come from one view. No N+1: labels come from one installation lookup.
+- *Planned (Phase 9):* log entry drafts in `localStorage` per installation until saved.
 
 ## 9. Environments and deployment
 
@@ -285,6 +315,7 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 | Level | Tool | Scope |
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
-| Unit | `node --test` (built in), 38 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic. |
-| End-to-end | Playwright, 35 tests | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution. Desktop; tests tagged `@responsive` also run at 375 px and 768 px. |
-| Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit; CI is Phase 10. |
+| Unit | `node --test` (built in), 44 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules (type + extension, size, filenames). |
+| End-to-end | Playwright, 55 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, and an axe-core WCAG 2.1 AA + no-horizontal-scroll sweep of the main pages. |
+| Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit. |
+| CI | GitHub Actions `.github/workflows/ci.yml` | On PRs and pushes to non-main branches: **verify** (lint, typecheck, unit, build with placeholder public config), **database** (fresh local stack in the runner: migrations + seed, pgTAP, generated types up to date), **e2e** (Playwright against the local stack; traces kept on failure). Actions pinned to SHAs, no secrets, no hosted project. |

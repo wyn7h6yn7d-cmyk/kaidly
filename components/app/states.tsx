@@ -55,19 +55,6 @@ export function NoticeState({
   );
 }
 
-/** Placeholder for a module that arrives in a later phase. Clearly not a fake feature. */
-export function ComingSoon({ title, children }: { title: string; children?: React.ReactNode }) {
-  return (
-    <section className="border border-dashed border-k-grey/50 bg-k-paper-2 px-5 py-8 sm:px-8">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-k-muted">
-        {t.app.comingSoon.title}
-      </p>
-      <p className="mt-2 max-w-xl text-k-ink">{t.app.comingSoon.phase(title)}</p>
-      {children}
-    </section>
-  );
-}
-
 export function LoadingBlock({ lines = 3 }: { lines?: number }) {
   return (
     <div aria-busy="true" aria-live="polite" className="animate-pulse space-y-3">
