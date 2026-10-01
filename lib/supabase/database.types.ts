@@ -78,6 +78,85 @@ export type Database = {
           },
         ]
       }
+      electrical_installations: {
+        Row: {
+          archived_at: string | null
+          commissioned_on: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          identifier: string | null
+          installation_type: Database["public"]["Enums"]["installation_type"]
+          location: string | null
+          name: string
+          notes: string | null
+          organisation_id: string
+          responsible_person: string | null
+          site_id: string
+          status: Database["public"]["Enums"]["installation_status"]
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          commissioned_on?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          identifier?: string | null
+          installation_type: Database["public"]["Enums"]["installation_type"]
+          location?: string | null
+          name: string
+          notes?: string | null
+          organisation_id: string
+          responsible_person?: string | null
+          site_id: string
+          status?: Database["public"]["Enums"]["installation_status"]
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          commissioned_on?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          identifier?: string | null
+          installation_type?: Database["public"]["Enums"]["installation_type"]
+          location?: string | null
+          name?: string
+          notes?: string | null
+          organisation_id?: string
+          responsible_person?: string | null
+          site_id?: string
+          status?: Database["public"]["Enums"]["installation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "electrical_installations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "electrical_installations_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "electrical_installations_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
       organisation_invitations: {
         Row: {
           accepted_at: string | null
@@ -269,6 +348,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sites: {
+        Row: {
+          address: string | null
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          name: string
+          organisation_id: string
+          responsible_person: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          organisation_id: string
+          responsible_person?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          organisation_id?: string
+          responsible_person?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sites_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -298,6 +431,16 @@ export type Database = {
       }
     }
     Enums: {
+      installation_status: "in_service" | "out_of_service"
+      installation_type:
+        | "building"
+        | "switchboard"
+        | "substation"
+        | "solar"
+        | "storage"
+        | "charging"
+        | "industrial"
+        | "other"
       org_role: "owner" | "admin" | "operator" | "viewer"
     }
     CompositeTypes: {
@@ -429,6 +572,17 @@ export const Constants = {
   },
   public: {
     Enums: {
+      installation_status: ["in_service", "out_of_service"],
+      installation_type: [
+        "building",
+        "switchboard",
+        "substation",
+        "solar",
+        "storage",
+        "charging",
+        "industrial",
+        "other",
+      ],
       org_role: ["owner", "admin", "operator", "viewer"],
     },
   },

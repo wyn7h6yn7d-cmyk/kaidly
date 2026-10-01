@@ -654,3 +654,53 @@ delete), `organisation_invitations` (insert, update).
 shared fixture `supabase/tests/helpers/fixture.psql` (two tenants × four roles, an
 outsider, a user in both tenants). The baseline test now also pins the exact list of
 functions `authenticated` can execute.
+
+## 10. Implemented: Phase 3 sites and electrical installations
+
+Migration `supabase/migrations/20261001161757_sites_installations.sql` (local only).
+
+**Tables** (simplified from the §4 sketch to intentionally minimal master data)
+
+| sites | |
+|---|---|
+| `name` | 1–200, trimmed |
+| `address` | ≤ 300 |
+| `description` | ≤ 5000 |
+| `responsible_person` | free text ≤ 200 (**review**) |
+| `archived_at` | archive instead of delete |
+| `created_by` | `default auth.uid()`, not client-writable |
+
+`unique (id, organisation_id)` is the target of the installations' composite FK.
+
+| electrical_installations | |
+|---|---|
+| `site_id` | composite FK `(site_id, organisation_id)` → `sites (id, organisation_id)` |
+| `name` | 1–200 |
+| `identifier` | tähis, ≤ 50 |
+| `installation_type` | enum `building`, `switchboard`, `substation`, `solar`, `storage`, `charging`, `industrial`, `other` (**review**) |
+| `location` | where on the site, ≤ 200 |
+| `description`, `notes` | ≤ 5000 each |
+| `commissioned_on` | date, 1900–2100 in the database; "not in the future" in the app |
+| `status` | enum `in_service`, `out_of_service` (**review**) |
+| `responsible_person` | free text ≤ 200 (**review**: is this the käidukorraldaja?) |
+| `archived_at`, `created_by` | as on sites |
+
+Removed from the sketch on purpose: voltage level, main fuse, connection point code,
+supervisor user link. They are regulatory/technical classifications that need the domain
+review before they are added.
+
+**Rules enforced in the database**
+- RLS: members read; **owner/admin** insert and update (incl. archive/restore); operators
+  and viewers read only. No delete policy or grant — archive instead.
+- Column grants: `id`, `organisation_id` (after insert), `created_by` and timestamps are not
+  client-writable.
+- An installation's site must be in the same organisation (composite FK).
+- `private.ensure_site_active()`: no new installation on, and no move onto, an archived site
+  (`site_archived`). Archiving a site keeps its installations; restoring an installation
+  under an archived site is allowed.
+- `prevent_organisation_change`, `set_updated_at`, `record_history` on both tables.
+
+**Tests**: `supabase/tests/040_sites_installations.test.sql` (54): isolation by id, by
+organisation filter and through joins; forged organisation, site and creator ids;
+cross-organisation FK on insert and move; full role matrix; archived sites; invalid ids;
+history; and a Storage guard (no objects readable or writable before Phase 7).

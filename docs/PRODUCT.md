@@ -137,3 +137,10 @@ exists but is not a primary navigation item.
 > **Domain review needed:** installation fields, entry types and severity levels must be
 > reviewed by a practising electrical operations professional before Phase 3 is
 > considered final. KAIDLY must not claim regulatory compliance without that review.
+>
+> Open questions after Phase 3 (all marked "DOMAIN REVIEW PENDING" in the migration):
+> 1. Installation types — is the list right, and is "type" the right concept at all?
+> 2. Status — are *kasutuses* / *kasutusest väljas* enough (e.g. *ajutiselt välja lülitatud*, *rekonstrueerimisel*)?
+> 3. "Responsible person" on sites and installations — should this be the *käidukorraldaja*, and should it link to a KAIDLY user?
+> 4. Which technical fields are needed for daily operation and audits (voltage level, main fuse, connection point/EIC code, *tehnilise kontrolli* dates) — deliberately not added yet.
+> 5. Is the identifier (*tähis*) expected to be unique per site or per organisation?

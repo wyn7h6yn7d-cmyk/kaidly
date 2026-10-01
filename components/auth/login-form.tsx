@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, FormError } from "./auth-heading";
+import { useFieldId } from "@/components/forms/use-field-id";
 
 export function LoginForm() {
+  const id = useFieldId();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -51,9 +53,10 @@ export function LoginForm() {
       />
       <form onSubmit={handleLogin} className="flex flex-col gap-5">
         <div className="grid gap-2">
-          <Label htmlFor="email">{t.common.email}</Label>
+          <Label htmlFor={id("email")}>{t.common.email}</Label>
           <Input
-            id="email"
+            id={id("email")}
+            name="email"
             type="email"
             autoComplete="email"
             inputMode="email"
@@ -64,7 +67,7 @@ export function LoginForm() {
         </div>
         <div className="grid gap-2">
           <div className="flex items-baseline justify-between gap-4">
-            <Label htmlFor="password">{t.common.password}</Label>
+            <Label htmlFor={id("password")}>{t.common.password}</Label>
             <Link
               href="/auth/forgot-password"
               className="text-sm text-k-green underline-offset-4 hover:underline"
@@ -73,7 +76,8 @@ export function LoginForm() {
             </Link>
           </div>
           <Input
-            id="password"
+            id={id("password")}
+            name="password"
             type="password"
             autoComplete="current-password"
             required

@@ -20,7 +20,8 @@ export function ConfirmForm({
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   fields: Record<string, string>;
-  confirm: string;
+  /** Omit for actions that don't need confirming (e.g. restore). */
+  confirm?: string;
   label: string;
   pendingLabel?: string;
   variant?: ButtonProps["variant"];
@@ -31,7 +32,7 @@ export function ConfirmForm({
     <form
       action={formAction}
       onSubmit={(event) => {
-        if (!window.confirm(confirm)) event.preventDefault();
+        if (confirm && !window.confirm(confirm)) event.preventDefault();
       }}
       className="flex flex-col items-start gap-2"
     >

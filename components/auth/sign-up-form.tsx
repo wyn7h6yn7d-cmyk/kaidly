@@ -11,10 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, FormError } from "./auth-heading";
+import { useFieldId } from "@/components/forms/use-field-id";
 
 const MIN_PASSWORD_LENGTH = 10;
 
 export function SignUpForm() {
+  const id = useFieldId();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,9 +68,10 @@ export function SignUpForm() {
       <AuthHeading title={t.auth.signUp.title} description={t.auth.signUp.description} />
       <form onSubmit={handleSignUp} className="flex flex-col gap-5">
         <div className="grid gap-2">
-          <Label htmlFor="full-name">{t.common.fullName}</Label>
+          <Label htmlFor={id("full-name")}>{t.common.fullName}</Label>
           <Input
-            id="full-name"
+            id={id("full-name")}
+            name="fullName"
             autoComplete="name"
             required
             maxLength={200}
@@ -77,9 +80,10 @@ export function SignUpForm() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="email">{t.common.email}</Label>
+          <Label htmlFor={id("email")}>{t.common.email}</Label>
           <Input
-            id="email"
+            id={id("email")}
+            name="email"
             type="email"
             autoComplete="email"
             inputMode="email"
@@ -89,25 +93,27 @@ export function SignUpForm() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password">{t.common.password}</Label>
+          <Label htmlFor={id("password")}>{t.common.password}</Label>
           <Input
-            id="password"
+            id={id("password")}
+            name="password"
             type="password"
             autoComplete="new-password"
             required
             minLength={MIN_PASSWORD_LENGTH}
-            aria-describedby="password-hint"
+            aria-describedby={`${id("password")}-hint`}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <p id="password-hint" className="text-sm text-k-muted">
+          <p id={id("password-hint")} className="text-sm text-k-muted">
             {t.auth.signUp.passwordHint}
           </p>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="repeat-password">{t.auth.signUp.repeatPassword}</Label>
+          <Label htmlFor={id("repeat-password")}>{t.auth.signUp.repeatPassword}</Label>
           <Input
-            id="repeat-password"
+            id={id("repeat-password")}
+            name="repeatPassword"
             type="password"
             autoComplete="new-password"
             required

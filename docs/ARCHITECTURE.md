@@ -207,6 +207,18 @@ Rules:
 Cache Components stays enabled (D10). Phase 1 confirmed the pattern: session reads sit
 behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 
+## 6a. Next.js 16 behaviours that shaped the UI code (learned in Phases 2–3)
+
+- **Hidden pages stay mounted.** With Cache Components, Next keeps up to three visited
+  pages in the DOM (React `<Activity>`, `display: none`). Fixed element ids would be
+  duplicated, so form ids come from `useFieldId()` (`components/forms/use-field-id.ts`).
+- **Forms reset after every action.** React 19 resets a form after a Server Action, even a
+  failed one. `useFormAction()` keeps the submitted values and fields use them as
+  `defaultValue`; `<select>`s also get a `key` so they really show the submitted option.
+- **Pages check access themselves.** `OrgPage` resolves the membership for each page; the
+  `/o/[org]` layout check is not relied on (layouts and pages render in parallel).
+- `forbidden()` is experimental in Next 16, so insufficient roles render `ForbiddenState`.
+
 ## 7. Auth flow
 
 - Sign-up with name, email + password → confirmation email → `/auth/confirm` → `/o`.

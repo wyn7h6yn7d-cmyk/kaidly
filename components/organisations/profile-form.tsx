@@ -1,46 +1,47 @@
 "use client";
 
-import { useActionState } from "react";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
+import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateProfile } from "@/lib/actions/organisations";
-import { initialState } from "@/lib/actions/state";
 import { t } from "@/lib/i18n";
+import { useFieldId } from "@/components/forms/use-field-id";
 
 export function ProfileForm({
   profile,
 }: {
   profile: { fullName: string | null; email: string | null; phone: string | null };
 }) {
-  const [state, action, pending] = useActionState(updateProfile, initialState);
+  const id = useFieldId();
+  const [state, action, pending, value] = useFormAction(updateProfile);
   return (
     <form action={action} className="flex max-w-lg flex-col gap-5">
-      <Field id="fullName" label={t.common.fullName}>
+      <Field id={id("fullName")} label={t.common.fullName}>
         <Input
-          id="fullName"
+          id={id("fullName")}
           name="fullName"
           required
           maxLength={200}
           autoComplete="name"
-          defaultValue={profile.fullName ?? ""}
+          defaultValue={value("fullName", profile.fullName)}
           aria-invalid={state.fields?.fullName}
         />
       </Field>
-      <Field id="phone" label={t.app.account.phone} optional>
+      <Field id={id("phone")} label={t.app.account.phone} optional>
         <Input
-          id="phone"
+          id={id("phone")}
           name="phone"
           type="tel"
           maxLength={40}
           autoComplete="tel"
-          defaultValue={profile.phone ?? ""}
+          defaultValue={value("phone", profile.phone)}
           aria-invalid={state.fields?.phone}
         />
       </Field>
-      <Field id="email" label={t.common.email} hint={t.app.account.emailReadOnly}>
-        <Input id="email" value={profile.email ?? ""} readOnly disabled aria-describedby="email-hint" />
+      <Field id={id("email")} label={t.common.email} hint={t.app.account.emailReadOnly}>
+        <Input id={id("email")} value={profile.email ?? ""} readOnly disabled aria-describedby={`${id("email")}-hint`} />
       </Field>
       <FormMessage error={state.error} success={state.ok ? t.app.saved : undefined} />
       <div>

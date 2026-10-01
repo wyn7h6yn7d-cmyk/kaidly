@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, FormError } from "./auth-heading";
+import { useFieldId } from "@/components/forms/use-field-id";
 
 const MIN_PASSWORD_LENGTH = 10;
 
 export function UpdatePasswordForm() {
+  const id = useFieldId();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,18 +53,19 @@ export function UpdatePasswordForm() {
       />
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid gap-2">
-          <Label htmlFor="password">{t.auth.updatePassword.newPassword}</Label>
+          <Label htmlFor={id("password")}>{t.auth.updatePassword.newPassword}</Label>
           <Input
-            id="password"
+            id={id("password")}
+            name="password"
             type="password"
             autoComplete="new-password"
             required
             minLength={MIN_PASSWORD_LENGTH}
-            aria-describedby="password-hint"
+            aria-describedby={`${id("password")}-hint`}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <p id="password-hint" className="text-sm text-k-muted">
+          <p id={id("password-hint")} className="text-sm text-k-muted">
             {t.auth.signUp.passwordHint}
           </p>
         </div>

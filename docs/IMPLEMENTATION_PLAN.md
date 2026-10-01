@@ -45,7 +45,13 @@ exception), email change.
 
 **Done when:** two users in two organisations cannot see each other's organisation in any way (tested), and one user in two organisations can switch between them.
 
-## Phase 3 — Sites and electrical installations
+## Phase 3 — Sites and electrical installations ✅ implemented (domain review pending)
+
+As built: see DATABASE.md §10. Routes: `/o/[org]/objektid`, `/objektid/uus`,
+`/objektid/[site]`, `/objektid/[site]/muuda`, `/paigaldised/uus`, `/paigaldised/[installation]`
+(+ `/muuda` and placeholder tabs `paevik`, `kaidukava`, `puudused`, `dokumendid`).
+Phase 3 is not final until the domain review below is done.
+
 
 - **Domain review** of installation fields, kinds and voltage levels with a practising electrical operations professional. Phase 3 is not final until this review is done.
 - Migration `sites_installations` with composite FKs, indexes, RLS (admin+ write, operator read-only), history triggers.

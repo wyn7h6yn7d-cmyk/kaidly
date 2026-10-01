@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, FormError } from "./auth-heading";
+import { useFieldId } from "@/components/forms/use-field-id";
 
 export function ForgotPasswordForm() {
+  const id = useFieldId();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -56,9 +58,10 @@ export function ForgotPasswordForm() {
       <AuthHeading title={t.auth.forgot.title} description={t.auth.forgot.description} />
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid gap-2">
-          <Label htmlFor="email">{t.common.email}</Label>
+          <Label htmlFor={id("email")}>{t.common.email}</Label>
           <Input
-            id="email"
+            id={id("email")}
+            name="email"
             type="email"
             autoComplete="email"
             inputMode="email"

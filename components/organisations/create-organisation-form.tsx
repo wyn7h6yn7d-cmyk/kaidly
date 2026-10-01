@@ -1,37 +1,40 @@
 "use client";
 
-import { useActionState } from "react";
 import { FormMessage } from "@/components/forms/form-message";
+import { useFormAction } from "@/components/forms/use-form-action";
 import { Field } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createOrganisation } from "@/lib/actions/organisations";
-import { initialState } from "@/lib/actions/state";
 import { t } from "@/lib/i18n";
+import { useFieldId } from "@/components/forms/use-field-id";
 
 export function CreateOrganisationForm() {
-  const [state, action, pending] = useActionState(createOrganisation, initialState);
+  const id = useFieldId();
+  const [state, action, pending, value] = useFormAction(createOrganisation);
   const copy = t.app.createOrganisation;
 
   return (
     <form action={action} className="flex max-w-lg flex-col gap-5">
-      <Field id="name" label={copy.name}>
+      <Field id={id("name")} label={copy.name}>
         <Input
-          id="name"
+          id={id("name")}
           name="name"
           required
           maxLength={200}
           autoComplete="organization"
           placeholder={copy.namePlaceholder}
+          defaultValue={value("name")}
           aria-invalid={state.fields?.name}
         />
       </Field>
-      <Field id="registryCode" label={copy.registryCode} optional>
+      <Field id={id("registryCode")} label={copy.registryCode} optional>
         <Input
-          id="registryCode"
+          id={id("registryCode")}
           name="registryCode"
           maxLength={30}
           inputMode="numeric"
+          defaultValue={value("registryCode")}
           aria-invalid={state.fields?.registryCode}
         />
       </Field>
