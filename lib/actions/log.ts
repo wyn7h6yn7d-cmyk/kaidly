@@ -27,7 +27,18 @@ function input(formData: FormData) {
   };
 }
 
-export async function createLogEntry(_prev: ActionState, formData: FormData): Promise<ActionState> {
+/** When the form has files to upload, the action returns the new entry instead of redirecting. */
+export type SavedEntry = { entryId: string; href: string };
+
+function done(formData: FormData, entryId: string, href: string): ActionState<SavedEntry> {
+  if (field(formData, "withAttachments") === "1") return { ok: true, data: { entryId, href } };
+  redirect(href);
+}
+
+export async function createLogEntry(
+  _prev: ActionState<SavedEntry>,
+  formData: FormData,
+): Promise<ActionState<SavedEntry>> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -40,22 +51,29 @@ export async function createLogEntry(_prev: ActionState, formData: FormData): Pr
   if (!installation) return failure("not_found");
 
   const supabase = await createClient();
-  const { error } = await supabase.from("log_entries").insert({
-    organisation_id: ctx.org.id,
-    site_id: installation.site.id,
-    electrical_installation_id: installation.id,
-    entry_type: entry.entryType,
-    occurred_at: entry.occurredAt,
-    description: entry.description,
-    result: entry.result ?? null,
-    performed_by_name: entry.performedByName ?? null,
-  });
-  if (error) return failure(dbErrorCode(error));
+  const { data, error } = await supabase
+    .from("log_entries")
+    .insert({
+      organisation_id: ctx.org.id,
+      site_id: installation.site.id,
+      electrical_installation_id: installation.id,
+      entry_type: entry.entryType,
+      occurred_at: entry.occurredAt,
+      description: entry.description,
+      result: entry.result ?? null,
+      performed_by_name: entry.performedByName ?? null,
+    })
+    .select("id")
+    .single();
+  if (error || !data) return failure(dbErrorCode(error));
 
-  redirect(`/o/${ctx.org.slug}/paigaldised/${installation.id}/paevik?salvestatud=1`);
+  return done(formData, data.id, `/o/${ctx.org.slug}/paigaldised/${installation.id}/paevik?salvestatud=1`);
 }
 
-export async function correctLogEntry(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function correctLogEntry(
+  _prev: ActionState<SavedEntry>,
+  formData: FormData,
+): Promise<ActionState<SavedEntry>> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -82,19 +100,27 @@ export async function correctLogEntry(_prev: ActionState, formData: FormData): P
   if (readError) return failure(dbErrorCode(readError));
   if (!original) return failure("not_found");
 
-  const { error } = await supabase.from("log_entries").insert({
-    organisation_id: ctx.org.id,
-    site_id: original.site_id,
-    electrical_installation_id: original.electrical_installation_id,
-    entry_type: entry.entryType,
-    occurred_at: entry.occurredAt,
-    description: entry.description,
-    result: entry.result ?? null,
-    performed_by_name: entry.performedByName ?? null,
-    correction_of_id: original.id,
-    correction_reason: entry.correctionReason,
-  });
-  if (error) return failure(dbErrorCode(error));
+  const { data, error } = await supabase
+    .from("log_entries")
+    .insert({
+      organisation_id: ctx.org.id,
+      site_id: original.site_id,
+      electrical_installation_id: original.electrical_installation_id,
+      entry_type: entry.entryType,
+      occurred_at: entry.occurredAt,
+      description: entry.description,
+      result: entry.result ?? null,
+      performed_by_name: entry.performedByName ?? null,
+      correction_of_id: original.id,
+      correction_reason: entry.correctionReason,
+    })
+    .select("id")
+    .single();
+  if (error || !data) return failure(dbErrorCode(error));
 
-  redirect(`/o/${ctx.org.slug}/paigaldised/${original.electrical_installation_id}/paevik/${original.id}`);
+  return done(
+    formData,
+    data.id,
+    `/o/${ctx.org.slug}/paigaldised/${original.electrical_installation_id}/paevik/${original.id}`,
+  );
 }

@@ -48,7 +48,10 @@ organisations ─────┤
               │     ↑ completion entries  ← scheduled_activities
               │     ↑ resolution entries  ← deficiencies
               ├── scheduled_activities
-              └── deficiencies
+              ├── deficiencies
+              └── documents              (metadata; files in the private Storage bucket)
+                    → optional link to one log entry or one deficiency
+                    (organisation- and site-level documents leave installation/site empty)
 ```
 
 Every tenant table carries `organisation_id`. Child tables also carry `site_id` where the
@@ -162,6 +165,21 @@ future), `responsible_person_name`, `due_on`, `status` (`open` Avatud · `in_pro
 · `resolved` Lahendatud), `resolution`, `resolved_at`, `resolved_by`, `resolved_by_name`
 (all four set exactly when resolved), `created_by`, `created_by_name`.
 
+### documents — dokumendid ja fotod (Phase 7)
+Metadata only — file bytes live in Storage, never in Postgres. `category`
+(`audit` Audit · `measurement_protocol` Mõõteprotokoll · `single_line_diagram`
+Ühejooneskeem · `operating_plan` Käidukava · `maintenance_report` Hooldusraport ·
+`declaration` Deklaratsioon · `manual` Juhend · `photo` Foto · `other` Muu), `title` 1–200,
+`original_filename` (display only; no path separators or control characters),
+`storage_path` (generated: `{organisation_id}/{document_id}/{random uuid}`, unique, checked),
+`mime_type` (PDF, JPEG, PNG, WebP, DOCX, XLSX — no SVG/HTML), `size_bytes` 1 B–25 MB,
+`status` (`pending` → `ready` | `failed`), `uploaded_by`, `uploaded_by_name`, `created_at`,
+`ready_at` (set exactly when ready), `archived_at`.
+Placement: optional `site_id`, `electrical_installation_id` (needs the site), and at most one
+of `log_entry_id` / `deficiency_id` (needs the installation); composite FKs as for every
+tenant table, including `(log_entry_id, electrical_installation_id)` and
+`(deficiency_id, electrical_installation_id)`.
+
 ## 5. Permission matrix (enforced by RLS, grants and RPC checks)
 
 V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
@@ -176,6 +194,8 @@ V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
 | log entries | V+ | Op+ | **never** — Op+ adds corrections | **never** |
 | scheduled activities | V+ | A+ | A+ incl. archive; Op+ completes via `complete_scheduled_activity` | — (archive) |
 | deficiencies | V+ | Op+ | Op+ fields and open ⇄ in progress; Op+ resolves via `resolve_deficiency`; resolved = final | **never** |
+| documents (ready) | V+ | Op+ for installations, log entries and deficiencies; A+ for organisation and site documents | A+: title, category, archive — general documents only; attachments never | **never** (archive) |
+| documents (incomplete upload) | — (not listed or readable) | — | `finalize_document` (uploader) | the uploader (cleanup) |
 
 Differences from the original Phase 0 plan, by later briefs: operators may correct any log
 entry (not only their own), nobody deletes deficiencies, and the next due date is anchored
@@ -207,6 +227,7 @@ entry (not only their own), nobody deletes deficiencies, and the next due date i
 | `accept_invitation(token)` | invitee | row lock; revoked → used → expired → confirmed email → email match → not a member; inserts the membership with the stored role |
 | `complete_scheduled_activity(activity, due_on, entry_type, occurred_at, description, result, performed_by)` | Op+ | §8 |
 | `resolve_deficiency(deficiency, resolution, entry_type, occurred_at, performed_by)` | Op+ | §9 |
+| `finalize_document(document)` | the uploader, Op+ | §10: `ready` if the object exists at the registered path with the registered size and type, else `failed` |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
 can't be probed. The baseline test pins this exact list.
@@ -245,21 +266,59 @@ can't be probed. The baseline test pins this exact list.
 - Every change, including each status transition, is in `activity_history` with the acting
   user and the previous state.
 
-## 10. Storage
+## 10. Storage — documents and photos (Phase 7)
 
-Not used yet (Phase 7). The baseline test asserts that no storage objects are readable or
-writable and that no bucket is public. Planned: one private bucket, paths
-`{organisation_id}/…`, policies through `private.org_ids()`, short-lived signed URLs.
+**One private bucket `documents`** (`public = false`, 25 MB limit, the same six MIME types as
+the table). No public URLs; files are read through **60-second signed URLs** created for
+the signed-in user by the route `/o/[org]/dokumendid/[id]/ava`.
+
+**Upload lifecycle**
+1. *Register* (server action → insert into `documents` as the user). The insert trigger
+   generates `storage_path`, forces `pending`, records the uploader, and refuses archived
+   installations, resolved deficiencies and closed log entries.
+2. *Upload* — the browser sends the bytes straight to Storage with the user's session
+   (`x-upsert: false`). The INSERT policy only accepts a path that is the caller's own
+   **pending** document, so paths can't be forged or pointed into another tenant.
+3. *Finalize* — `finalize_document` compares the object's size and type with the row and
+   sets `ready` or `failed`. Only `ready` documents are listed or readable.
+4. On failure the client deletes its own object and pending row (allowed only for
+   non-ready rows of the uploader). No background worker; leftovers are reported by the
+   read-only `supabase/maintenance/storage_report.sql`.
+
+**Storage policies on `storage.objects`** (exactly three; the baseline pins them):
+| Policy | Rule |
+|---|---|
+| read ready files (SELECT) | a `ready` documents row with this path is visible to the caller (documents RLS applies) |
+| upload registered pending files (INSERT) | a `pending` row with this path, uploaded by the caller |
+| remove own incomplete uploads (DELETE) | a non-ready row with this path, uploaded by the caller |
+
+No UPDATE policy: objects are never overwritten or replaced. Nothing for `anon`.
+
+**Immutability**
+- Files on a log entry or a deficiency are part of the operational record: the row can't
+  be changed, archived or deleted (`document_immutable`, `documents_are_kept`, check
+  constraint) and the object can't be deleted or overwritten.
+- New files go onto a log entry only from its author within **one hour** of recording it
+  (`log_entry_attachment_closed`) — enough to finish uploads from site. Later material goes
+  on a **correction** entry (corrections are new log entries); the original's files stay.
+- Deficiencies accept files until resolved (`deficiency_resolved`); then they are final.
+- Completed activities: files go on the completion's log entry (no separate link).
+- General documents (organisation, site, installation) can be renamed, recategorised and
+  **archived/restored** by admins; never deleted. Archived documents stay readable.
+- Ready rows can't be deleted even by the table owner (trigger), and TRUNCATE is refused.
+
+Errors never reveal another organisation's objects: foreign and unknown documents both
+give 404 / `not_found`.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 310 tests in 8 files, using the shared fixture
+`npm run test:db` runs pgTAP: 356 tests in 9 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
 | File | Tests | Covers |
 |---|---|---|
-| `000_security_baseline` | 17 | RLS on every table; nothing for anon; no TRUNCATE/REFERENCES/TRIGGER for users; `security_invoker` views; `search_path` on definer functions; **review gates** — exact table list, exact definer-function list, exact RPC list, every tenant policy through `org_ids`, select policy on every tenant table, no write paths into append-only/never-deleted tables, server-owned columns not writable, no public buckets |
+| `000_security_baseline` | 20 | RLS on every table; nothing for anon; no TRUNCATE/REFERENCES/TRIGGER for users; `security_invoker` views; `search_path` on definer functions; **review gates** — exact table list, exact definer-function list, exact RPC list, every tenant policy through `org_ids`, select policy on every tenant table, no write paths into append-only/never-deleted tables, server-owned columns not writable, no public buckets, **exact bucket set and settings, exact storage policy set, every storage policy limited to the bucket** |
 | `010_foundation` | 17 | profiles, triggers |
 | `020_organisations` | 48 | role matrix, isolation, last owner, joins, history |
 | `030_invitations` | 41 | hashing, expiry, single use, revocation, email binding, cross-tenant RPC calls |
@@ -267,6 +326,7 @@ a user in both) and `helpers/sites.psql`.
 | `050_log_entries` | 44 | append-only for every role and the owner, corrections, forged and mismatched ids |
 | `060_scheduled_activities` | 46 | roles, completion → log, anchored dates, duplicates, one-time, archived |
 | `070_deficiencies` | 39 | roles, lifecycle, resolution → log, no double resolution, no deletion, history |
+| `080_documents` | 43 | metadata isolation, roles (viewer can't upload, operator scope, admin-only general documents), forged/foreign paths and parents, SVG/size/filename rules, attachment windows, storage read/upload/overwrite/delete across tenants, pending objects unreadable, finalize (missing object, size mismatch, foreign caller), historical files immutable and undeletable, archive/restore, anon reads nothing |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

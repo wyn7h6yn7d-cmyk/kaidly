@@ -173,6 +173,119 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          archived_at: string | null
+          category: Database["public"]["Enums"]["document_category"]
+          created_at: string
+          deficiency_id: string | null
+          electrical_installation_id: string | null
+          id: string
+          log_entry_id: string | null
+          mime_type: string
+          organisation_id: string
+          original_filename: string
+          ready_at: string | null
+          site_id: string | null
+          size_bytes: number
+          status: Database["public"]["Enums"]["document_status"]
+          storage_path: string
+          title: string
+          uploaded_by: string
+          uploaded_by_name: string
+        }
+        Insert: {
+          archived_at?: string | null
+          category: Database["public"]["Enums"]["document_category"]
+          created_at?: string
+          deficiency_id?: string | null
+          electrical_installation_id?: string | null
+          id?: string
+          log_entry_id?: string | null
+          mime_type: string
+          organisation_id: string
+          original_filename: string
+          ready_at?: string | null
+          site_id?: string | null
+          size_bytes: number
+          status?: Database["public"]["Enums"]["document_status"]
+          storage_path?: string
+          title: string
+          uploaded_by?: string
+          uploaded_by_name?: string
+        }
+        Update: {
+          archived_at?: string | null
+          category?: Database["public"]["Enums"]["document_category"]
+          created_at?: string
+          deficiency_id?: string | null
+          electrical_installation_id?: string | null
+          id?: string
+          log_entry_id?: string | null
+          mime_type?: string
+          organisation_id?: string
+          original_filename?: string
+          ready_at?: string | null
+          site_id?: string | null
+          size_bytes?: number
+          status?: Database["public"]["Enums"]["document_status"]
+          storage_path?: string
+          title?: string
+          uploaded_by?: string
+          uploaded_by_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_deficiency_id_electrical_installation_id_fkey"
+            columns: ["deficiency_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "deficiencies"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "documents_electrical_installation_id_organisation_id_fkey"
+            columns: ["electrical_installation_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "documents_electrical_installation_id_site_id_fkey"
+            columns: ["electrical_installation_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "site_id"]
+          },
+          {
+            foreignKeyName: "documents_log_entry_id_electrical_installation_id_fkey"
+            columns: ["log_entry_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "log_entries"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "documents_log_entry_id_electrical_installation_id_fkey"
+            columns: ["log_entry_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "log_entry_current"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "documents_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
       electrical_installations: {
         Row: {
           archived_at: string | null
@@ -810,6 +923,10 @@ export type Database = {
         Args: { p_name: string; p_registry_code?: string }
         Returns: string
       }
+      finalize_document: {
+        Args: { p_document_id: string }
+        Returns: Database["public"]["Enums"]["document_status"]
+      }
       invitation_preview: { Args: { p_token: string }; Returns: Json }
       resolve_deficiency: {
         Args: {
@@ -831,6 +948,17 @@ export type Database = {
       activity_priority: "low" | "normal" | "high"
       deficiency_severity: "low" | "medium" | "high" | "critical"
       deficiency_status: "open" | "in_progress" | "resolved"
+      document_category:
+        | "audit"
+        | "measurement_protocol"
+        | "single_line_diagram"
+        | "operating_plan"
+        | "maintenance_report"
+        | "declaration"
+        | "manual"
+        | "photo"
+        | "other"
+      document_status: "pending" | "ready" | "failed"
       installation_status: "in_service" | "out_of_service"
       installation_type:
         | "building"
@@ -985,6 +1113,18 @@ export const Constants = {
       activity_priority: ["low", "normal", "high"],
       deficiency_severity: ["low", "medium", "high", "critical"],
       deficiency_status: ["open", "in_progress", "resolved"],
+      document_category: [
+        "audit",
+        "measurement_protocol",
+        "single_line_diagram",
+        "operating_plan",
+        "maintenance_report",
+        "declaration",
+        "manual",
+        "photo",
+        "other",
+      ],
+      document_status: ["pending", "ready", "failed"],
       installation_status: ["in_service", "out_of_service"],
       installation_type: [
         "building",

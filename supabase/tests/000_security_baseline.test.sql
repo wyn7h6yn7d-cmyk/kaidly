@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(17);
+select plan(20);
 
 -- Every table in the API-exposed schema has RLS enabled.
 select is_empty(
@@ -56,6 +56,7 @@ select results_eq(
        ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
+       ('finalize_document(uuid)'),
        ('invitation_preview(text)'),
        ('private.co_member_ids()'),
        ('private.org_ids(org_role)'),
@@ -125,7 +126,7 @@ select results_eq(
       where n.nspname = 'public' and c.relkind in ('r', 'p')
         and c.relname <> '__default_privileges_probe' -- created earlier in this file
       order by c.relname::text collate "C" $$,
-  $$ values ('activity_history'), ('deficiencies'), ('electrical_installations'), ('log_entries'),
+  $$ values ('activity_history'), ('deficiencies'), ('documents'), ('electrical_installations'), ('log_entries'),
             ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
             ('scheduled_activities'), ('sites') $$,
   'public tables are exactly the reviewed set'
@@ -139,9 +140,11 @@ select results_eq(
        ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
+       ('finalize_document(uuid)'),
        ('invitation_preview(text)'),
        ('private.co_member_ids()'),
        ('private.deficiency_before_insert()'),
+       ('private.document_before_insert()'),
        ('private.ensure_site_active()'),
        ('private.handle_new_user()'),
        ('private.has_org_role(uuid,org_role)'),
@@ -202,8 +205,32 @@ select ok(
   'server-owned columns are not client-writable'
 );
 
--- Storage (Phase 7 will add a private bucket): nothing may ever be public.
+-- Storage: one private bucket, exactly the reviewed object policies, nothing public.
 select is_empty($$ select id from storage.buckets where public $$, 'no public storage buckets');
+select results_eq(
+  $$ select id::text, public, file_size_limit, allowed_mime_types::text[]
+       from storage.buckets order by id $$,
+  $$ values ('documents', false, 26214400::bigint,
+             array['application/pdf', 'image/jpeg', 'image/png', 'image/webp',
+                   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']::text[]) $$,
+  'storage buckets are exactly the reviewed private documents bucket'
+);
+select results_eq(
+  $$ select (tablename::text || ': ' || policyname::text || ' (' || cmd || ' to '
+              || array_to_string(roles, ',') || ')') collate "default"
+       from pg_policies where schemaname = 'storage' order by 1 $$,
+  $$ values
+       ('objects: kaidly documents: read ready files (SELECT to authenticated)'),
+       ('objects: kaidly documents: remove own incomplete uploads (DELETE to authenticated)'),
+       ('objects: kaidly documents: upload registered pending files (INSERT to authenticated)') $$,
+  'storage policies are exactly the reviewed set (no update, nothing for anon)'
+);
+select is_empty(
+  $$ select policyname from pg_policies where schemaname = 'storage'
+      and (coalesce(qual, '') || coalesce(with_check, '')) collate "C" not like '%bucket_id = ''documents''%' $$,
+  'every storage policy is limited to the documents bucket'
+);
 
 select * from finish();
 rollback;

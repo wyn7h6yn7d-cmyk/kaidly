@@ -1,6 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { AttachmentPicker } from "@/components/documents/attachment-picker";
+import { useUploadQueue } from "@/components/documents/use-upload-queue";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
 import { useFieldId } from "@/components/forms/use-field-id";
@@ -8,7 +12,8 @@ import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { correctLogEntry, createLogEntry } from "@/lib/actions/log";
+import { correctLogEntry, createLogEntry, type SavedEntry } from "@/lib/actions/log";
+import type { ActionState } from "@/lib/actions/state";
 import { t } from "@/lib/i18n";
 import type { LogEntryType } from "@/lib/validation/log";
 import { EntryTypeField } from "./entry-type-field";
@@ -24,6 +29,10 @@ export type LogEntryDefaults = {
 /**
  * New entry or correction. Organisation and installation are already known from the URL,
  * so the form only asks for what happened. Rarely changed fields start collapsed.
+ *
+ * Photos: the entry is saved first, then the chosen files upload to it (the author may
+ * attach files for an hour after saving). If an upload fails the entry is already safe;
+ * the user can retry or continue without the file — nothing typed is lost.
  */
 export function LogEntryForm({
   orgSlug,
@@ -39,9 +48,34 @@ export function LogEntryForm({
   cancelHref: string;
 }) {
   const isCorrection = Boolean(correctionOfId);
-  const [state, action, pending, value] = useFormAction(isCorrection ? correctLogEntry : createLogEntry);
+  const router = useRouter();
+  const queue = useUploadQueue({ orgSlug, resizeImages: true });
+  const [retrying, setRetrying] = useState(false);
+
+  const save = async (previous: ActionState<SavedEntry>, formData: FormData) => {
+    if (queue.items.length) formData.set("withAttachments", "1");
+    const result = await (isCorrection ? correctLogEntry : createLogEntry)(previous, formData);
+    if (result.ok && result.data) {
+      const allDone = await queue.uploadAll({ kind: "logEntry", id: result.data.entryId });
+      if (allDone) router.push(result.data.href);
+      // The entry is saved; keep it on screen while the user retries or moves on.
+      return { ...result, keepValues: true };
+    }
+    return result;
+  };
+  const [state, action, pending, value] = useFormAction(save);
+  const saved = state.ok ? state.data : undefined;
   const id = useFieldId();
   const copy = t.app.log;
+  const attachmentCopy = t.app.attachments;
+
+  const retry = async () => {
+    if (!saved) return;
+    setRetrying(true);
+    const allDone = await queue.uploadAll({ kind: "logEntry", id: saved.entryId });
+    setRetrying(false);
+    if (allDone) router.push(saved.href);
+  };
   const selectedType = value("entryType", defaults.entryType);
   const detailsHaveError = Boolean(
     state.fields?.occurredAt || state.fields?.result || state.fields?.performedByName,
@@ -137,15 +171,39 @@ export function LogEntryForm({
         </details>
       )}
 
+      <fieldset className="grid gap-2">
+        <legend className="mb-2 text-[15px] font-semibold">{attachmentCopy.photos}</legend>
+        <AttachmentPicker
+          queue={queue}
+          label={attachmentCopy.takePhoto}
+          hint={isCorrection ? `${attachmentCopy.correctionHint} ${attachmentCopy.hint}` : attachmentCopy.hint}
+          disabled={pending || retrying || Boolean(saved)}
+        />
+      </fieldset>
+
       <FormMessage error={state.error} />
-      <div className="flex flex-col-reverse gap-3 sm:flex-row">
-        <Button asChild variant="ghost" size="lg">
-          <Link href={cancelHref}>{t.app.cancel}</Link>
-        </Button>
-        <Button type="submit" size="lg" disabled={pending} className="sm:min-w-56">
-          {pending ? copy.saving : isCorrection ? copy.submitCorrection : copy.submit}
-        </Button>
-      </div>
+      {saved && !pending && queue.items.some((item) => item.status === "failed") ? (
+        <div role="alert" className="grid gap-3 border-l-4 border-k-warn bg-k-surface px-4 py-3">
+          <p>{attachmentCopy.savedWithFailures}</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button type="button" size="lg" onClick={retry} disabled={retrying}>
+              {attachmentCopy.retry}
+            </Button>
+            <Button asChild variant="ghost" size="lg">
+              <Link href={saved.href}>{attachmentCopy.continueWithout}</Link>
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col-reverse gap-3 sm:flex-row">
+          <Button asChild variant="ghost" size="lg">
+            <Link href={cancelHref}>{t.app.cancel}</Link>
+          </Button>
+          <Button type="submit" size="lg" disabled={pending || queue.busy || Boolean(saved)} className="sm:min-w-56">
+            {pending ? copy.saving : isCorrection ? copy.submitCorrection : copy.submit}
+          </Button>
+        </div>
+      )}
     </form>
   );
 }

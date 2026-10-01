@@ -12,7 +12,7 @@ import { type ActionState, failure } from "./state";
 export async function actionContext(
   formData: FormData,
   minRole: Role,
-): Promise<{ ok: false; error: ActionState } | { ok: true; ctx: OrgContext }> {
+): Promise<{ ok: false; error: ActionState<never> } | { ok: true; ctx: OrgContext }> {
   const ctx = await getOrgContext(field(formData, "orgSlug"));
   if (!ctx) return { ok: false, error: failure("not_found") };
   if (!hasRole(ctx.role, minRole)) return { ok: false, error: failure("forbidden") };

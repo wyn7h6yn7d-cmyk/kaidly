@@ -155,6 +155,7 @@ export type LogEntryVersion = {
   description: string;
   result: string | null;
   performedByName: string | null;
+  createdBy: string;
   createdByName: string;
   createdAt: string;
   correctionReason: string | null;
@@ -184,7 +185,7 @@ export async function getLogEntry(
   const { data, error } = await supabase
     .from("log_entries")
     .select(
-      "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, created_by_name, created_at, correction_of_id, correction_reason, scheduled_activity_id, scheduled_due_on, deficiency_id",
+      "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, created_by, created_by_name, created_at, correction_of_id, correction_reason, scheduled_activity_id, scheduled_due_on, deficiency_id",
     )
     .eq("organisation_id", organisationId)
     .eq("electrical_installation_id", installationId)
@@ -202,6 +203,7 @@ export async function getLogEntry(
     description: row.description,
     result: row.result,
     performedByName: row.performed_by_name,
+    createdBy: row.created_by,
     createdByName: row.created_by_name,
     createdAt: row.created_at,
     correctionReason: row.correction_reason,

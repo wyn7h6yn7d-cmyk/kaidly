@@ -2,16 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DetailList } from "@/components/app/detail-list";
+import { AttachmentUploader } from "@/components/documents/attachment-uploader";
+import { AttachmentGallery } from "@/components/documents/document-list";
 import { OrgPage } from "@/components/app/org-page";
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
+import { listAttachments } from "@/lib/data/documents";
 import { getLogEntry, type LogEntryVersion } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
 import { formatDate, t } from "@/lib/i18n";
-import { formatDateTime } from "@/lib/time";
+import { formatDateTime, isWithin } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: t.app.log.entryTitle };
+
+/** Matches the database rule: the author may attach files for an hour after recording. */
+const ATTACH_WINDOW_MS = 60 * 60 * 1000;
 
 function Version({
   label,
@@ -61,7 +67,7 @@ export default function LogEntryPage({
   return (
     <OrgPage
       params={params}
-      render={async ({ org, role }) => {
+      render={async ({ org, role, user }) => {
         const { installation: installationId, entry: entryId } = await params;
         const installation = await getInstallation(org.id, installationId);
         if (!installation) notFound();
@@ -72,6 +78,20 @@ export default function LogEntryPage({
         const base = `/o/${org.slug}/paigaldised/${installation.id}/paevik`;
         const canCorrect = hasRole(role, "operator") && !installation.archivedAt;
         const versions = [entry.original, ...entry.corrections];
+        const attachments = await listAttachments(org.id, { logEntryIds: versions.map((v) => v.id) });
+        const attachmentCopy = t.app.attachments;
+        const canAttach =
+          hasRole(role, "operator") &&
+          !installation.archivedAt &&
+          current.createdBy === user.id &&
+          isWithin(current.createdAt, ATTACH_WINDOW_MS);
+        const versionLabel = (versionId: string) => {
+          const index = versions.findIndex((v) => v.id === versionId);
+          return index === 0 ? copy.original : copy.correctionNumber(index);
+        };
+        const groups = versions
+          .map((version) => ({ version, items: attachments.filter((a) => a.logEntryId === version.id) }))
+          .filter((group) => group.items.length > 0);
 
         return (
           <>
@@ -136,6 +156,35 @@ export default function LogEntryPage({
                 },
               ]}
             />
+
+            <section aria-labelledby="attachments" className="mt-10">
+              <h3 id="attachments" className="mb-3 text-lg font-bold">
+                {attachmentCopy.photos}
+              </h3>
+              {groups.length === 0 && <p className="text-k-muted">{attachmentCopy.none}</p>}
+              <div className="grid gap-5">
+                {groups.map((group) => (
+                  <div key={group.version.id}>
+                    {entry.corrections.length > 0 && (
+                      <p className="mb-2 text-sm font-semibold">{versionLabel(group.version.id)}</p>
+                    )}
+                    <AttachmentGallery orgSlug={org.slug} items={group.items} />
+                  </div>
+                ))}
+              </div>
+              {canAttach ? (
+                <div className="mt-4">
+                  <AttachmentUploader
+                    orgSlug={org.slug}
+                    target={{ kind: "logEntry", id: current.id }}
+                    label={attachmentCopy.addPhotos}
+                    hint={`${attachmentCopy.hint} ${attachmentCopy.entryClosedHint}`}
+                  />
+                </div>
+              ) : (
+                canCorrect && <p className="mt-3 text-sm text-k-muted">{attachmentCopy.entryClosedHint}</p>
+              )}
+            </section>
 
             {entry.corrections.length > 0 && (
               <section aria-labelledby="history" className="mt-10">

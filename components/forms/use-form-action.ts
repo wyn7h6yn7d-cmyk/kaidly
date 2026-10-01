@@ -20,7 +20,7 @@ export function useFormAction<T = undefined>(
   const [state, formAction, pending] = useActionState<Submitted<T>, FormData>(
     async (previous, formData) => {
       const result = await action(previous, formData);
-      if (result.ok !== false) return result;
+      if (result.ok !== false && !result.keepValues) return result;
       const values: Record<string, string> = {};
       formData.forEach((entry, key) => {
         if (typeof entry === "string") values[key] = entry;

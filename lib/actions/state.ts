@@ -11,6 +11,8 @@ export type ActionState<T = undefined> = {
   /** Fields that failed validation. */
   fields?: Record<string, true>;
   data?: T;
+  /** Keep the submitted values in the form although the action succeeded (client-side). */
+  keepValues?: boolean;
 };
 
 export const initialState: ActionState = {};

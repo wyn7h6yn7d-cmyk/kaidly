@@ -80,3 +80,8 @@ const dateTimeFormatter = new Intl.DateTimeFormat("et-EE", {
 export function formatDateTime(value: string | Date): string {
   return dateTimeFormatter.format(typeof value === "string" ? new Date(value) : value).replace(",", "");
 }
+
+/** True if `iso` is less than `ms` milliseconds ago. */
+export function isWithin(iso: string, ms: number, now: Date = new Date()): boolean {
+  return now.getTime() - new Date(iso).getTime() < ms;
+}

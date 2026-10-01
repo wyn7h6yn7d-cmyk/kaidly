@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Pencil, Plus } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
+import { DocumentList } from "@/components/documents/document-list";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
@@ -11,6 +12,7 @@ import { ArchivedBadge, StatusMark } from "@/components/sites/status-mark";
 import { Button } from "@/components/ui/button";
 import { setSiteArchived } from "@/lib/actions/sites";
 import { hasRole } from "@/lib/auth/roles";
+import { listDocuments } from "@/lib/data/documents";
 import { getSite, listSiteInstallations } from "@/lib/data/sites";
 import { t } from "@/lib/i18n";
 
@@ -24,7 +26,10 @@ export default function SitePage({ params }: { params: Promise<{ org: string; si
         const { site: siteId } = await params;
         const site = await getSite(org.id, siteId);
         if (!site) notFound();
-        const installations = await listSiteInstallations(org.id, site.id);
+        const [installations, documents] = await Promise.all([
+          listSiteInstallations(org.id, site.id),
+          listDocuments(org.id, { siteId: site.id, siteLevelOnly: true }),
+        ]);
         const active = installations.filter((i) => !i.archivedAt);
         const archived = installations.filter((i) => i.archivedAt);
         const isAdmin = hasRole(role, "admin");
@@ -145,6 +150,32 @@ export default function SitePage({ params }: { params: Promise<{ org: string; si
                   </ul>
                 </details>
               )}
+            </section>
+
+            <section aria-labelledby="site-documents" className="mt-12">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 id="site-documents" className="text-xl font-bold">
+                  {t.app.documents.title}
+                </h2>
+                {canAdd && (
+                  <Button asChild variant="outline">
+                    <Link href={`${base}/dokumendid/uus?objekt=${site.id}`}>{t.app.documents.upload}</Link>
+                  </Button>
+                )}
+              </div>
+              {documents.items.length === 0 ? (
+                <p className="text-k-muted">{t.app.documents.empty}</p>
+              ) : (
+                <DocumentList orgSlug={org.slug} items={documents.items} />
+              )}
+              <p className="mt-3">
+                <Link
+                  href={`${base}/dokumendid?objekt=${site.id}`}
+                  className="inline-flex h-11 items-center font-semibold text-k-green underline underline-offset-4"
+                >
+                  {t.app.documents.allForSite}
+                </Link>
+              </p>
             </section>
 
             <section aria-labelledby="site-details" className="mt-12">
