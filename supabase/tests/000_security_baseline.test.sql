@@ -53,6 +53,7 @@ select results_eq(
       order by 1 $$,
   $$ values
        ('accept_invitation(text)'),
+       ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
        ('invitation_preview(text)'),

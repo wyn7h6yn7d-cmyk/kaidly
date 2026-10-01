@@ -1,0 +1,75 @@
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { Activity } from "@/lib/data/schedule";
+import { formatDate, t } from "@/lib/i18n";
+import { DueDate, DueMark } from "./due-mark";
+
+export function frequencyLabel(activity: Pick<Activity, "frequencyType" | "intervalValue" | "intervalUnit">) {
+  const copy = t.app.schedule.frequency;
+  return activity.frequencyType === "recurring" && activity.intervalValue && activity.intervalUnit
+    ? copy.every(activity.intervalValue, activity.intervalUnit)
+    : copy.once;
+}
+
+/** Due date and state first: what needs doing, and when. Rows, not cards. */
+export function ActivityList({
+  items,
+  today,
+  orgSlug,
+  canComplete,
+  contextFor,
+}: {
+  items: Activity[];
+  today: string;
+  orgSlug: string;
+  canComplete: boolean;
+  contextFor?: (item: Activity) => string | null;
+}) {
+  const copy = t.app.schedule;
+  return (
+    <ol aria-label={copy.listLabel} className="divide-y divide-k-line border border-k-line bg-k-surface">
+      {items.map((item) => {
+        const href = `/o/${orgSlug}/kaidukava/${item.id}`;
+        const context = contextFor?.(item);
+        const completable = canComplete && item.nextDueOn !== null && !item.archivedAt;
+        return (
+          <li key={item.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-5">
+            <Link href={href} className="grid min-w-0 flex-1 gap-x-6 gap-y-1 sm:grid-cols-[150px_1fr]">
+              <span className="flex flex-wrap items-baseline gap-x-3 sm:block">
+                <DueDate nextDueOn={item.nextDueOn} />
+                <span className="sm:mt-1 sm:block">
+                  <DueMark nextDueOn={item.nextDueOn} today={today} />
+                </span>
+              </span>
+              <span className="min-w-0">
+                {context && <span className="block truncate text-sm text-k-muted">{context}</span>}
+                <span className="block break-words font-semibold">
+                  {item.title}
+                  {item.priority === "high" && (
+                    <span className="ml-2 align-middle text-xs font-semibold uppercase tracking-wider text-k-danger">
+                      {copy.priorities.high}
+                    </span>
+                  )}
+                </span>
+                <span className="block text-sm text-k-muted">
+                  {frequencyLabel(item)}
+                  {item.responsiblePersonName ? ` · ${item.responsiblePersonName}` : ""}
+                  {item.lastCompletedAt ? ` · ${copy.fields.lastCompleted} ${formatDate(item.lastCompletedAt)}` : ""}
+                </span>
+              </span>
+            </Link>
+            <div className="flex items-center gap-2">
+              {completable && (
+                <Button asChild variant="outline" className="w-full sm:w-auto">
+                  <Link href={`${href}/tehtud`}>{copy.complete}</Link>
+                </Button>
+              )}
+              <ChevronRight className="hidden size-5 text-k-grey sm:block" aria-hidden="true" />
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}

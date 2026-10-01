@@ -79,7 +79,13 @@ The most important phase.
 
 **Done when:** on a phone, from cold start, a routine entry takes ≤ 3 taps to reach typing and ≤ 30 s to save.
 
-## Phase 5 — Scheduled activities (käidukava)
+## Phase 5 — Scheduled activities (käidukava) ✅ implemented
+
+As built: DATABASE.md §12. Routes `/o/[org]/kaidukava` (filters: site, installation, due state,
+priority; archived view), `/kaidukava/uus`, `/kaidukava/[activity]` (+ `/tehtud`, `/muuda`),
+`/paigaldised/[installation]/kaidukava`. **Change from the original plan:** the next due date is
+anchored to the schedule (not "completion date + interval"), as required by the Phase 5 brief.
+
 
 - Migration `scheduled_activities` + RPC `complete_scheduled_activity`. No stored status.
 - Installation → Käidukava tab; create / edit / archive (admin+).

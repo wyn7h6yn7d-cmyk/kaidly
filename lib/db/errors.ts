@@ -23,6 +23,9 @@ const RAISED: Record<string, ErrorCode> = {
   occurred_in_future: "occurred_in_future",
   correction_target_invalid: "correction_target_invalid",
   log_entries_append_only: "log_entries_append_only",
+  activity_archived: "activity_archived",
+  activity_already_completed: "activity_already_completed",
+  next_due_required: "next_due_required",
 };
 
 export function dbErrorCode(error: unknown): ErrorCode {

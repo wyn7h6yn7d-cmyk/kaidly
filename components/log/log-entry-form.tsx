@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { correctLogEntry, createLogEntry } from "@/lib/actions/log";
 import { t } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
-import { LOG_ENTRY_TYPES, type LogEntryType } from "@/lib/validation/log";
+import type { LogEntryType } from "@/lib/validation/log";
+import { EntryTypeField } from "./entry-type-field";
 
 export type LogEntryDefaults = {
   entryType?: LogEntryType;
@@ -96,32 +96,7 @@ export function LogEntryForm({
         <p className="border-l-4 border-k-green bg-k-surface px-4 py-3">{copy.correctionExplanation}</p>
       )}
 
-      <fieldset key={selectedType} aria-invalid={state.fields?.entryType}>
-        <legend className="mb-2 text-sm font-semibold">{copy.fields.type}</legend>
-        <div className="flex flex-wrap gap-2">
-          {LOG_ENTRY_TYPES.map((type) => (
-            <label key={type} className="relative">
-              <input
-                type="radio"
-                name="entryType"
-                value={type}
-                required
-                defaultChecked={selectedType === type}
-                className="peer sr-only"
-              />
-              <span
-                className={cn(
-                  "flex h-11 cursor-pointer select-none items-center rounded-sm border border-k-grey/60 bg-k-surface px-4 text-[15px] font-semibold",
-                  "peer-checked:border-k-green peer-checked:bg-k-green peer-checked:text-white",
-                  "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background",
-                )}
-              >
-                {copy.types[type]}
-              </span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <EntryTypeField selected={selectedType} invalid={state.fields?.entryType} />
 
       <Field id={id("description")} label={copy.fields.description}>
         <Textarea

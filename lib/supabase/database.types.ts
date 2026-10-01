@@ -172,6 +172,8 @@ export type Database = {
           organisation_id: string
           performed_by_name: string | null
           result: string | null
+          scheduled_activity_id: string | null
+          scheduled_due_on: string | null
           site_id: string
         }
         Insert: {
@@ -188,6 +190,8 @@ export type Database = {
           organisation_id: string
           performed_by_name?: string | null
           result?: string | null
+          scheduled_activity_id?: string | null
+          scheduled_due_on?: string | null
           site_id: string
         }
         Update: {
@@ -204,6 +208,8 @@ export type Database = {
           organisation_id?: string
           performed_by_name?: string | null
           result?: string | null
+          scheduled_activity_id?: string | null
+          scheduled_due_on?: string | null
           site_id?: string
         }
         Relationships: [
@@ -241,6 +247,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organisations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_entries_scheduled_activity_fkey"
+            columns: ["scheduled_activity_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_activities"
+            referencedColumns: ["id", "electrical_installation_id"]
           },
           {
             foreignKeyName: "log_entries_site_id_organisation_id_fkey"
@@ -442,6 +455,102 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_activities: {
+        Row: {
+          anchor_on: string
+          archived_at: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          electrical_installation_id: string
+          frequency_type: Database["public"]["Enums"]["activity_frequency"]
+          id: string
+          interval_unit: Database["public"]["Enums"]["interval_unit"] | null
+          interval_value: number | null
+          next_due_on: string | null
+          organisation_id: string
+          priority: Database["public"]["Enums"]["activity_priority"]
+          responsible_person_name: string | null
+          site_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          anchor_on?: string
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          electrical_installation_id: string
+          frequency_type: Database["public"]["Enums"]["activity_frequency"]
+          id?: string
+          interval_unit?: Database["public"]["Enums"]["interval_unit"] | null
+          interval_value?: number | null
+          next_due_on?: string | null
+          organisation_id: string
+          priority?: Database["public"]["Enums"]["activity_priority"]
+          responsible_person_name?: string | null
+          site_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          anchor_on?: string
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          electrical_installation_id?: string
+          frequency_type?: Database["public"]["Enums"]["activity_frequency"]
+          id?: string
+          interval_unit?: Database["public"]["Enums"]["interval_unit"] | null
+          interval_value?: number | null
+          next_due_on?: string | null
+          organisation_id?: string
+          priority?: Database["public"]["Enums"]["activity_priority"]
+          responsible_person_name?: string | null
+          site_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_activities_electrical_installation_id_organisati_fkey"
+            columns: ["electrical_installation_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "scheduled_activities_electrical_installation_id_site_id_fkey"
+            columns: ["electrical_installation_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "site_id"]
+          },
+          {
+            foreignKeyName: "scheduled_activities_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_activities_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
       sites: {
         Row: {
           address: string | null
@@ -515,6 +624,8 @@ export type Database = {
           recorded_at: string | null
           recorded_by_name: string | null
           result: string | null
+          scheduled_activity_id: string | null
+          scheduled_due_on: string | null
           site_id: string | null
         }
         Relationships: [
@@ -540,6 +651,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "log_entries_scheduled_activity_fkey"
+            columns: ["scheduled_activity_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_activities"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
             foreignKeyName: "log_entries_site_id_organisation_id_fkey"
             columns: ["site_id", "organisation_id"]
             isOneToOne: false
@@ -551,6 +669,18 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      complete_scheduled_activity: {
+        Args: {
+          p_activity_id: string
+          p_description: string
+          p_due_on: string
+          p_entry_type: Database["public"]["Enums"]["log_entry_type"]
+          p_occurred_at: string
+          p_performed_by_name?: string
+          p_result?: string
+        }
+        Returns: string
+      }
       create_invitation: {
         Args: {
           p_email: string
@@ -574,6 +704,8 @@ export type Database = {
       }
     }
     Enums: {
+      activity_frequency: "once" | "recurring"
+      activity_priority: "low" | "normal" | "high"
       installation_status: "in_service" | "out_of_service"
       installation_type:
         | "building"
@@ -584,6 +716,7 @@ export type Database = {
         | "charging"
         | "industrial"
         | "other"
+      interval_unit: "day" | "week" | "month" | "year"
       log_entry_type:
         | "inspection"
         | "maintenance"
@@ -723,6 +856,8 @@ export const Constants = {
   },
   public: {
     Enums: {
+      activity_frequency: ["once", "recurring"],
+      activity_priority: ["low", "normal", "high"],
       installation_status: ["in_service", "out_of_service"],
       installation_type: [
         "building",
@@ -734,6 +869,7 @@ export const Constants = {
         "industrial",
         "other",
       ],
+      interval_unit: ["day", "week", "month", "year"],
       log_entry_type: [
         "inspection",
         "maintenance",

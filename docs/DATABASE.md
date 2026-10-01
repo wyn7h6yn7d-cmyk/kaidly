@@ -749,3 +749,55 @@ read-only. Nobody updates or deletes.
 **Tests:** `supabase/tests/050_log_entries.test.sql` (44) + baseline guard "every view is
 security_invoker". Mutation-tested: dropping the append-only trigger, letting viewers write,
 removing `security_invoker`, removing the correction-chain check — each makes tests fail.
+
+## 12. Implemented: Phase 5 operating plan (käidukava)
+
+Migration `supabase/migrations/20261001173932_operating_plan.sql` (local only).
+
+**`scheduled_activities`** — a planned operating action on one installation (not a task manager).
+
+| column | notes |
+|---|---|
+| `organisation_id`, `site_id`, `electrical_installation_id` | composite FKs as on `log_entries` (consistent tenant, site, installation) |
+| `title` | 1–200; `description` ≤ 5000 |
+| `frequency_type` | `once` or `recurring` |
+| `interval_value`, `interval_unit` | both set for recurring (1–1000 × day/week/month/year), both null for once (checks) |
+| `anchor_on` | schedule anchor; set by triggers only (= `next_due_on` on insert and whenever an admin changes due date/frequency/interval); not client-writable |
+| `next_due_on` | next planned due date; null only after a one-time activity is done |
+| `responsible_person_name` | free text ≤ 200 |
+| `priority` | `low` Madal · `normal` Tavaline · `high` Kõrge |
+| `archived_at` | archive instead of delete |
+
+**Recurrence — anchored, deterministic, no background jobs.** Due dates are
+`anchor_on + k × interval`. `private.next_anchored_due()` returns the first anchored date
+after **both** the completed due date and today (Tallinn):
+- completed on time or early → the following occurrence;
+- completed late → missed occurrences are skipped; the schedule stays on its anchor and
+  does not restart from the completion date (assumption: an overdue periodic check that is
+  done late does not shift the plan; documented for domain review);
+- month ends and leap days don't drift (31 Jan → 28 Feb → 31 Mar; 29 Feb 2028 → 28 Feb 2029 → … → 29 Feb 2032).
+
+**Derived state, not stored:** Üle tähtaja (`next_due_on < today`), Varsti (within 14 days),
+Tulemas (later), Tehtud (`next_due_on is null`, one-time). `lib/schedule.ts`.
+
+**Completion** — only through `complete_scheduled_activity(activity, due_on, entry_type,
+occurred_at, description, result, performed_by_name)` (operator+):
+locks the activity row; same `not_found` for unknown and not-allowed ids; refuses archived
+activities and any `due_on` other than the current `next_due_on`
+(`activity_already_completed`); writes an operating-log entry with
+`scheduled_activity_id` + `scheduled_due_on`; advances `next_due_on` (a transaction-local
+flag stops the trigger from re-anchoring). The completion history **is** the operating log:
+immutable, correctable like any entry.
+
+**`log_entries` additions:** `scheduled_activity_id`, `scheduled_due_on` (both or neither;
+not in the insert grant, so completions can't be forged; corrections never carry them);
+composite FK to the activity in the same installation; unique
+`(scheduled_activity_id, scheduled_due_on)` — one completion per due date even under
+concurrent submits. `log_entry_current` exposes both columns.
+
+**Permissions:** read — members; create, edit, archive — owner/admin; complete —
+operator+; viewer read-only. Operators cannot change any scheduling field.
+
+**Tests:** `supabase/tests/060_scheduled_activities.test.sql` (46). Mutation-tested:
+operators allowed to manage, completion allowed for viewers, drifting recurrence, removed
+duplicate protection — each fails tests.
