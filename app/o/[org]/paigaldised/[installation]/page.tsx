@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
 import { OrgPage } from "@/components/app/org-page";
 import { ConfirmForm } from "@/components/forms/confirm-form";
@@ -9,8 +9,10 @@ import { StatusMark } from "@/components/sites/status-mark";
 import { Button } from "@/components/ui/button";
 import { setInstallationArchived } from "@/lib/actions/sites";
 import { hasRole } from "@/lib/auth/roles";
+import { getInstallationSummary } from "@/lib/data/dashboard";
 import { getInstallation } from "@/lib/data/sites";
 import { formatDate, t } from "@/lib/i18n";
+import { formatDateTime } from "@/lib/time";
 
 export const metadata: Metadata = { title: t.app.installations.tabs.overview };
 
@@ -28,6 +30,11 @@ export default function InstallationOverviewPage({
         if (!installation) notFound();
         const f = t.app.installations.fields;
         const isAdmin = hasRole(role, "admin");
+        const canWrite = hasRole(role, "operator") && !installation.archivedAt;
+        const summary = await getInstallationSummary(org.id, installation.id);
+        const base = `/o/${org.slug}/paigaldised/${installation.id}`;
+        const s = t.app.installationSummary;
+        const linkClass = "font-semibold text-k-green underline underline-offset-4";
 
         return (
           <>
@@ -42,6 +49,51 @@ export default function InstallationOverviewPage({
                   />
                 )}
               </div>
+            )}
+
+            {summary.lastEntry === null ? (
+              <section aria-labelledby="first-entry" className="mb-8 border-l-4 border-k-volt bg-k-surface px-4 py-4 sm:px-5">
+                <h2 id="first-entry" className="font-bold">
+                  {s.firstEntryTitle}
+                </h2>
+                {canWrite && (
+                  <>
+                    <p className="mt-1 max-w-xl text-k-muted">{s.firstEntryBody}</p>
+                    <Button asChild size="lg" className="mt-4">
+                      <Link href={`${base}/paevik/uus`}>
+                        <Plus aria-hidden="true" />
+                        {t.app.log.addFirst}
+                      </Link>
+                    </Button>
+                  </>
+                )}
+              </section>
+            ) : (
+              <section aria-label={s.label} className="mb-8 grid gap-1 border-l-4 border-k-line bg-k-surface px-4 py-3 text-sm sm:px-5">
+                <p>
+                  <span className="font-semibold">{s.lastEntry}:</span>{" "}
+                  <Link href={`${base}/paevik/${summary.lastEntry.id}`} className={linkClass}>
+                    {formatDateTime(summary.lastEntry.occurredAt)} · {t.app.log.types[summary.lastEntry.entryType]}
+                  </Link>
+                </p>
+                <p>
+                  {summary.overdueActivities > 0 ? (
+                    <Link href={`${base}/kaidukava`} className={linkClass}>
+                      {s.overdue(summary.overdueActivities)}
+                    </Link>
+                  ) : (
+                    s.noOverdue
+                  )}
+                  {" · "}
+                  {summary.openDeficiencies > 0 ? (
+                    <Link href={`${base}/puudused`} className={linkClass}>
+                      {s.open(summary.openDeficiencies)}
+                    </Link>
+                  ) : (
+                    s.noOpen
+                  )}
+                </p>
+              </section>
             )}
 
             <DetailList
@@ -64,7 +116,7 @@ export default function InstallationOverviewPage({
             {isAdmin && (
               <div className="mt-8">
                 <Button asChild variant="outline">
-                  <Link href={`/o/${org.slug}/paigaldised/${installation.id}/muuda`}>
+                  <Link href={`${base}/muuda`}>
                     <Pencil aria-hidden="true" />
                     {t.app.installations.edit}
                   </Link>

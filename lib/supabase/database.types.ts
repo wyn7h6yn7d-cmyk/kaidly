@@ -168,6 +168,13 @@ export type Database = {
             foreignKeyName: "deficiencies_site_id_organisation_id_fkey"
             columns: ["site_id", "organisation_id"]
             isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "deficiencies_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id", "organisation_id"]
           },
@@ -281,6 +288,13 @@ export type Database = {
             foreignKeyName: "documents_site_id_organisation_id_fkey"
             columns: ["site_id", "organisation_id"]
             isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "documents_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id", "organisation_id"]
           },
@@ -355,6 +369,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organisations"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "electrical_installations_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
           },
           {
             foreignKeyName: "electrical_installations_site_id_organisation_id_fkey"
@@ -472,6 +493,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "scheduled_activities"
             referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
           },
           {
             foreignKeyName: "log_entries_site_id_organisation_id_fkey"
@@ -764,6 +792,13 @@ export type Database = {
             foreignKeyName: "scheduled_activities_site_id_organisation_id_fkey"
             columns: ["site_id", "organisation_id"]
             isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "scheduled_activities_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id", "organisation_id"]
           },
@@ -887,8 +922,35 @@ export type Database = {
             foreignKeyName: "log_entries_site_id_organisation_id_fkey"
             columns: ["site_id", "organisation_id"]
             isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
             referencedRelation: "sites"
             referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
+      site_attention: {
+        Row: {
+          due_soon_activities: number | null
+          name: string | null
+          open_deficiencies: number | null
+          organisation_id: string | null
+          overdue_activities: number | null
+          serious_deficiencies: number | null
+          site_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
           },
         ]
       }

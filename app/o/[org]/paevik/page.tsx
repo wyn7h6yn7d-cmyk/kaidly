@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { OrgPage } from "@/components/app/org-page";
 import { FilterPanel } from "@/components/app/filter-panel";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
 import { Field } from "@/components/forms/field";
 import { LogList, Pager, parsePage } from "@/components/log/log-list";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { hasRole } from "@/lib/auth/roles";
 import { listInstallationOptions, listOrganisationLog, parseLogFilters } from "@/lib/data/log";
 import { listActiveSiteOptions } from "@/lib/data/sites";
 import { t } from "@/lib/i18n";
@@ -24,7 +28,7 @@ export default function OrganisationLogPage({
   return (
     <OrgPage
       params={params}
-      render={async ({ org }) => {
+      render={async ({ org, role }) => {
         const query = await searchParams;
         const filters = parseLogFilters(query);
         const page = parsePage(query.lk);
@@ -50,7 +54,20 @@ export default function OrganisationLogPage({
 
         return (
           <>
-            <PageHeader eyebrow={org.name} title={copy.title} />
+            <PageHeader
+              eyebrow={org.name}
+              title={copy.title}
+              actions={
+                hasRole(role, "operator") && installations.some((i) => !i.archived) ? (
+                  <Button asChild size="lg" className="w-full sm:w-auto">
+                    <Link href={`/o/${org.slug}/sissekanne`}>
+                      <Plus aria-hidden="true" />
+                      {copy.add}
+                    </Link>
+                  </Button>
+                ) : undefined
+              }
+            />
             <FilterPanel action={base} activeCount={activeCount}>
               <Field id="filter-site" label={f.site}>
                 <Select id="filter-site" name="objekt" defaultValue={filters.siteId ?? ""}>

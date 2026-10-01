@@ -2,11 +2,18 @@ import Link from "next/link";
 import { ChevronRight, Plus, UserPlus } from "lucide-react";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { ComingSoon, EmptyState } from "@/components/app/states";
+import { EmptyState } from "@/components/app/states";
+import { AttentionRow, AttentionSection, Onboarding, type OnboardingStep } from "@/components/dashboard/sections";
+import { SeverityMark, StatusBadge } from "@/components/deficiencies/marks";
+import { DueMark } from "@/components/schedule/due-mark";
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
+import { getDashboard } from "@/lib/data/dashboard";
+import { listInstallationOptions } from "@/lib/data/log";
 import { getOverviewCounts, listSites } from "@/lib/data/sites";
 import { t } from "@/lib/i18n";
+import { installationLabel } from "@/lib/labels";
+import { formatDateTime } from "@/lib/time";
 
 const SITES_SHOWN = 8;
 
@@ -15,9 +22,50 @@ export default function OverviewPage({ params }: { params: Promise<{ org: string
     <OrgPage
       params={params}
       render={async ({ org, role }) => {
-        const [counts, sites] = await Promise.all([getOverviewCounts(org.id), listSites(org.id)]);
+        const [counts, sites, dashboard, installations] = await Promise.all([
+          getOverviewCounts(org.id),
+          listSites(org.id),
+          getDashboard(org.id),
+          listInstallationOptions(org.id),
+        ]);
         const isAdmin = hasRole(role, "admin");
+        const canWrite = hasRole(role, "operator");
         const base = `/o/${org.slug}`;
+        const copy = t.app.dashboard;
+        const byId = new Map(installations.map((i) => [i.id, i]));
+        const where = (installationId: string) => {
+          const i = byId.get(installationId);
+          return i ? installationLabel(i) : null;
+        };
+
+        const onboarding = t.app.onboarding.steps;
+        const firstSite = sites[0];
+        const steps: OnboardingStep[] = [
+          {
+            key: "site",
+            ...onboarding.site,
+            done: counts.sites > 0,
+            cta: isAdmin ? { href: `${base}/objektid/uus`, label: onboarding.site.cta } : undefined,
+          },
+          {
+            key: "installation",
+            ...onboarding.installation,
+            done: counts.installations > 0,
+            cta:
+              isAdmin && firstSite
+                ? { href: `${base}/paigaldised/uus?objekt=${firstSite.id}`, label: onboarding.installation.cta }
+                : undefined,
+          },
+          {
+            key: "entry",
+            ...onboarding.entry,
+            done: dashboard.hasAnyEntry,
+            cta: canWrite ? { href: `${base}/sissekanne`, label: onboarding.entry.cta } : undefined,
+          },
+        ];
+        const onboardingOpen = steps.some((step) => !step.done);
+        const showAttention = counts.installations > 0;
+        const attentionCount = dashboard.overdue.total + dashboard.serious.total;
 
         return (
           <>
@@ -26,80 +74,216 @@ export default function OverviewPage({ params }: { params: Promise<{ org: string
               title={org.name}
               description={`${t.app.organisations.yourRole}: ${t.roles[role]}`}
               actions={
-                isAdmin ? (
-                  <Button asChild variant="outline">
-                    <Link href={`${base}/seaded/liikmed`}>
-                      <UserPlus aria-hidden="true" />
-                      {t.app.invitations.title}
-                    </Link>
-                  </Button>
-                ) : undefined
+                <>
+                  {canWrite && counts.installations > 0 && (
+                    <Button asChild size="lg" className="w-full sm:w-auto">
+                      <Link href={`${base}/sissekanne`}>
+                        <Plus aria-hidden="true" />
+                        {copy.quickEntry}
+                      </Link>
+                    </Button>
+                  )}
+                  {isAdmin && (
+                    <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                      <Link href={`${base}/seaded/liikmed`}>
+                        <UserPlus aria-hidden="true" />
+                        {t.app.invitations.title}
+                      </Link>
+                    </Button>
+                  )}
+                </>
               }
             />
 
-            <section aria-labelledby="overview-sites">
-              <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-                <h2 id="overview-sites" className="text-xl font-bold">
-                  {t.app.overview.sitesTitle}
-                </h2>
-                <p className="text-sm tabular-nums text-k-muted">
-                  {t.app.overview.counts(counts.sites, counts.installations)}
-                </p>
-              </div>
-
-              {sites.length === 0 ? (
-                <EmptyState
-                  title={t.app.sites.emptyTitle}
-                  body={isAdmin ? t.app.sites.emptyAdmin : t.app.sites.emptyMember}
-                  action={
-                    isAdmin ? (
-                      <Button asChild>
-                        <Link href={`${base}/objektid/uus`}>
-                          <Plus aria-hidden="true" />
-                          {t.app.sites.add}
-                        </Link>
-                      </Button>
-                    ) : undefined
-                  }
-                />
+            {onboardingOpen &&
+              (counts.sites === 0 && !isAdmin ? (
+                <div className="mb-10">
+                  <EmptyState title={t.app.sites.emptyTitle} body={t.app.onboarding.memberWaiting} />
+                </div>
               ) : (
-                <>
-                  <ul className="divide-y divide-k-line border border-k-line bg-k-surface">
-                    {sites.slice(0, SITES_SHOWN).map((site) => (
-                      <li key={site.id}>
+                <Onboarding steps={steps} />
+              ))}
+
+            {showAttention && (
+              <section aria-labelledby="attention" className="mb-12">
+                <h2 id="attention" className="text-xl font-bold">
+                  {copy.attentionTitle}
+                </h2>
+                {attentionCount === 0 && <p className="mt-1 text-k-muted">{copy.allClear}</p>}
+
+                <dl className="mt-4 grid grid-cols-3 border-y border-k-line">
+                  {[
+                    { label: copy.overdue, value: dashboard.overdue.total, href: `${base}/kaidukava?seis=overdue`, tone: "text-k-danger" },
+                    { label: copy.dueSoon, value: dashboard.dueSoon.total, href: `${base}/kaidukava?seis=soon`, tone: "text-k-ink" },
+                    { label: copy.serious, value: dashboard.serious.total, href: `${base}/puudused`, tone: "text-k-danger" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="min-w-0 border-l border-k-line first:border-l-0">
+                      <Link href={stat.href} className="flex h-full flex-col-reverse justify-end gap-1 px-3 py-3 hover:bg-k-paper-2 sm:px-4">
+                        <dt className="text-xs font-medium leading-snug text-k-muted sm:text-sm">{stat.label}</dt>
+                        <dd className={`text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.value > 0 ? stat.tone : "text-k-muted"}`}>
+                          {stat.value}
+                        </dd>
+                      </Link>
+                    </div>
+                  ))}
+                </dl>
+
+                <div className="mt-8 grid gap-10 lg:grid-cols-2">
+                  <AttentionSection
+                    id="attention-overdue"
+                    title={copy.overdue}
+                    total={dashboard.overdue.total}
+                    allHref={`${base}/kaidukava?seis=overdue`}
+                    empty={copy.empty.overdue}
+                  >
+                    {dashboard.overdue.items.map((a) => (
+                      <AttentionRow
+                        key={a.id}
+                        href={`${base}/kaidukava/${a.id}`}
+                        title={a.title}
+                        context={where(a.installationId)}
+                        mark={<DueMark nextDueOn={a.nextDueOn} today={dashboard.today} />}
+                      />
+                    ))}
+                  </AttentionSection>
+
+                  <AttentionSection
+                    id="attention-serious"
+                    title={copy.serious}
+                    total={dashboard.serious.total}
+                    allHref={`${base}/puudused`}
+                    empty={copy.empty.serious}
+                  >
+                    {dashboard.serious.items.map((d) => (
+                      <AttentionRow
+                        key={d.id}
+                        href={`${base}/puudused/${d.id}`}
+                        title={d.title}
+                        context={where(d.installationId)}
+                        mark={
+                          <>
+                            <SeverityMark severity={d.severity} />
+                            <StatusBadge status={d.status} />
+                          </>
+                        }
+                      />
+                    ))}
+                  </AttentionSection>
+
+                  <AttentionSection
+                    id="attention-soon"
+                    title={copy.dueSoon}
+                    total={dashboard.dueSoon.total}
+                    allHref={`${base}/kaidukava?seis=soon`}
+                    empty={copy.empty.dueSoon}
+                  >
+                    {dashboard.dueSoon.items.map((a) => (
+                      <AttentionRow
+                        key={a.id}
+                        href={`${base}/kaidukava/${a.id}`}
+                        title={a.title}
+                        context={where(a.installationId)}
+                        mark={<DueMark nextDueOn={a.nextDueOn} today={dashboard.today} />}
+                      />
+                    ))}
+                  </AttentionSection>
+
+                  <AttentionSection
+                    id="attention-recent"
+                    title={copy.recent}
+                    total={dashboard.recent.length}
+                    allHref={`${base}/paevik`}
+                    allLabel={copy.openLog}
+                    empty={copy.empty.recent}
+                  >
+                    {dashboard.recent.map((entry) => (
+                      <AttentionRow
+                        key={entry.id}
+                        href={`${base}/paigaldised/${entry.installationId}/paevik/${entry.id}`}
+                        title={entry.description}
+                        context={`${formatDateTime(entry.occurredAt)} · ${t.app.log.types[entry.entryType]} · ${where(entry.installationId) ?? ""}`}
+                      />
+                    ))}
+                  </AttentionSection>
+                </div>
+              </section>
+            )}
+
+            {showAttention && (
+              <section aria-labelledby="attention-sites" className="mb-12">
+                <h2 id="attention-sites" className="mb-3 text-xl font-bold">
+                  {copy.sites}
+                </h2>
+                {dashboard.sites.length === 0 ? (
+                  <p className="text-k-muted">{copy.sitesAllClear}</p>
+                ) : (
+                  <ul aria-label={copy.sites} className="divide-y divide-k-line border border-k-line bg-k-surface">
+                    {dashboard.sites.map((site) => (
+                      <li key={site.siteId}>
                         <Link
-                          href={`${base}/objektid/${site.id}`}
+                          href={`${base}/objektid/${site.siteId}`}
                           className="flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-k-paper-2 sm:px-5"
                         >
                           <span className="min-w-0 flex-1">
                             <span className="block truncate font-semibold">{site.name}</span>
-                            {site.address && (
-                              <span className="block truncate text-sm text-k-muted">{site.address}</span>
-                            )}
-                          </span>
-                          <span className="shrink-0 text-sm tabular-nums text-k-muted">
-                            {t.app.sites.installationsCount(site.installationCount)}
+                            <span className="block text-sm text-k-muted">
+                              {[
+                                site.overdueActivities > 0 && copy.siteCounts.overdue(site.overdueActivities),
+                                site.dueSoonActivities > 0 && copy.siteCounts.dueSoon(site.dueSoonActivities),
+                                site.openDeficiencies > 0 &&
+                                  `${copy.siteCounts.open(site.openDeficiencies)}${
+                                    site.seriousDeficiencies > 0 ? ` (${copy.siteCounts.serious(site.seriousDeficiencies)})` : ""
+                                  }`,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </span>
                           </span>
                           <ChevronRight className="size-5 shrink-0 text-k-grey" aria-hidden="true" />
                         </Link>
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-4">
-                    <Link
-                      href={`${base}/objektid`}
-                      className="text-sm font-semibold text-k-green underline underline-offset-4"
-                    >
-                      {t.app.overview.allSites}
-                    </Link>
-                  </p>
-                </>
-              )}
-            </section>
+                )}
+              </section>
+            )}
 
-            <div className="mt-12">
-              <ComingSoon title={`${t.app.nav.log}, ${t.app.nav.schedule.toLowerCase()} ja ${t.app.nav.deficiencies.toLowerCase()}`} />
-            </div>
+            {sites.length > 0 && (
+              <section aria-labelledby="overview-sites">
+                <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                  <h2 id="overview-sites" className="text-xl font-bold">
+                    {t.app.overview.sitesTitle}
+                  </h2>
+                  <p className="text-sm tabular-nums text-k-muted">
+                    {t.app.overview.counts(counts.sites, counts.installations)}
+                  </p>
+                </div>
+                <ul aria-label={t.app.overview.sitesTitle} className="divide-y divide-k-line border border-k-line bg-k-surface">
+                  {sites.slice(0, SITES_SHOWN).map((site) => (
+                    <li key={site.id}>
+                      <Link
+                        href={`${base}/objektid/${site.id}`}
+                        className="flex min-h-16 items-center gap-4 px-4 py-3 hover:bg-k-paper-2 sm:px-5"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold">{site.name}</span>
+                          {site.address && <span className="block truncate text-sm text-k-muted">{site.address}</span>}
+                        </span>
+                        <span className="shrink-0 text-sm tabular-nums text-k-muted">
+                          {t.app.sites.installationsCount(site.installationCount)}
+                        </span>
+                        <ChevronRight className="size-5 shrink-0 text-k-grey" aria-hidden="true" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4">
+                  <Link href={`${base}/objektid`} className="text-sm font-semibold text-k-green underline underline-offset-4">
+                    {t.app.overview.allSites}
+                  </Link>
+                </p>
+              </section>
+            )}
           </>
         );
       }}

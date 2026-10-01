@@ -310,9 +310,19 @@ No UPDATE policy: objects are never overwritten or replaced. Nothing for `anon`.
 Errors never reveal another organisation's objects: foreign and unknown documents both
 give 404 / `not_found`.
 
+## 10a. Dashboard view (Phase 8)
+
+`public.site_attention` (`security_invoker`): one row per **active** site with
+`overdue_activities`, `due_soon_activities` (today … today + 14, Tallinn), `open_deficiencies`
+and `serious_deficiencies` (high/critical, not resolved). Because it runs with the caller's
+rights, every count comes through RLS — a member of two organisations sees each
+organisation's own numbers. `select` for `authenticated` only. Partial indexes
+`scheduled_activities_site_due_idx` and `deficiencies_site_open_idx` back the counts.
+The dashboard's other sections are bounded queries (`limit 5` + exact count) on the tables.
+
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 356 tests in 9 files, using the shared fixture
+`npm run test:db` runs pgTAP: 368 tests in 10 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -327,6 +337,7 @@ a user in both) and `helpers/sites.psql`.
 | `060_scheduled_activities` | 46 | roles, completion → log, anchored dates, duplicates, one-time, archived |
 | `070_deficiencies` | 39 | roles, lifecycle, resolution → log, no double resolution, no deletion, history |
 | `080_documents` | 43 | metadata isolation, roles (viewer can't upload, operator scope, admin-only general documents), forged/foreign paths and parents, SVG/size/filename rules, attachment windows, storage read/upload/overwrite/delete across tenants, pending objects unreadable, finalize (missing object, size mismatch, foreign caller), historical files immutable and undeletable, archive/restore, anon reads nothing |
+| `090_dashboard` | 12 | `site_attention` counts, isolation per role, member of two organisations, outsider and anon, archived sites, `security_invoker` |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.
