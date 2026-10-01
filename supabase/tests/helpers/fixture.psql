@@ -1,0 +1,89 @@
+-- Shared fixture for KAIDLY database tests. Include with `\ir helpers/fixture.psql`
+-- inside a test transaction (everything is rolled back).
+--
+-- Two tenants with one user per role each, an outsider with no memberships, and a
+-- user who belongs to both tenants:
+--
+--   organisation A  (org-a-test)            organisation B  (org-b-test)
+--     a_owner  a_admin  a_operator  a_viewer  b_owner  b_admin  b_operator  b_viewer
+--     multi (operator)                         multi (viewer)
+--   outsider: no memberships
+--
+-- Helpers (call as postgres or as any test user):
+--   pg_temp.uid(name)       → user id
+--   pg_temp.org(name)       → organisation id ('a' / 'b')
+--   pg_temp.login(name)     → act as that user (role authenticated + JWT claims)
+--   pg_temp.logout()        → act as anon
+-- Use `reset role;` to go back to postgres.
+
+create temporary table test_users (name text primary key, id uuid not null, email text not null);
+insert into test_users (name, id, email) values
+  ('a_owner',    'a0000000-0000-4000-8000-000000000001', 'a.owner@example.ee'),
+  ('a_admin',    'a0000000-0000-4000-8000-000000000002', 'a.admin@example.ee'),
+  ('a_operator', 'a0000000-0000-4000-8000-000000000003', 'a.operator@example.ee'),
+  ('a_viewer',   'a0000000-0000-4000-8000-000000000004', 'a.viewer@example.ee'),
+  ('b_owner',    'b0000000-0000-4000-8000-000000000001', 'b.owner@example.ee'),
+  ('b_admin',    'b0000000-0000-4000-8000-000000000002', 'b.admin@example.ee'),
+  ('b_operator', 'b0000000-0000-4000-8000-000000000003', 'b.operator@example.ee'),
+  ('b_viewer',   'b0000000-0000-4000-8000-000000000004', 'b.viewer@example.ee'),
+  ('multi',      'd0000000-0000-4000-8000-000000000001', 'multi@example.ee'),
+  ('outsider',   'c0000000-0000-4000-8000-000000000001', 'outsider@example.ee');
+
+create temporary table test_orgs (name text primary key, id uuid not null);
+insert into test_orgs (name, id) values
+  ('a', '0a000000-0000-4000-8000-00000000000a'),
+  ('b', '0b000000-0000-4000-8000-00000000000b');
+
+grant select on test_users, test_orgs to authenticated, anon;
+
+create function pg_temp.uid(p_name text) returns uuid
+language sql stable as $$ select id from test_users where name = p_name $$;
+
+create function pg_temp.org(p_name text) returns uuid
+language sql stable as $$ select id from test_orgs where name = p_name $$;
+
+create function pg_temp.login(p_name text) returns void
+language plpgsql as $$
+declare
+  v_user test_users%rowtype;
+begin
+  select * into strict v_user from test_users where name = p_name;
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_user.id, 'role', 'authenticated', 'email', v_user.email)::text,
+    true);
+  perform set_config('role', 'authenticated', true);
+end;
+$$;
+
+create function pg_temp.logout() returns void
+language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', '{"role": "anon"}', true);
+  perform set_config('role', 'anon', true);
+end;
+$$;
+
+grant execute on function pg_temp.uid(text), pg_temp.org(text), pg_temp.login(text), pg_temp.logout()
+  to authenticated, anon;
+
+-- Users (confirmed emails). The profiles trigger creates their profiles.
+insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data, aud, role)
+select id, email, now(), jsonb_build_object('full_name', initcap(replace(name, '_', ' '))),
+       'authenticated', 'authenticated'
+  from test_users;
+
+insert into public.organisations (id, name, slug) values
+  (pg_temp.org('a'), 'Organisatsioon A', 'org-a-test'),
+  (pg_temp.org('b'), 'Organisatsioon B', 'org-b-test');
+
+insert into public.organisation_members (organisation_id, user_id, role) values
+  (pg_temp.org('a'), pg_temp.uid('a_owner'),    'owner'),
+  (pg_temp.org('a'), pg_temp.uid('a_admin'),    'admin'),
+  (pg_temp.org('a'), pg_temp.uid('a_operator'), 'operator'),
+  (pg_temp.org('a'), pg_temp.uid('a_viewer'),   'viewer'),
+  (pg_temp.org('a'), pg_temp.uid('multi'),      'operator'),
+  (pg_temp.org('b'), pg_temp.uid('b_owner'),    'owner'),
+  (pg_temp.org('b'), pg_temp.uid('b_admin'),    'admin'),
+  (pg_temp.org('b'), pg_temp.uid('b_operator'), 'operator'),
+  (pg_temp.org('b'), pg_temp.uid('b_viewer'),   'viewer'),
+  (pg_temp.org('b'), pg_temp.uid('multi'),      'viewer');

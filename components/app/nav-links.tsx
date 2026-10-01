@@ -21,11 +21,7 @@ function isActive(pathname: string, href: string, item: NavItem) {
   return item.segment ? pathname.startsWith(href) : pathname === href;
 }
 
-/**
- * Without an organisation (Phase 1, or before one is chosen) the items render
- * disabled: the structure is visible but nothing links to routes that don't exist.
- */
-export function SidebarNav({ orgSlug }: { orgSlug?: string }) {
+export function SidebarNav({ orgSlug }: { orgSlug: string }) {
   const pathname = usePathname();
 
   return (
@@ -40,20 +36,6 @@ export function SidebarNav({ orgSlug }: { orgSlug?: string }) {
         );
         const base =
           "focus-on-dark flex h-11 items-center gap-3 rounded-sm px-3 text-[15px] font-medium";
-
-        if (!orgSlug) {
-          return (
-            <li key={item.key}>
-              <span
-                aria-disabled="true"
-                title={t.app.navUnavailable}
-                className={cn(base, "cursor-not-allowed text-white/50")}
-              >
-                {content}
-              </span>
-            </li>
-          );
-        }
 
         const href = hrefFor(orgSlug, item);
         const active = isActive(pathname, href, item);
@@ -78,7 +60,7 @@ export function SidebarNav({ orgSlug }: { orgSlug?: string }) {
   );
 }
 
-export function BottomNav({ orgSlug }: { orgSlug?: string }) {
+export function BottomNav({ orgSlug }: { orgSlug: string }) {
   const pathname = usePathname();
   const primary = NAV_ITEMS.filter((item) => item.mobile);
   const more = NAV_ITEMS.filter((item) => !item.mobile);
@@ -95,15 +77,6 @@ export function BottomNav({ orgSlug }: { orgSlug?: string }) {
             <span className="truncate">{item.label}</span>
           </>
         );
-        if (!orgSlug) {
-          return (
-            <li key={item.key}>
-              <span aria-disabled="true" className={cn(cell, "text-k-grey/70")}>
-                {content}
-              </span>
-            </li>
-          );
-        }
         const href = hrefFor(orgSlug, item);
         const active = isActive(pathname, href, item);
         return (
@@ -125,28 +98,23 @@ export function BottomNav({ orgSlug }: { orgSlug?: string }) {
       })}
       <li>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            disabled={!orgSlug}
-            className={cn(cell, "w-full text-k-muted disabled:text-k-grey/70")}
-          >
+          <DropdownMenuTrigger className={cn(cell, "w-full text-k-muted")}>
             <Ellipsis className="size-5" aria-hidden="true" />
             <span>{t.common.more}</span>
           </DropdownMenuTrigger>
-          {orgSlug && (
-            <DropdownMenuContent side="top" align="end" className="min-w-52">
-              {more.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <DropdownMenuItem key={item.key} asChild>
-                    <Link href={hrefFor(orgSlug, item)}>
-                      <Icon aria-hidden="true" />
-                      {item.label}
-                    </Link>
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          )}
+          <DropdownMenuContent side="top" align="end" className="min-w-52">
+            {more.map((item) => {
+              const Icon = item.icon;
+              return (
+                <DropdownMenuItem key={item.key} asChild>
+                  <Link href={hrefFor(orgSlug, item)}>
+                    <Icon aria-hidden="true" />
+                    {item.label}
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
         </DropdownMenu>
       </li>
     </ul>

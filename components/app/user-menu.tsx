@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, UserRound } from "lucide-react";
+import { LogOut, Settings2, UserRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +55,12 @@ export function UserMenu({
           <span className="block truncate font-semibold">{email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/konto">
+            <Settings2 aria-hidden="true" />
+            {t.app.account.title}
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={signOut}>
           <LogOut aria-hidden="true" />
           {t.common.signOut}

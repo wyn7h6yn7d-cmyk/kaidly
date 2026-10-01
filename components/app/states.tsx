@@ -1,0 +1,77 @@
+import Link from "next/link";
+import { Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { t } from "@/lib/i18n";
+
+/** One sentence on what to do next and the button to do it. No illustrations. */
+export function EmptyState({
+  title,
+  body,
+  action,
+}: {
+  title: string;
+  body?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <section className="border border-dashed border-k-grey/50 bg-k-paper-2 px-5 py-8 sm:px-8">
+      <h2 className="text-lg font-bold">{title}</h2>
+      {body && <p className="mt-1 max-w-xl text-k-muted">{body}</p>}
+      {action && <div className="mt-5">{action}</div>}
+    </section>
+  );
+}
+
+export function ForbiddenState({ orgSlug }: { orgSlug: string }) {
+  return (
+    <section className="max-w-xl border border-k-line bg-k-surface p-6">
+      <Lock className="mb-3 size-5 text-k-muted" aria-hidden="true" />
+      <h1 className="text-2xl font-extrabold">{t.app.forbidden.title}</h1>
+      <p className="mt-2 text-k-muted">{t.app.forbidden.body}</p>
+      <Button asChild variant="outline" className="mt-6">
+        <Link href={`/o/${orgSlug}`}>{t.app.forbidden.backToOverview}</Link>
+      </Button>
+    </section>
+  );
+}
+
+/** Placeholder for a module that arrives in a later phase. Clearly not a fake feature. */
+export function ComingSoon({ title, children }: { title: string; children?: React.ReactNode }) {
+  return (
+    <section className="border border-dashed border-k-grey/50 bg-k-paper-2 px-5 py-8 sm:px-8">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-k-muted">
+        {t.app.comingSoon.title}
+      </p>
+      <p className="mt-2 max-w-xl text-k-ink">{t.app.comingSoon.phase(title)}</p>
+      {children}
+    </section>
+  );
+}
+
+export function LoadingBlock({ lines = 3 }: { lines?: number }) {
+  return (
+    <div aria-busy="true" aria-live="polite" className="animate-pulse space-y-3">
+      <span className="sr-only">{t.common.loading}</span>
+      <div className="h-8 w-2/3 max-w-sm bg-k-line/70" />
+      {Array.from({ length: lines }, (_, i) => (
+        <div key={i} className="h-14 bg-k-line/50" />
+      ))}
+    </div>
+  );
+}
+
+/** Loading frame that matches AppShell, so the sidebar and bars don't pop in later. */
+export function ShellSkeleton() {
+  return (
+    <div className="min-h-svh lg:grid lg:grid-cols-[264px_1fr]">
+      <div className="hidden bg-k-green lg:block lg:h-svh" />
+      <div className="flex min-h-svh flex-col">
+        <div className="h-14 border-b border-k-line bg-k-paper lg:hidden" />
+        <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 sm:px-6 lg:px-10 lg:pt-10">
+          <LoadingBlock />
+        </div>
+        <div className="fixed inset-x-0 bottom-0 h-16 border-t border-k-line bg-k-surface lg:hidden" />
+      </div>
+    </div>
+  );
+}

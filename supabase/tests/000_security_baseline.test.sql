@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(7);
+select plan(8);
 
 -- Every table in the API-exposed schema has RLS enabled.
 select is_empty(
@@ -40,6 +40,26 @@ select is_empty(
       where n.nspname in ('public', 'private')
         and has_function_privilege('anon', p.oid, 'execute') $$,
   'anon cannot execute any function in public or private'
+);
+
+-- The API surface: exactly these functions are callable by signed-in users.
+-- Adding an RPC means reviewing it and adding it here.
+select results_eq(
+  $$ select p.oid::regprocedure::text
+       from pg_proc p
+       join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname in ('public', 'private')
+        and has_function_privilege('authenticated', p.oid, 'execute')
+      order by 1 $$,
+  $$ values
+       ('accept_invitation(text)'),
+       ('create_invitation(uuid,text,org_role)'),
+       ('create_organisation(text,text)'),
+       ('invitation_preview(text)'),
+       ('private.co_member_ids()'),
+       ('private.org_ids(org_role)'),
+       ('revoke_invitation(uuid)') $$,
+  'authenticated can execute exactly the reviewed functions'
 );
 
 -- Every security definer function pins its search_path.

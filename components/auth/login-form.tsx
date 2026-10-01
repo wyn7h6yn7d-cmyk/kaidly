@@ -31,7 +31,7 @@ export function LoginForm() {
         setError(t.errors[authErrorCode(error)]);
         return;
       }
-      router.replace(safeRedirectPath(searchParams.get("next")));
+      router.replace(next);
       router.refresh();
     } catch (err) {
       setError(t.errors[authErrorCode(err)]);
@@ -40,9 +40,15 @@ export function LoginForm() {
     }
   };
 
+  const next = safeRedirectPath(searchParams.get("next"));
+  const isInvite = next.startsWith("/invite/");
+
   return (
     <>
-      <AuthHeading title={t.auth.login.title} description={t.auth.login.description} />
+      <AuthHeading
+        title={t.auth.login.title}
+        description={isInvite ? t.app.invite.loginHint : t.auth.login.description}
+      />
       <form onSubmit={handleLogin} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor="email">{t.common.email}</Label>
@@ -82,7 +88,10 @@ export function LoginForm() {
       </form>
       <p className="mt-8 text-sm text-k-muted">
         {t.auth.login.noAccount}{" "}
-        <Link href="/auth/sign-up" className="font-semibold text-k-green underline underline-offset-4">
+        <Link
+          href={isInvite ? `/auth/sign-up?next=${encodeURIComponent(next)}` : "/auth/sign-up"}
+          className="font-semibold text-k-green underline underline-offset-4"
+        >
           {t.common.signUp}
         </Link>
       </p>

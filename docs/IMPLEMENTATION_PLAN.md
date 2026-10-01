@@ -1,7 +1,7 @@
 # KAIDLY — Implementation plan
 
-Status: **approved 2026-10-01.** Phase 1 implemented on branch `phase-1-foundation`,
-awaiting review. Phase 2 does not start until Phase 1 is approved.
+Status: **approved 2026-10-01.** Phase 1 done. Phases 2–3 implemented on branch
+`phase-2-3-organisations-sites`. Phase 4 does not start until approved.
 
 Each phase ends with a working, deployable app and `npm run check` passing (lint,
 typecheck, unit tests, pgTAP database tests, build). Each phase is one or more commits on
@@ -9,7 +9,7 @@ a branch, merged to `main` after review.
 
 ---
 
-## Phase 1 — Foundation ✅ implemented, awaiting review
+## Phase 1 — Foundation ✅ done
 
 Clean starter, tooling, design tokens, database foundation. No product modules.
 
@@ -29,7 +29,11 @@ Clean starter, tooling, design tokens, database foundation. No product modules.
 Moved to Phase 2 (they depend on `organisations`): `org_role` enum, `role_rank`, `org_ids`,
 `activity_history` + `record_history`.
 
-## Phase 2 — Authentication and organisations
+## Phase 2 — Authentication and organisations ✅ implemented
+
+As built: see DATABASE.md §9. Deferred: organisation deletion (needs the Phase 4 append-only
+exception), email change.
+
 
 - Migration `organisations`: `org_role`, `private.role_rank`, `private.org_ids`, `organisations`, `organisation_members`, `organisation_invitations` (hashed tokens), `activity_history` + `record_history`, `protect_last_owner`; RPCs `create_organisation`, `create_invitation`, `invitation_preview`, `accept_invitation`, `delete_organisation`; profiles visible to co-members.
 - `zod` added for Server Action validation.

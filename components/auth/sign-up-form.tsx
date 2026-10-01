@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { authErrorCode } from "@/lib/auth/errors";
-import { DEFAULT_AFTER_LOGIN } from "@/lib/auth/redirect";
+import { safeRedirectPath } from "@/lib/auth/redirect";
 import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,8 @@ export function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  // An invitation link survives sign-up and email confirmation.
+  const next = safeRedirectPath(useSearchParams().get("next"));
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +46,7 @@ export function SignUpForm() {
         options: {
           // Read by the profiles trigger (supabase/migrations/*_foundation.sql).
           data: { full_name: fullName.trim() },
-          emailRedirectTo: `${window.location.origin}/auth/confirm?next=${DEFAULT_AFTER_LOGIN}`,
+          emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
         },
       });
       if (error) {
@@ -120,7 +122,10 @@ export function SignUpForm() {
       </form>
       <p className="mt-8 text-sm text-k-muted">
         {t.auth.signUp.haveAccount}{" "}
-        <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
+        <Link
+          href={next.startsWith("/invite/") ? `/auth/login?next=${encodeURIComponent(next)}` : "/auth/login"}
+          className="font-semibold text-k-green underline underline-offset-4"
+        >
           {t.common.signIn}
         </Link>
       </p>

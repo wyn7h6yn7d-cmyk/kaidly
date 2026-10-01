@@ -7,12 +7,19 @@ import { cn } from "@/lib/utils";
 
 const BOLT_PATH = "M20 2 L7 18 H15 L11 30 L25 13 H17 L22 2 Z";
 
-export function LogoMark({ className }: { className?: string }) {
+export function LogoMark({
+  className,
+  color = "volt",
+}: {
+  className?: string;
+  /** volt on dark or brand surfaces; green on paper, where volt is too faint */
+  color?: "volt" | "green";
+}) {
   return (
     <svg
       viewBox="0 0 32 32"
       aria-hidden="true"
-      className={cn("h-7 w-7 text-k-volt", className)}
+      className={cn("h-7 w-7", color === "volt" ? "text-k-volt" : "text-k-green", className)}
       data-provisional-logo
     >
       <path d={BOLT_PATH} fill="currentColor" />

@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { ConfigurationError, getSupabaseEnv } from "@/lib/env";
 import { DEFAULT_AFTER_LOGIN } from "@/lib/auth/redirect";
+import { LAST_ORG_COOKIE } from "@/lib/org-cookie";
 import { t } from "@/lib/i18n";
 
 /** Routes reachable without a session. Everything else requires sign-in. */
@@ -82,6 +83,19 @@ export async function updateSession(request: NextRequest) {
     url.pathname = DEFAULT_AFTER_LOGIN;
     url.search = "";
     return redirectWithCookies(url, supabaseResponse);
+  }
+
+  // Remember the last opened organisation (a slug only; access is still checked on
+  // every request) so /o can return the user there.
+  const orgMatch = /^\/o\/([a-z0-9]+(?:-[a-z0-9]+)+)(?:\/|$)/.exec(pathname);
+  if (signedIn && orgMatch) {
+    supabaseResponse.cookies.set(LAST_ORG_COOKIE, orgMatch[1], {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+    });
   }
 
   // Return supabaseResponse as is: it carries the refreshed session cookies.
