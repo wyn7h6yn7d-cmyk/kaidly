@@ -1,0 +1,85 @@
+# KAIDLY verification pipeline. Runs everything against a throwaway LOCAL Supabase stack
+# inside the runner; it has no access to any hosted project and uses no secrets.
+# The Supabase CLI is the version pinned in package.json (installed by npm ci).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Build-time public config only. Not a secret and not a real project: the build never
+  # talks to Supabase, and lib/env.ts rejects the .env.example placeholders.
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-build-only-not-a-key
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  verify:
+    name: Lint, types, unit tests, build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  database:
+    name: Database and RLS tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Applies every migration and the seed from scratch. Storage stays on: it owns the
+      # storage schema that the documents tests exercise.
+      - run: npx supabase start -x studio,edge-runtime,logflare,vector,supavisor,imgproxy,realtime
+      - run: npx supabase test db
+      - name: Generated types match the migrations
+        run: |
+          npx supabase gen types typescript --local > "$RUNNER_TEMP/database.types.ts"
+          diff -u lib/supabase/database.types.ts "$RUNNER_TEMP/database.types.ts"
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # Auth, REST, Storage and Mailpit are needed; the dashboard and edge services are not.
+      - run: npx supabase start -x studio,postgres-meta,edge-runtime,logflare,vector,supavisor,imgproxy,realtime
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Keep traces of failed tests
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-results
+          path: test-results/
+          retention-days: 7
