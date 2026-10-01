@@ -6,7 +6,7 @@ KAIDLY is a digital operations logbook for electrical installations. It replaces
 paper *käidupäevik*, the Excel *käidukava* and the folder of protocols that every
 electrical operation supervisor (*käidukorraldaja*) keeps today.
 
-Status: **approved 2026-10-01** (decisions recorded in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md#decisions)).
+Status: approved 2026-10-01; Phases 1–6 implemented (see [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)). Documents (Phase 7) and the dashboard (Phase 8) are not built yet.
 
 ---
 
@@ -52,10 +52,13 @@ Users belong to one or more organisations, with one role per organisation:
 
 | Role | Estonian | Can |
 |---|---|---|
-| Owner | Omanik | Full control: organisation settings, ownership, all membership management, sites and installations, everything an admin can do, delete the organisation. |
-| Admin | Administraator | Manage sites and installations, the käidukava and all operational data, manage documents, invite and manage members — except anything touching ownership (granting/removing owner, organisation settings, deleting the organisation). |
-| Operator | Käitaja | Write log entries, complete scheduled activities, create and update deficiencies, upload operational documents. **Cannot** create, archive or delete sites or installations, and cannot manage members. |
+| Owner | Omanik | Full control: organisation settings, ownership, all membership management, sites and installations, everything an admin can do. (Deleting an organisation is not built yet.) |
+| Admin | Administraator | Manage sites and installations and the käidukava, all operational data, invite and manage members — except anything touching ownership (granting/removing owner, organisation settings). |
+| Operator | Käitaja | Write and correct log entries, complete scheduled activities, record deficiencies, move them to in progress and resolve them. **Cannot** create, edit or archive sites, installations or planned activities, and cannot manage members. (Uploading documents comes with Phase 7.) |
 | Viewer | Vaataja | Read only. For property owners, auditors, management. |
+
+Nobody — not even an owner — can change or delete an operating-log entry or delete a
+deficiency. The exact matrix is in DATABASE.md §5.
 
 A contractor serving ten customers is a member of ten organisations. Switching
 organisation is one tap.
@@ -67,9 +70,9 @@ organisation is one tap.
 3. **Sites** — list, create, edit, archive.
 4. **Electrical installations** — list per site, create, edit, archive; one page that shows everything about the installation.
 5. **Operating log / Käidupäevik** — chronological, strictly append-only record of what happened at an installation. Mistakes are fixed with linked correction entries; the original always stays visible.
-6. **Scheduled activities / Käidukava** — recurring and one-off activities (*tegevused*) with due dates; completing one writes a log entry. Shown as *Tulemas* (upcoming), *Tähtaeg läheneb* (due soon), *Hilinenud* (overdue) or *Tehtud* (completed) — derived from dates, there is no "in progress" state.
-7. **Deficiencies / Puudused** — found problems with severity, due date and status *Avatud* (open), *Töös* (in progress) or *Kõrvaldatud* (resolved).
-8. **Documents** — schemes, protocols, certificates and photos attached to a site, an installation, a log entry or a deficiency. Optional site cover photo.
+6. **Scheduled activities / Käidukava** — recurring and one-off activities (*tegevused*) with due dates and priority; "Märgi tehtuks" writes the log entry. Shown as *Tulemas* (upcoming), *Varsti* (due within 14 days), *Üle tähtaja* (overdue) or *Tehtud* (completed) — derived from dates, there is no "in progress" state. Recurring due dates stay anchored to the plan.
+7. **Deficiencies / Puudused** — found problems with severity (*Madal*, *Keskmine*, *Kõrge*, *Kriitiline*), due date and status *Avatud* (open), *Töös* (in progress) or *Lahendatud* (resolved). Resolving requires a note and writes the log entry; resolved deficiencies stay in history and are never deleted.
+8. **Documents** — schemes, protocols, certificates and photos attached to a site, an installation, a log entry or a deficiency. Optional site cover photo. *(Phase 7 — not built yet.)*
 9. **Users and permissions** — invite with a copyable, single-use link; four roles; remove members.
 
 ### Out of MVP (explicitly)
@@ -90,6 +93,10 @@ Targets for this flow on a mid-range phone:
 - **≤ 30 seconds** to record a routine entry with one photo.
 - Works one-handed; all primary actions reachable by thumb.
 - Typed text is never lost — if the save fails, the draft stays on the device.
+
+Status: from an installation page the entry form is one tap away and the type a second
+tap; validation errors keep everything typed. Not yet: a recent-installations picker from
+the overview, photos (Phase 7), and device-side drafts when the network fails (Phase 9).
 
 See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
 

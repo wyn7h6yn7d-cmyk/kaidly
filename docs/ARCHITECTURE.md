@@ -1,6 +1,6 @@
 # KAIDLY — Architecture
 
-Status: **approved 2026-10-01**. Phase 1 (foundation) implemented.
+Status: describes the implemented system (Phases 1–6).
 
 ---
 
@@ -27,7 +27,7 @@ resizing). Proposed additions for the whole MVP:
 |---|---|---|
 | `supabase` 2.115.0 (CLI, dev dependency) | Migrations, type generation, `supabase test db` | **Added in Phase 1**, pinned so every machine and CI use the same CLI |
 | `zod` | Validate every Server Action input on the server | Approved (D8); added in Phase 2 with the first Server Action |
-| `@playwright/test` (dev) | One end-to-end test of the critical log-entry flow | Phase 10 |
+| `@playwright/test` 1.63.0 (dev) | E2E suite (`npm run test:e2e`, local stack only) | **Added after Phase 6** |
 
 Unit tests use Node's built-in test runner (`node --test`, native TypeScript type
 stripping) — no test library. Removed in Phase 1: `next-themes`, `@radix-ui/react-checkbox`.
@@ -85,83 +85,84 @@ list that follows the table.
 Also: `/auth/confirm` handles both the default PKCE `code` link and the `token_hash` email
 template, so confirmation works with Supabase's default templates.
 
-## 3. Folder structure (target)
+## 3. Folder structure
 
 ```
 app/
-  (marketing)/                 public pages: /, later /hinnad, /kontakt
-    layout.tsx
-    page.tsx
-  auth/                        login, sign-up, confirm, reset (from starter, restyled, Estonian)
-  invite/[token]/              invitation landing (public → login → accept)
-  o/                           the application (signed-in)
-    page.tsx                   organisation picker / redirect to last used
-    uus/page.tsx               create organisation
-    [org]/                     everything inside one organisation (slug)
-      layout.tsx               app shell: org switcher, nav, membership check
-      page.tsx                 dashboard
-      objektid/                sites
-      paigaldised/             installations
-      paevik/                  operating log (all installations)
-      kaidukava/               scheduled activities
-      puudused/                deficiencies
-      dokumendid/              documents
-      seaded/                  organisation settings, members, invitations
-  konto/                       own profile, password, sign out
+  page.tsx                     public landing (placeholder until Phase 9)
+  auth/                        login, sign-up, confirm, error, forgot/update password
+  invite/[token]/              invitation landing (sign-in required)
+  konto/                       own profile
+  o/
+    page.tsx                   organisation picker (redirects to the last used one)
+    uus/                       create organisation
+    not-found.tsx              "organisation not found" (unknown or not a member)
+    [org]/
+      layout.tsx               app shell, membership check
+      page.tsx                 overview
+      objektid/                sites: list, uus, [site], [site]/muuda
+      paigaldised/             installations: uus, [installation] (+ layout with tabs),
+                               [installation]/{muuda, paevik, kaidukava, puudused, dokumendid}
+      paevik/                  organisation operating log with filters
+      kaidukava/               plan: list, uus, [activity], [activity]/{tehtud, muuda}
+      puudused/                deficiencies: list, uus, [deficiency], [deficiency]/{lahenda, muuda}
+      dokumendid/              placeholder (Phase 7)
+      seaded/                  organisation settings, liikmed (members + invitations)
 components/
-  ui/                          primitives (button, input, …) — restyled shadcn
-  app/                         app-specific building blocks (page header, list row, empty state, …)
-  marketing/
-  auth/                        auth forms (client components)
+  ui/                          primitives (button, input, select, textarea, label, dropdown)
+  app/                         shell, page header, states, filter panel, org page wrapper
+  forms/                       field, messages, confirm form, useFormAction, useFieldId
+  auth/ organisations/ sites/ log/ schedule/ deficiencies/   feature components
   brand/                       provisional logo
 lib/
   supabase/                    clients (browser, server, proxy), generated database.types.ts
-  auth/                        session.ts (getCurrentUser, requireUser; Phase 2: requireMembership),
-                               redirect.ts (allowlist), errors.ts (error codes)
-  env.ts                       required configuration, fails closed
-  i18n/                        et.ts (all UI strings), index.ts (`t`, `Messages` type)
-  data/                        server-only read functions, one file per area (Phase 2+)
-  actions/                     server actions, one file per area (Phase 2+)
-  validation/                  zod schemas shared by forms and actions (Phase 2+)
+  auth/                        session, roles, redirect allowlist, auth error codes
+  data/                        server-only reads, one file per area
+  actions/                     Server Actions, one file per area; context.ts (role check), state.ts
+  validation/                  zod schemas
+  db/errors.ts                 database error → application error code
+  i18n/                        et.ts (all UI strings), index.ts
+  schedule.ts, time.ts, labels.ts, env.ts
+scripts/                       local-supabase.mjs, dev-local.mjs (local stack only)
 tests/unit/                    node --test unit tests
-supabase/                      migrations, seed, tests, config (see DATABASE.md §7)
-docs/
+e2e/                           Playwright suite + support/fixtures.ts
+supabase/                      migrations, seed (local only), pgTAP tests, config
 ```
 
-URL segments use Estonian words (`objektid`, `paigaldised`, `paevik` …) because users read
-them. Code identifiers stay in English. (Decision D7.)
+URL segments are Estonian (`objektid`, `paigaldised`, `paevik`, `kaidukava`, `puudused`);
+code identifiers are English.
 
-## 4. Page architecture
+## 4. Routes (implemented)
 
 | Route | Purpose | Min role |
 |---|---|---|
-| `/` | Marketing landing | public |
-| `/auth/login`, `/auth/sign-up`, `/auth/forgot-password`, `/auth/update-password`, `/auth/confirm`, `/auth/error` | Auth | public |
-| `/invite/[token]` | Shows the inviting organisation and role (`invitation_preview`); sign in / sign up; accept | public → signed in |
-| `/o` | Organisation list; auto-redirect if the user has exactly one | signed in |
-| `/o/uus` | Create organisation | signed in |
-| `/o/[org]` | **Dashboard**: overdue + upcoming activities, open deficiencies, latest entries, **"Lisa sissekanne"** | viewer |
-| `/o/[org]/objektid` | Sites list (search, archived toggle) | viewer |
-| `/o/[org]/objektid/uus` | New site | admin |
-| `/o/[org]/objektid/[siteId]` | Site: its installations, site documents | viewer |
-| `/o/[org]/objektid/[siteId]/muuda` | Edit / archive site | admin |
-| `/o/[org]/paigaldised/uus?objekt=…` | New installation | admin |
-| `/o/[org]/paigaldised/[installationId]` | **Installation page**: header + tabs Päevik · Käidukava · Puudused · Dokumendid · Andmed | viewer |
-| `/o/[org]/paigaldised/[installationId]/sissekanne` | **New log entry** (the critical flow) | operator |
-| `/o/[org]/paigaldised/[installationId]/muuda` | Edit / archive installation | admin |
-| `/o/[org]/sissekanne` | New log entry → pick installation first (recent first) | operator |
-| `/o/[org]/paevik` | All log entries, filter by site / installation / type / date | viewer |
-| `/o/[org]/kaidukava` | All scheduled activities: overdue, this month, later | viewer |
-| `/o/[org]/kaidukava/uus`, `…/[id]` | Create / edit / complete activity | admin (edit), operator (complete) |
-| `/o/[org]/puudused` | All deficiencies: open first, by severity and due date | viewer |
-| `/o/[org]/puudused/uus`, `…/[id]` | Create / view / resolve | operator |
-| `/o/[org]/dokumendid` | All documents, filter by site / installation / kind | viewer |
-| `/o/[org]/seaded` | Organisation name, registry code | owner (admins see it read-only) |
-| `/o/[org]/seaded/liikmed` | Members, roles, invitations | admin |
-| `/konto` | Profile, password, sign out, leave organisation | signed in |
+| `/`, `/auth/*` | landing, authentication | public |
+| `/invite/[token]` | invitation preview and accept | signed in |
+| `/o`, `/o/uus`, `/konto` | organisation picker, create, own profile | signed in |
+| `/o/[org]` | overview: real counts and sites | viewer |
+| `/o/[org]/objektid` (+ `?arhiiv`) | sites | viewer |
+| `/o/[org]/objektid/uus`, `/[site]/muuda` | create/edit/archive site | admin |
+| `/o/[org]/objektid/[site]` | site with its installations | viewer |
+| `/o/[org]/paigaldised/uus?objekt=` | new installation | admin |
+| `/o/[org]/paigaldised/[installation]` | tabs: Ülevaade · Käidupäevik · Käidukava · Puudused · Dokumendid (placeholder) | viewer |
+| `/o/[org]/paigaldised/[installation]/muuda` | edit/archive installation | admin |
+| `…/[installation]/paevik` (+ `/uus`, `/[entry]`, `/[entry]/paranda`) | installation log, new entry, entry history, correction | viewer / operator |
+| `/o/[org]/paevik` | organisation log; filters `objekt`, `paigaldis`, `liik`, `alates`, `kuni`; `lk` page | viewer |
+| `/o/[org]/kaidukava` (+ `?arhiiv`) | plan; filters `objekt`, `paigaldis`, `seis`, `prioriteet` | viewer |
+| `/o/[org]/kaidukava/uus?paigaldis=`, `/[activity]/muuda` | create/edit/archive activity | admin |
+| `/o/[org]/kaidukava/[activity]` (+ `/tehtud`) | activity and completion history; "Märgi tehtuks" | viewer / operator |
+| `…/[installation]/kaidukava` | installation plan | viewer |
+| `/o/[org]/puudused` | deficiencies (default: active); filters `objekt`, `paigaldis`, `seis`, `raskus`, `tahtaeg=uletatud` | viewer |
+| `/o/[org]/puudused/uus?paigaldis=`, `/[deficiency]/muuda`, `/lahenda` | record, edit, resolve | operator |
+| `/o/[org]/puudused/[deficiency]` | detail; Märgi töös / Lahenda puudus | viewer |
+| `…/[installation]/puudused` | active first, resolved in a separate section | viewer |
+| `/o/[org]/seaded`, `/seaded/liikmed` | settings (owner edits), members and invitations | viewer (admin manages) |
+| `/o/[org]/dokumendid` | placeholder (Phase 7) | viewer |
 
-Log entries, deficiencies and documents are created in context (from an installation)
-wherever possible; the organisation-wide lists exist for overview and audit.
+Every page re-checks membership (`OrgPage`) and scopes every query to the organisation
+from the URL. Unknown or foreign record ids render "Lehte ei leitud"; insufficient roles
+render "Ligipääs puudub"; finished records ("already resolved", "already completed",
+archived) render a clear notice instead of a permission error.
 
 ## 5. Data access
 
@@ -173,17 +174,21 @@ wherever possible; the organisation-wide lists exist for overview and audit.
 
 **Writes** happen in Server Actions in `lib/actions/*`. Each action:
 1. validates `FormData` with a zod schema (never trusts the client),
-2. calls Supabase as the user (RLS applies) or calls one of the RPCs from DATABASE.md §5.5,
-3. maps database errors to Estonian messages, returns `{ ok, error, fieldErrors }`,
-4. revalidates the affected routes.
+2. resolves the organisation from the URL slug through RLS (`actionContext`), never from a
+   client-supplied organisation id, and takes site/installation ids from the database, not
+   the form,
+3. calls Supabase as the user (RLS applies) or one of the RPCs (DATABASE.md §7); a write
+   that RLS filters out (0 rows) is reported as forbidden/not found, never as success,
+4. maps database errors to Estonian messages (`lib/db/errors.ts`) and returns
+   `{ ok, error, fields }`; the client keeps typed values on failure (`useFormAction`),
+5. redirects or calls `refresh()`.
 
-The browser talks to Supabase directly only for **auth** (starter forms) and **file
-uploads** (straight to Storage, to avoid routing large files through Vercel functions).
-Both are covered by RLS / storage policies.
+The browser talks to Supabase directly only for **auth** (the auth forms). File uploads
+will also go straight to Storage in Phase 7, covered by storage policies.
 
 **Authorisation layers**, from strongest to weakest:
 1. Postgres RLS + storage policies — the real boundary.
-2. `requireMembership(org, minRole)` in the `[org]` layout and in every action — gives a proper 404/403 page instead of empty lists, and hides buttons the user can't use.
+2. `requireOrg(slug)` / `OrgPage minRole` in every page and `actionContext(formData, minRole)` in every action — gives a proper not-found/forbidden page instead of empty lists, and hides buttons the user can't use.
 3. Proxy — only refreshes the session and redirects anonymous users to login. Never trusted for authorisation (per the Next.js 16 guidance).
 
 An unknown org slug and an org the user isn't a member of both return the same **404**
@@ -208,7 +213,7 @@ Rules:
 Cache Components stays enabled (D10). Phase 1 confirmed the pattern: session reads sit
 behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 
-## 6a. Next.js 16 behaviours that shaped the UI code (learned in Phases 2–3)
+## 6a. Next.js 16 behaviours that shaped the UI code
 
 - **Hidden pages stay mounted.** With Cache Components, Next keeps up to three visited
   pages in the DOM (React `<Activity>`, `display: none`). Fixed element ids would be
@@ -219,6 +224,16 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 - **Pages check access themselves.** `OrgPage` resolves the membership for each page; the
   `/o/[org]` layout check is not relied on (layouts and pages render in parallel).
 - `forbidden()` is experimental in Next 16, so insufficient roles render `ForbiddenState`.
+- **Pages re-render after an action**, even a failed one. A page whose record changed state
+  in the meantime (resolved, completed, archived) shows `NoticeState` ("already done"),
+  never a misleading permission error.
+- **Radio groups** (entry type, frequency) also get a `key` from the submitted value, for the
+  same reset reason as selects.
+- **Dev-only log noise:** Next's "instant navigation" validation logs `Could not validate
+  instant … NEXT_HTTP_ERROR_FALLBACK;404` when a route correctly calls `notFound()` (e.g. a
+  non-member opening an organisation). Expected; production is unaffected.
+- **Tests must ignore hidden pages:** E2E locators use visible fields or accessible names
+  (lists carry `aria-label`s), never "first match in the DOM".
 
 ## 7. Auth flow
 
@@ -261,14 +276,15 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 - The only environment variables the app needs are the two public Supabase values.
   `SUPABASE_ACCESS_TOKEN` / database password are used by the CLI on developer machines and
   in CI, never by the app. No secret or service-role key exists anywhere in the app.
-- To run the app against the local stack, start it with the values from
-  `npx supabase status -o env` (`API_URL`, `PUBLISHABLE_KEY`) as `NEXT_PUBLIC_*` variables.
+- `npm run dev:local` runs the app against the local stack (values read from
+  `supabase status`, refused unless they point at localhost). The E2E suite uses the same
+  helper on port 3100.
 
 ## 10. Testing
 
 | Level | Tool | Scope |
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
-| Unit | `node --test` (built in) | Pure security logic: redirect allowlist, error-code mapping, configuration checks. |
-| End-to-end | Playwright | Sign in → open site → installation → add entry with photo → see it in the log. Phase 10. |
-| Checks | `npm run check` = lint, typecheck, unit, database, build | Run before every commit; in CI on every push (GitHub Actions, Phase 10). |
+| Unit | `node --test` (built in), 38 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic. |
+| End-to-end | Playwright, 35 tests | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution. Desktop; tests tagged `@responsive` also run at 375 px and 768 px. |
+| Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit; CI is Phase 10. |

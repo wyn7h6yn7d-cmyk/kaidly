@@ -25,6 +25,7 @@ training data. Before writing Next.js code, read the relevant guide in
 
 ```bash
 npm run dev            # dev server, http://localhost:3000 (uses .env.local = hosted DEVELOPMENT project)
+npm run dev:local      # dev server against the LOCAL Supabase stack (demo seed data)
 npm run lint
 npm run typecheck      # next typegen + tsc
 npm test               # unit tests (node --test, tests/unit)
@@ -33,7 +34,8 @@ npm run db:reset       # rebuild local DB from migrations + seed
 npm run test:db        # pgTAP database/RLS tests (supabase/tests)
 npm run db:types       # regenerate lib/supabase/database.types.ts from the local DB
 npm run build
-npm run check          # all of the above except db:start/reset, in order
+npm run test:e2e       # Playwright, local stack only (own dev server on :3100)
+npm run check          # lint, typecheck, unit, database tests, build
 npx supabase migration new <name>
 ```
 
@@ -49,8 +51,14 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Every table change ships with pgTAP tests covering the role matrix and cross-tenant access.
 - New tables get **no** privileges by default (foundation migration). Each migration grants
   `authenticated` exactly the table/column privileges it needs; never grant to `anon`.
-- `supabase/tests/000_security_baseline.test.sql` must keep passing: RLS on every table,
-  nothing for `anon`, no TRUNCATE for `authenticated`, `search_path` on security definer functions.
+- `supabase/tests/000_security_baseline.test.sql` must keep passing. It pins the exact set
+  of tables, security definer functions and callable RPCs: adding one means reviewing it
+  (RLS, grants, role checks, pgTAP tests) and then adding it to the list.
+- Every tenant table: composite FKs for organisation/site/installation consistency; every
+  policy through `private.org_ids()`; ids from the database, never from the form.
+- The operating log is append-only (corrections are new rows); deficiencies are never
+  deleted; history is written by triggers only. Don't add update/delete paths.
+- After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
 
 **Database**
@@ -60,6 +68,10 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Update `docs/DATABASE.md` in the same commit as the migration. Regenerate types.
 
 **Code**
+- Pages inside an organisation use `OrgPage` (membership + minRole); actions use
+  `actionContext(formData, minRole)`. A 0-row write is a failure, not a success.
+- Forms use `useFormAction` (keeps values after errors) and `useFieldId` (unique ids — Next
+  keeps hidden copies of visited pages). Selects and radio groups get a `key` from the value.
 - Server Components read through `lib/data/*` (`server-only`); writes are Server Actions in `lib/actions/*` that validate input on the server.
 - Select explicit columns. Map database errors to Estonian user messages.
 - UI strings in `lib/i18n/et.ts`, used via `t` from `@/lib/i18n`. No hard-coded user-facing text in components.
@@ -79,6 +91,6 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 
 ## Definition of done
 
-`npm run check` passes (lint, typecheck, unit tests, database tests, build); RLS tests cover
-touched tables; the feature works on a phone-sized viewport; docs updated if behaviour or
-schema changed.
+`npm run check` and `npm run test:e2e` pass; RLS tests cover touched tables; the feature
+works at 375 px (no horizontal scroll, 44 px targets); docs updated if behaviour or schema
+changed.

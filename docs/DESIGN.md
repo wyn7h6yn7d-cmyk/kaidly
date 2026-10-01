@@ -1,6 +1,6 @@
 # KAIDLY — Design
 
-Status: **approved 2026-10-01**. Tokens, fonts, primitives, provisional logo and the app shell are implemented (Phase 1).
+Status: implemented for Phases 1–6 (tokens, fonts, primitives, provisional logo, app shell, all product screens). Marketing page and real photography are Phase 9.
 
 Source: [`design/KAIDLY-brand-board.png`](../design/KAIDLY-brand-board.png) plus the written
 brief. Where the two differ, this document records which one wins and why.
@@ -36,7 +36,7 @@ brief. Where the two differ, this document records which one wins and why.
 | Rounded corners ~8–12 px | 4–6 px | Brief: avoid excessive rounding; keeps it precise |
 | Nav items "Hooldus", "Aruanded" | Not in the MVP | Out of scope (PRODUCT.md §4) |
 | Site cards / rows with a cover photo | Optional cover photo, Phase 7 (D17) | Needs Storage; not part of the core workflow |
-| Activity tabs "Tulevased · Tegemisel · Lõpetatud" | Derived states **Hilinenud · Tähtaeg läheneb · Tulemas · Tehtud** | Scheduled activities have no stored "in progress" state (D18) |
+| Activity tabs "Tulevased · Tegemisel · Lõpetatud" | Derived states **Üle tähtaja · Varsti · Tulemas · Tehtud** | Scheduled activities have no stored "in progress" state (D18) |
 | Generic labels "Tegevused", "Auditijälg" in the main nav | **Käidupäevik · Käidukava · Puudused · Dokumendid**; "Tegevused" only inside Käidukava; change history is not a nav item | Domain terminology (D20) |
 
 ---
@@ -106,7 +106,7 @@ Rules:
   links and active text use deep green.
 - **Focus ring**: deep green on light surfaces (volt is only 2 : 1 there and fails the 3 : 1
   rule for UI parts); volt on deep green surfaces (`.focus-on-dark` utility).
-- Status is never colour-only: always colour + word or icon ("Hilinenud", "3 päeva").
+- Status is never colour-only: always colour + word or icon ("Üle tähtaja · 3 päeva").
 - All text meets WCAG AA (4.5 : 1); large text and UI parts 3 : 1.
 - Light theme only in the MVP. The starter's dark mode toggle (`next-themes`) is removed —
   one theme done well. (Field use in bright daylight favours a light UI.)
@@ -161,14 +161,22 @@ requests to Google).
 
 - **Page header**: title, short context line (site · installation), one primary action at right (desktop) or bottom (mobile).
 - **List row** rather than card: one line of key info + one line of secondary info + status at right. Tap target is the whole row.
-- **Status mark**: small square or dot + word. Scheduled activities (derived from dates):
-  `Hilinenud` (danger), `Tähtaeg läheneb` (warn), `Tulemas` (neutral), `Tehtud` (green).
-  Deficiencies (stored): `Avatud`, `Töös`, `Kõrvaldatud`.
-- **Corrected log entry**: current text with a "Parandatud" line (date, author, reason) and a
-  link to the full history; the original stays readable, struck through, in the history.
+- **Status mark**: small square + word, never colour alone.
+  Scheduled activities (derived from dates): `Üle tähtaja · 3 päeva` (danger),
+  `Varsti · 5 päeva pärast` (warn), `Tulemas` (neutral), `Tehtud` (green) — calm, no alarm UI.
+  Deficiencies: severity `Madal` / `Keskmine` / `Kõrge` / **`Kriitiline`** (bold) and a status
+  badge `Avatud` / `Töös` / `Lahendatud`; "Tähtaeg ületatud" in text when overdue.
+- **Corrected log entry**: the list shows the current text with a "Parandatud {date} · {name}"
+  mark; the entry page shows the current values and a history list — newest correction
+  marked "Kehtiv", each correction with its reason, the original muted but fully legible.
+  There is never an "Edit" action, only "Paranda sissekanne".
 - **Empty states**: one sentence telling what to do next and the button to do it. No illustrations.
-- **Forms**: labels above fields, one column, required fields only up front, "Lisa üksikasju" disclosure for the rest.
-- **Tables** (desktop only) for organisation-wide lists; the same data renders as list rows on mobile.
+- **Forms**: labels above fields, one column on phones, required fields first; rarely changed
+  fields behind a disclosure ("Lisa tulemus või muuda aega ja teostajat"), which opens itself
+  when one of them has an error. Typed values survive validation errors.
+- **Lists, not tables**: organisation-wide lists are two-column rows on desktop (time/state
+  left, content right) that stack on phones. No tables, no card grids.
+- **Filters**: a collapsed "Filtrid" panel (GET form, URL parameters), open when filters are active.
 
 ## 6. Mobile UX
 
@@ -177,44 +185,41 @@ not a different product.
 
 ### Navigation
 
-- Bottom tab bar on mobile (thumb zone), implemented in Phase 1:
-  **Ülevaade · Käidupäevik · Käidukava · Puudused · Rohkem** (Rohkem = Objektid, Dokumendid, Seaded).
-  Sites are reached from the dashboard and through the "Lisa sissekanne" picker, so the
-  critical flow never needs the Rohkem menu.
-- A full-width volt **"+ Lisa sissekanne"** button (board wording) on the dashboard, site and installation screens, just above the tab bar.
+- Bottom tab bar on mobile (thumb zone): **Ülevaade · Käidupäevik · Käidukava · Puudused · Rohkem**
+  (Rohkem = Objektid, Dokumendid, Seaded). Sites are listed on the overview.
+- A full-width volt **"+ Lisa sissekanne"** button in the installation header on phones.
 - Desktop: deep green left sidebar (as on the board): Ülevaade · Objektid · Käidupäevik ·
   Käidukava · Puudused · Dokumendid · Seaded, organisation switcher at the top (Phase 2),
   account menu at the bottom.
 - Organisation switcher: name of the current organisation in the header; tap → list.
 
-### The critical flow: add a log entry
+### The critical flow: add a log entry (as implemented)
 
 ```
-Dashboard ──[+ Lisa sissekanne]──► Pick installation ──► Entry form ──[Salvesta]──► Installation log
-                         (recent first,         (type chips,
-                          search, grouped        text, photo,
-                          by site)               time = now)
-
-Installation page ──[+ Lisa sissekanne]──► Entry form   (skips the picker)
+Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta sissekanne]──► Installation log
+   (header button, full width                (type chips, description           ("Sissekanne
+    on phones; operators and up)              auto-focused; time = now,           salvestatud.")
+                                              performer = you, in a disclosure)
 ```
 
-- **Picker**: last 5 used installations at the top (stored per user on the device), then
-  all, grouped by site, with a search field. One tap selects.
-- **Form**, in order:
-  1. Entry type as large chips (Ülevaatus · Lülitamine · Hooldus · Mõõtmine · Rike · Märkus); last used type pre-selected.
-  2. Text area, auto-focused, auto-growing, 16 px.
-  3. **Photo** button opening the camera (`<input type="file" accept="image/*" capture="environment">`) and a second button for files. Thumbnails with upload progress; upload starts immediately.
-  4. Time: "Praegu" by default; tap to change (for entries written afterwards).
-  5. "Leidsin puuduse" toggle → reveals title + severity → creates a linked deficiency in the same save.
-  6. **Salvesta** — full-width, bottom, always visible above the keyboard.
-- Save is disabled only while text is empty or an upload is still running (shown clearly).
-- Draft (type, text, time) is saved to the device on every change and restored if the
-  page is reopened; cleared after a successful save.
-- After save: back to the installation log with the new entry highlighted, and a toast
-  "Sissekanne salvestatud".
+- Organisation, site and installation come from the page — never selected again.
+- Entry types as large chips: Kontroll · Hooldus · Lülitamine · Rike · Remont · Mõõtmine · Muu.
+- Description is focused on open; result, time and performer sit in a disclosure that
+  starts with sensible defaults (now, the user's name).
+- Measured: from the installation page, two taps (Lisa sissekanne → type chip) plus typing
+  and Salvesta.
 
-**Target: 3 taps** from opening the app to typing (Lisa sissekanne → recent installation →
-type chip, text already focused).
+**Not built yet (planned):** an installation picker with recently used installations
+(entry point from the overview), photo capture (Phase 7), device-side drafts for poor
+signal (Phase 9), "Leidsin puuduse" shortcut that creates a deficiency from an entry.
+
+### Completing planned work and resolving deficiencies
+
+- "Märgi tehtuks" (activity) and "Lahenda puudus" (deficiency) open a form that *is* the log
+  entry, prefilled (type, description = activity name, time = now, performer = you), so the
+  same event is never written twice.
+- In lists, "Märgi tehtuks" appears only for overdue and due-soon activities; any activity can
+  be completed from its own page.
 
 ### Touch and field conditions
 
