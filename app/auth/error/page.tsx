@@ -1,51 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
+import { AuthHeading } from "@/components/auth/auth-heading";
+import { isErrorCode, t } from "@/lib/i18n";
 
-async function ErrorContent({
-  searchParams,
-}: {
-  searchParams: Promise<{ error: string }>;
-}) {
-  const params = await searchParams;
+export const metadata: Metadata = { title: t.auth.error.title };
 
-  return (
-    <>
-      {params?.error ? (
-        <p className="text-sm text-muted-foreground">
-          Code error: {params.error}
-        </p>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          An unspecified error occurred.
-        </p>
-      )}
-    </>
-  );
+/**
+ * Shows only application-controlled messages. The URL carries an error *code*; any
+ * unknown or missing code falls back to a generic message, so no one can make this
+ * page display text of their choosing.
+ */
+async function ErrorMessage({ searchParams }: { searchParams: Promise<{ code?: string | string[] }> }) {
+  const { code } = await searchParams;
+  const message = isErrorCode(code) ? t.errors[code] : t.errors.unknown;
+  return <p className="mb-8 text-k-muted">{message}</p>;
 }
 
 export default function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ error: string }>;
+  searchParams: Promise<{ code?: string | string[] }>;
 }) {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">
-                Sorry, something went wrong.
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Suspense>
-                <ErrorContent searchParams={searchParams} />
-              </Suspense>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+    <>
+      <AuthHeading title={t.auth.error.title} />
+      <Suspense fallback={<p className="mb-8 text-k-muted">{t.common.loading}</p>}>
+        <ErrorMessage searchParams={searchParams} />
+      </Suspense>
+      <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
+        {t.common.backToLogin}
+      </Link>
+    </>
   );
 }

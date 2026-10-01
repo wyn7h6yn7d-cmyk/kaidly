@@ -1,11 +1,9 @@
-import { SignUpForm } from "@/components/sign-up-form";
+import type { Metadata } from "next";
+import { SignUpForm } from "@/components/auth/sign-up-form";
+import { t } from "@/lib/i18n";
+
+export const metadata: Metadata = { title: t.auth.signUp.title };
 
 export default function Page() {
-  return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <SignUpForm />
-      </div>
-    </div>
-  );
+  return <SignUpForm />;
 }

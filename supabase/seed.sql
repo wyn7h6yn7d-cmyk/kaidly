@@ -1,0 +1,2 @@
+-- Local development seed data. Runs on `supabase db reset` against the LOCAL database only;
+-- never run against hosted projects. Demo organisations and users arrive with Phase 2.

@@ -1,56 +1,54 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
+
+const token = (name: string) => `hsl(var(--${name}) / <alpha-value>)`;
 
 export default {
-  darkMode: ["class"],
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+        // KAIDLY tokens — docs/DESIGN.md §2
+        k: {
+          green: token("k-green"),
+          "green-hover": token("k-green-hover"),
+          volt: token("k-volt"),
+          "volt-hover": token("k-volt-hover"),
+          ink: token("k-ink"),
+          grey: token("k-grey"),
+          paper: token("k-paper"),
+          "paper-2": token("k-paper-2"),
+          sand: token("k-sand"),
+          surface: token("k-surface"),
+          line: token("k-line"),
+          muted: token("k-muted"),
+          warn: token("k-warn"),
+          danger: token("k-danger"),
         },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
+        // shadcn/ui names used by the primitives in components/ui
+        background: token("background"),
+        foreground: token("foreground"),
+        card: { DEFAULT: token("card"), foreground: token("card-foreground") },
+        popover: { DEFAULT: token("popover"), foreground: token("popover-foreground") },
+        primary: { DEFAULT: token("primary"), foreground: token("primary-foreground") },
+        secondary: { DEFAULT: token("secondary"), foreground: token("secondary-foreground") },
+        muted: { DEFAULT: token("muted"), foreground: token("muted-foreground") },
+        accent: { DEFAULT: token("accent"), foreground: token("accent-foreground") },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: token("destructive"),
+          foreground: token("destructive-foreground"),
         },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        chart: {
-          "1": "hsl(var(--chart-1))",
-          "2": "hsl(var(--chart-2))",
-          "3": "hsl(var(--chart-3))",
-          "4": "hsl(var(--chart-4))",
-          "5": "hsl(var(--chart-5))",
-        },
+        border: token("border"),
+        input: token("input"),
+        ring: token("ring"),
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-manrope)", "var(--font-inter)", "ui-sans-serif", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -59,5 +57,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 } satisfies Config;

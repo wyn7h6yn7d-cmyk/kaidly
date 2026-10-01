@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
-import { Geist } from "next/font/google";
-import { ThemeProvider } from "next-themes";
+import type { Metadata, Viewport } from "next";
+import { Inter, Manrope } from "next/font/google";
+import { locale, t } from "@/lib/i18n";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -9,14 +9,28 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "Next.js and Supabase Starter Kit",
-  description: "The fastest way to build apps with Next.js and Supabase",
+  title: {
+    default: `${t.brand.name} — ${t.brand.tagline}`,
+    template: `%s · ${t.brand.name}`,
+  },
+  description: t.meta.description,
 };
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+export const viewport: Viewport = {
+  themeColor: "#0F3D32",
+};
+
+const inter = Inter({
+  variable: "--font-inter",
   display: "swap",
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
+});
+
+const manrope = Manrope({
+  variable: "--font-manrope",
+  display: "swap",
+  subsets: ["latin", "latin-ext"],
+  weight: ["600", "700", "800"],
 });
 
 export default function RootLayout({
@@ -25,17 +39,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      </body>
+    <html lang={locale} className={`${inter.variable} ${manrope.variable}`}>
+      <body className="min-h-svh font-sans">{children}</body>
     </html>
   );
 }

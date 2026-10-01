@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- PROVISIONAL app icon (D19): volt bolt on a near-black tile. Replace with production assets. -->
+  <rect width="32" height="32" rx="7" fill="#111827"/>
+  <path d="M19.5 4 L9 17.5 H15.5 L12.5 28 L23.5 14 H17 L21 4 Z" fill="#22D07A"/>
+</svg>

@@ -1,76 +1,95 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { hasEnvVars } from "../utils";
+import { ConfigurationError, getSupabaseEnv } from "@/lib/env";
+import { DEFAULT_AFTER_LOGIN } from "@/lib/auth/redirect";
+import { t } from "@/lib/i18n";
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+/** Routes reachable without a session. Everything else requires sign-in. */
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/auth/login",
+  "/auth/sign-up",
+  "/auth/sign-up-success",
+  "/auth/forgot-password",
+  "/auth/confirm",
+  "/auth/error",
+]);
+
+/** Public routes a signed-in user has no reason to see. */
+const SIGNED_IN_REDIRECT_PATHS = new Set(["/auth/login", "/auth/sign-up"]);
+
+function configurationErrorResponse(error: ConfigurationError) {
+  // Never continue without configuration: fail closed.
+  console.error(error.message);
+  const body =
+    process.env.NODE_ENV === "production"
+      ? `${t.config.title}. ${t.config.body}`
+      : `${error.message}\n\nRestart \`npm run dev\` after changing .env.local.`;
+  return new NextResponse(body, {
+    status: 500,
+    headers: { "content-type": "text/plain; charset=utf-8" },
   });
+}
 
-  // If the env vars are not set, skip proxy check. You can remove this
-  // once you setup the project.
-  if (!hasEnvVars) {
-    return supabaseResponse;
+/**
+ * Refreshes the Supabase session cookie and redirects anonymous users to login.
+ * This is an optimistic check only — authorisation is enforced by RLS in the database
+ * and by server-side checks in pages and actions.
+ */
+export async function updateSession(request: NextRequest) {
+  let env;
+  try {
+    env = getSupabaseEnv();
+  } catch (error) {
+    if (error instanceof ConfigurationError) return configurationErrorResponse(error);
+    throw error;
   }
 
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
-        },
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(env.url, env.publishableKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options),
+        );
       },
     },
-  );
+  });
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
+  // Do not run code between createServerClient and getClaims(): getClaims() refreshes
+  // the session, and anything in between can cause users to be logged out at random.
   const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  const signedIn = Boolean(data?.claims);
+  const { pathname } = request.nextUrl;
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
+  if (!signedIn && !PUBLIC_PATHS.has(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
-    return NextResponse.redirect(url);
+    url.search = "";
+    // The login page validates `next` against the allowlist before using it.
+    url.searchParams.set("next", pathname);
+    return redirectWithCookies(url, supabaseResponse);
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  if (signedIn && SIGNED_IN_REDIRECT_PATHS.has(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = DEFAULT_AFTER_LOGIN;
+    url.search = "";
+    return redirectWithCookies(url, supabaseResponse);
+  }
 
+  // Return supabaseResponse as is: it carries the refreshed session cookies.
   return supabaseResponse;
+}
+
+function redirectWithCookies(url: URL, from: NextResponse) {
+  const response = NextResponse.redirect(url);
+  from.cookies.getAll().forEach((cookie) => response.cookies.set(cookie));
+  return response;
 }

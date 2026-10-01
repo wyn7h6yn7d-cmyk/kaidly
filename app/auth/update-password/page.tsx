@@ -1,11 +1,10 @@
-import { UpdatePasswordForm } from "@/components/update-password-form";
+import type { Metadata } from "next";
+import { UpdatePasswordForm } from "@/components/auth/update-password-form";
+import { t } from "@/lib/i18n";
 
+export const metadata: Metadata = { title: t.auth.updatePassword.title };
+
+// Requires a session (established by /auth/confirm); the proxy redirects anonymous users.
 export default function Page() {
-  return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <UpdatePasswordForm />
-      </div>
-    </div>
-  );
+  return <UpdatePasswordForm />;
 }
