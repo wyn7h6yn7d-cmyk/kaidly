@@ -83,7 +83,7 @@ test.describe("Käidukava", () => {
     const installation = await createInstallation(org, site, "Kilp");
     sql(`insert into public.scheduled_activities
       (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on)
-      values ('${org.id}', '${site}', '${installation}', 'Hilinenud mõõtmine', 'once', current_date - 3);`);
+      values ('${org.id}', '${site}', '${installation}', 'Hilinenud mõõtmine', 'once', (now() at time zone 'Europe/Tallinn')::date - 3);`);
 
     await login(page, org.users.viewer, `/o/${org.slug}/kaidukava`);
     const list = page.getByRole("list", { name: "Käidukava tegevused" });

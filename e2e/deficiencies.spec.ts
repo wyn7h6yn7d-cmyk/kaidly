@@ -82,7 +82,7 @@ test.describe("Puudused", () => {
     const installation = await createInstallation(org, site, "Kilp");
     sql(`insert into public.deficiencies
       (organisation_id, site_id, electrical_installation_id, title, description, severity, due_on, created_by)
-      values ('${org.id}', '${site}', '${installation}', 'Kriitiline rike', 'x', 'critical', current_date - 2, '${org.users.admin.id}'),
+      values ('${org.id}', '${site}', '${installation}', 'Kriitiline rike', 'x', 'critical', (now() at time zone 'Europe/Tallinn')::date - 2, '${org.users.admin.id}'),
              ('${org.id}', '${site}', '${installation}', 'Väike märkus', 'y', 'low', null, '${org.users.admin.id}');`);
 
     await login(page, org.users.viewer, `/o/${org.slug}/puudused`);
