@@ -26,13 +26,79 @@ export const et = {
     more: "Rohkem",
   },
   landing: {
-    lead:
-      "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas — tehtud inimestele, kes hoiavad elektripaigaldised töös.",
-    points: [
-      "Sissekanne objektil telefonist alla minutiga",
-      "Käidukava tähtajad ja puudused alati näha",
-      "Kõik dokumendid paigaldise juures",
-    ],
+    metaTitle: "KAIDLY — Elektripaigaldise käit. Lihtsalt.",
+    hero: {
+      eyebrow: "Digitaalne käidupäevik elektripaigaldistele",
+      lineOne: "Elektripaigaldise käit.",
+      lineTwo: "Lihtsalt.",
+      lead: "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas — inimestele, kes hoiavad elektripaigaldised töös.",
+      note: "kõik kirjas, mitte kellegi peas",
+      figureLabel: "Joonis: peajaotuskilp, käidu märkmetega",
+      figureTitle: "PJK-1 · Peajaotuskilp",
+      figureMeta: "Näidisobjekt · leht 1/1",
+      callouts: ["Viimane kontroll 12.03.", "Järgmine mõõtmine 04/2027", "Puudus kõrvaldatud"],
+    },
+    excel: {
+      title: "Excel ei ole käiduraamat.",
+      body: "Käidupäevik, käidukava, puudused ja dokumendid ühe objekti all — ilma failide, e-mailide ja paberite tagaajamiseta.",
+      points: [
+        "Iga sissekanne on kirjas koos nime ja ajaga.",
+        "Parandus lisatakse, algne kanne jääb alles.",
+        "Tähtajad arvutatakse kava järgi, mitte meeles.",
+      ],
+      previewLabel: "KAIDLY vaade: paigaldise käidupäevik",
+    },
+    questions: {
+      title: "Küsimused, mida igas majas küsitakse",
+      items: [
+        {
+          q: "Mis eelmisel hooldusel tehti?",
+          a: "Käidupäevikus on iga töö kirjas — kes, millal, mida tegi ja mis oli tulemus. Parandused jäävad nähtavaks, midagi ei kustu.",
+          where: "Käidupäevik",
+        },
+        {
+          q: "Millal järgmine kontroll on?",
+          a: "Käidukava näitab, mis on üle tähtaja ja mis läheneb. Tehtuks märkimine kirjutab sissekande otse käidupäevikusse.",
+          where: "Käidukava",
+        },
+        {
+          q: "Kas see puudus sai kõrvaldatud?",
+          a: "Puudusel on raskusaste, tähtaeg ja seis. Lahendus läheb käidupäevikusse koos nime ja kuupäevaga.",
+          where: "Puudused",
+        },
+        {
+          q: "Kus mõõteprotokoll on?",
+          a: "Paigaldise juures, mitte kellegi postkastis. Dokumendid on seotud objekti, paigaldise ja sissekandega.",
+          where: "Dokumendid",
+        },
+      ],
+    },
+    system: {
+      eyebrow: "Ülesehitus",
+      title: "Üks objekt. Kõik, mis selle käiduga juhtub.",
+      note: "üks koht, mitte kümme faili",
+      nodes: {
+        site: { label: "Objekt", detail: "hoone, alajaam või park" },
+        installation: { label: "Elektripaigaldis", detail: "kilp, jaam või laadimistaristu" },
+        log: { label: "Käidupäevik", detail: "mis tehti ja mis juhtus" },
+        schedule: { label: "Käidukava", detail: "mis on ees ja millal" },
+        deficiencies: { label: "Puudused", detail: "mis vajab kõrvaldamist" },
+        documents: { label: "Dokumendid", detail: "skeemid, protokollid, fotod" },
+      },
+      diagramLabel:
+        "Skeem: objektil on elektripaigaldised; igal paigaldisel on käidupäevik, käidukava, puudused ja dokumendid.",
+    },
+    phone: {
+      title: "Kirja pandud seal, kus töö tehti.",
+      body: "Ava paigaldis telefonis, vali sissekande liik, kirjuta paar lauset ja salvesta. Objekti ja paigaldist ei pea uuesti valima.",
+      steps: ["Ava paigaldis", "Lisa sissekanne", "Salvesta"],
+      previewLabel: "KAIDLY telefonivaade: uus sissekanne",
+    },
+    cta: {
+      title: "Pane järgmine kontroll kirja.",
+      body: "Konto loomine võtab minuti. Esimene objekt ja paigaldis veel paar.",
+    },
+    footer: "Elektripaigaldise käit. Lihtsalt.",
   },
   auth: {
     login: {

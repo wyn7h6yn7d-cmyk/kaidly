@@ -49,6 +49,8 @@ export default {
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
         display: ["var(--font-manrope)", "var(--font-inter)", "ui-sans-serif", "sans-serif"],
+        // Handwritten brand notes — marketing page only (loaded there), never in app UI.
+        hand: ["var(--font-hand)", "cursive"],
       },
       borderRadius: {
         lg: "var(--radius)",

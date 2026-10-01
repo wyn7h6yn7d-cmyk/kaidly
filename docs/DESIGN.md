@@ -1,6 +1,6 @@
 # KAIDLY — Design
 
-Status: implemented for Phases 1–6 (tokens, fonts, primitives, provisional logo, app shell, all product screens). Marketing page and real photography are Phase 9.
+Status: implemented for Phases 1–6 (tokens, fonts, primitives, provisional logo, app shell, all product screens). Public landing page implemented (§5a); real photography still to be licensed (D11).
 
 Source: [`design/KAIDLY-brand-board.png`](../design/KAIDLY-brand-board.png) plus the written
 brief. Where the two differ, this document records which one wins and why.
@@ -177,6 +177,42 @@ requests to Google).
 - **Lists, not tables**: organisation-wide lists are two-column rows on desktop (time/state
   left, content right) that stack on phones. No tables, no card grids.
 - **Filters**: a collapsed "Filtrid" panel (GET form, URL parameters), open when filters are active.
+
+## 5a. Public landing page (implemented)
+
+Sections, alternating surfaces for rhythm:
+
+1. **Header** (paper).
+2. **Hero** (paper + grain): the full-width oversized headline (Manrope 800; on phones it
+   breaks after "Elektripaigaldise" so it can stay large), then the lead and CTAs left
+   (Loo konto / Logi sisse) and the deep green "photo slot" right. The slot holds a
+   technical line drawing of a switchboard with callouts and a drawing title block —
+   until real switchgear photography is licensed (D11), when the photo goes underneath.
+   One handwritten note: "kõik kirjas, mitte kellegi peas", with its arrow pointing right on
+   desktop and down on phones.
+3. **"Excel ei ole käiduraamat."** (deep green): editorial text left; the product's log view
+   (static HTML, fictional data) bleeding off the right edge — no laptop mock-up.
+4. **Real questions** (paper): numbered rows split by hairlines — question in display type,
+   KAIDLY's answer with the module name. No cards.
+5. **Structure** (paper-2 + technical grid): drawn as a single-line diagram — Objekt →
+   Elektripaigaldis → busbar → Käidupäevik, Käidukava, Puudused, Dokumendid; terminal
+   squares, drawing indices (A, B, Q1–Q4); vertical trunk on phones. Second handwritten
+   note: "üks koht, mitte kümme faili".
+6. **On the phone** (near-black): phone-sized entry form preview and the three steps.
+7. **Final CTA** (volt, ink text 8.8 : 1).
+8. **Footer** (near-black).
+
+Marketing-only tokens (not used in the application UI):
+
+| Token | Where | What |
+|---|---|---|
+| `font-hand` / `--font-hand` | `tailwind.config.ts`; loaded in `app/page.tsx` only | Caveat 600 (latin-ext) for handwritten notes |
+| `.k-grain` | `app/globals.css` | inline SVG fractal-noise paper grain at 5 % opacity |
+| `.k-grid` | `app/globals.css` | 24 px technical grid in `currentColor` (set very low alpha via `text-…/[0.05]`) |
+
+Components: `components/marketing/` (`hero-figure`, `hand-note`, `log-preview`,
+`phone-preview`, `system-diagram`). Copy lives in `t.landing`. Verified at 375, 768 and
+1440 px: no horizontal overflow, no axe violations, one h1.
 
 ## 6. Mobile UX
 
