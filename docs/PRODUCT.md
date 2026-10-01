@@ -72,7 +72,7 @@ organisation is one tap.
 5. **Operating log / Käidupäevik** — chronological, strictly append-only record of what happened at an installation. Mistakes are fixed with linked correction entries; the original always stays visible.
 6. **Scheduled activities / Käidukava** — recurring and one-off activities (*tegevused*) with due dates and priority; "Märgi tehtuks" writes the log entry. Shown as *Tulemas* (upcoming), *Varsti* (due within 14 days), *Üle tähtaja* (overdue) or *Tehtud* (completed) — derived from dates, there is no "in progress" state. Recurring due dates stay anchored to the plan.
 7. **Deficiencies / Puudused** — found problems with severity (*Madal*, *Keskmine*, *Kõrge*, *Kriitiline*), due date and status *Avatud* (open), *Töös* (in progress) or *Lahendatud* (resolved). Resolving requires a note and writes the log entry; resolved deficiencies stay in history and are never deleted.
-8. **Documents** — schemes, protocols, manuals and photos for the organisation, a site, an installation, a log entry or a deficiency (PDF, JPG, PNG, WebP, DOCX, XLSX; up to 25 MB). Files on log entries and deficiencies are part of the record and never change; general documents can be archived, never deleted. *(Site cover photo: not built.)*
+8. **Documents** — schemes, protocols, manuals and photos for the organisation, a site, an installation, a log entry or a deficiency (PDF, JPG, PNG, WebP, DOCX, XLSX; up to 25 MB). Files on log entries and deficiencies are part of the record and never change; a log entry's author can add files for 24 hours, later evidence goes on a correction. General documents can be archived and restored, never deleted. Anyone who may read a document may also open and download it. HEIC is not supported in the MVP (phone photos are converted to JPEG). *(Site cover photo: not built.)*
 9. **Users and permissions** — invite with a copyable, single-use link; four roles; remove members.
 
 ### Out of MVP (explicitly)
@@ -112,6 +112,19 @@ See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
 - **Calm, precise interface.** The app is a tool, not a showcase.
 
 ## 7. Likely after MVP (not committed)
+
+**Required before or at launch (decided 2026-10-02):**
+- **Public pricing page (Hinnad / Pricing).** Simple, publicly visible prices for normal plans
+  — no "contact sales" — positioned as high value and aggressively affordable compared with
+  electrical/compliance software, especially for small electrical contractors and
+  independent *käidukorraldajad*. Prices and plan/storage/feature limits are **not decided**
+  and will come from separate Estonia/EU competitor research. No billing exists yet.
+- **Storage quotas and upload rate limits** — a production launch blocker.
+- **Privacy erasure** — a dedicated, audited admin workflow for legitimate personal-data
+  deletion. No automatic deletion and no hardcoded retention periods: retention is a
+  legal/domain decision still to be made.
+
+Ideas:
 
 - Installation QR codes (sticker on the switchboard opens its log)
 - Offline entry queue for sites without signal

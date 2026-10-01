@@ -31,7 +31,7 @@ export type LogEntryDefaults = {
  * so the form only asks for what happened. Rarely changed fields start collapsed.
  *
  * Photos: the entry is saved first, then the chosen files upload to it (the author may
- * attach files for an hour after saving). If an upload fails the entry is already safe;
+ * attach files for 24 hours after saving). If an upload fails the entry is already safe;
  * the user can retry or continue without the file — nothing typed is lost.
  */
 export function LogEntryForm({

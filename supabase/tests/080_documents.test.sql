@@ -15,7 +15,9 @@ values
 alter table public.log_entries disable trigger log_entry_before_insert;
 insert into public.log_entries (id, organisation_id, site_id, electrical_installation_id, entry_type, description, created_by, created_by_name, created_at)
 values ('e1000000-0000-4000-8000-0000000000a3', pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Vana kanne',
-        pg_temp.uid('a_operator'), 'A Operator', now() - interval '1 day');
+        pg_temp.uid('a_operator'), 'A Operator', now() - interval '25 hours'),
+       ('e1000000-0000-4000-8000-0000000000a4', pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Eilne kanne',
+        pg_temp.uid('a_operator'), 'A Operator', now() - interval '23 hours');
 alter table public.log_entries enable trigger log_entry_before_insert;
 insert into public.deficiencies (id, organisation_id, site_id, electrical_installation_id, title, description, severity, created_by)
 values ('df000000-0000-4000-8000-0000000000a1', pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'Puudus', 'Kirjeldus', 'high', pg_temp.uid('a_operator'));
@@ -60,7 +62,7 @@ create function pg_temp.reg_id(k text) returns uuid language sql stable as $$ se
 create function pg_temp.reg_path(k text) returns text language sql stable as $$ select current_setting('test.path_' || k) $$;
 grant execute on function pg_temp.reg_id(text), pg_temp.reg_path(text) to authenticated;
 
-select plan(43);
+select plan(44);
 
 -- ===========================================================================
 -- Metadata: tenant isolation and roles
@@ -120,8 +122,10 @@ select throws_ok(
 -- Attachment windows
 select lives_ok($$ select pg_temp.register('fresh', 'a1', 'e1000000-0000-4000-8000-0000000000a1') $$,
   'the author can attach to their fresh log entry');
+select lives_ok($$ select pg_temp.register('day', 'a1', 'e1000000-0000-4000-8000-0000000000a4') $$,
+  'the author can still attach within 24 hours (entry 23 h old)');
 select throws_ok($$ select pg_temp.register('old', 'a1', 'e1000000-0000-4000-8000-0000000000a3') $$,
-  'P0001', 'log_entry_attachment_closed', 'an older log entry takes no new attachments (use a correction)');
+  'P0001', 'log_entry_attachment_closed', 'after 24 hours the entry takes no new attachments (use a correction)');
 select pg_temp.login('a_admin');
 select throws_ok($$ select pg_temp.register('foreign', 'a1', 'e1000000-0000-4000-8000-0000000000a1') $$,
   'P0001', 'log_entry_attachment_closed', 'only the entry''s author can attach to it');

@@ -298,7 +298,8 @@ No UPDATE policy: objects are never overwritten or replaced. Nothing for `anon`.
 - Files on a log entry or a deficiency are part of the operational record: the row can't
   be changed, archived or deleted (`document_immutable`, `documents_are_kept`, check
   constraint) and the object can't be deleted or overwritten.
-- New files go onto a log entry only from its author within **one hour** of recording it
+- New files go onto a log entry only from its author within **24 hours** of recording it
+  (approved 2026-10-02, migration `attachment_window_24h`)
   (`log_entry_attachment_closed`) — enough to finish uploads from site. Later material goes
   on a **correction** entry (corrections are new log entries); the original's files stay.
 - Deficiencies accept files until resolved (`deficiency_resolved`); then they are final.
@@ -329,7 +330,7 @@ The dashboard's other sections are bounded queries (`limit 5` + exact count) on 
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 377 tests in 11 files, using the shared fixture
+`npm run test:db` runs pgTAP: 378 tests in 11 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -343,7 +344,7 @@ a user in both) and `helpers/sites.psql`.
 | `050_log_entries` | 44 | append-only for every role and the owner, corrections, forged and mismatched ids |
 | `060_scheduled_activities` | 46 | roles, completion → log, anchored dates, duplicates, one-time, archived |
 | `070_deficiencies` | 39 | roles, lifecycle, resolution → log, no double resolution, no deletion, history |
-| `080_documents` | 43 | metadata isolation, roles (viewer can't upload, operator scope, admin-only general documents), forged/foreign paths and parents, SVG/size/filename rules, attachment windows, storage read/upload/overwrite/delete across tenants, pending objects unreadable, finalize (missing object, size mismatch, foreign caller), historical files immutable and undeletable, archive/restore, anon reads nothing |
+| `080_documents` | 44 | metadata isolation, roles (viewer can't upload, operator scope, admin-only general documents), forged/foreign paths and parents, SVG/size/filename rules, attachment window (23 h allowed, 25 h refused), storage read/upload/overwrite/delete across tenants, pending objects unreadable, finalize (missing object, size mismatch, foreign caller), historical files immutable and undeletable, archive/restore, anon reads nothing |
 | `090_dashboard` | 12 | `site_attention` counts, isolation per role, member of two organisations, outsider and anon, archived sites, `security_invoker` |
 | `100_cross_tenant_oracles` | 9 | naming another tenant's archived/resolved/correction records gives the generic FK error, non-members get the plain RLS error, Storage refuses another tenant's existing path like an unknown one and lists nothing |
 

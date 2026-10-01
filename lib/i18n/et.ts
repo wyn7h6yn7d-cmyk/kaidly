@@ -672,7 +672,7 @@ export const et = {
       savedWithFailures:
         "Sissekanne on salvestatud. Mõni fail jäi üles laadimata — proovi uuesti või jätka ilma.",
       continueWithout: "Jätka ilma nende failideta",
-      entryClosedHint: "Faile saab lisada tunni jooksul pärast sissekande tegemist. Hiljem lisa parandus.",
+      entryClosedHint: "Sissekande autor saab faile lisada 24 tunni jooksul. Hiljem lisa parandus ja manusta failid sinna.",
       correctionHint: "Algse sissekande failid jäävad alles. Uued failid lisatakse parandusele.",
       selected: (n: number) => (n === 1 ? "1 fail valitud" : `${n} faili valitud`),
     },

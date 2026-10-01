@@ -269,7 +269,7 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
   gallery; photos are resized on the phone and upload after the entry is saved, with
   progress per file. If an upload fails, the saved entry stays on screen with "Proovi
   uuesti" and "Jätka ilma nende failideta". More photos can be added from the entry page
-  for an hour; later ones go on a correction.
+  for 24 hours (author only); later ones go on a correction.
 
 **Not built yet (planned):** device-side drafts for poor signal (Phase 9), "Leidsin
 puuduse" shortcut that creates a deficiency from an entry, photos in the deficiency

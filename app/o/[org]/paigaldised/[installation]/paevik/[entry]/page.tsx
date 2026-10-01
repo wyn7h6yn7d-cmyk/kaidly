@@ -16,8 +16,8 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: t.app.log.entryTitle };
 
-/** Matches the database rule: the author may attach files for an hour after recording. */
-const ATTACH_WINDOW_MS = 60 * 60 * 1000;
+/** Matches the database rule: the author may attach files for 24 hours after recording. */
+const ATTACH_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function Version({
   label,

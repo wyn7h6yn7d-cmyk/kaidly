@@ -71,13 +71,25 @@ All decided 2026-10-01 unless noted.
 | D23 | Deficiency resolution | Final; recurring problem = new deficiency; never deleted |
 | D24 | Completion history | The operating log is the completion history (no separate table) |
 | D25 | Attachment immutability (Phase 7 brief) | Files on log entries and deficiencies are part of the record: never changed, replaced or deleted; replacements go on a correction entry; general documents are archived, never deleted |
-| D26 | Attachment window | A log entry accepts files from its author for **1 hour** after recording (to finish uploads from site); later files go on a correction. Deficiencies accept files until resolved. *Assumption — confirm with users.* |
+| D26 | Attachment window (approved 2026-10-02) | For **24 hours** after a log entry is recorded, only its author may add **new** attachments; the entry and existing attachments stay immutable (no change, replacement or deletion); each attachment keeps its own upload time. After 24 hours, evidence goes on a correction entry. Deficiencies accept files until resolved. |
 | D27 | Completed activities | Completion files attach to the completion's log entry; no separate link from documents to activities |
-| D28 | Document types | PDF, JPEG, PNG, WebP, DOCX, XLSX; **no HEIC** (Safari converts camera photos to JPEG; the browser resize converts the rest), no SVG; 25 MB. Deviates from D9 (HEIC): **awaiting product-owner confirmation** — HEIC files can't be displayed outside Safari, and photo uploads are converted to JPEG on the device anyway. Adding HEIC back for the general upload form is one migration + one constant |
+| D28 | Document types (approved 2026-10-02) | PDF, JPEG, PNG, WebP, DOCX, XLSX; **HEIC stays unsupported for MVP** (replaces D9); mobile photo uploads may keep normalising to JPEG on the device; no SVG; 25 MB |
 | D29 | Orphaned uploads | No background worker: the client cleans up its own failures; a read-only report (`supabase/maintenance/storage_report.sql`) lists leftovers for manual review |
 | D30 | Viewing files | Route handler checks access and redirects to a 60-second signed URL; nothing pre-signed in lists |
 | D31 | Dashboard | Real counts only, no charts; one `security_invoker` view for per-site counts |
+| D32 | Document deletion (2026-10-02) | No normal hard deletion of historical evidence; general documents archive/restore; attachments immutable. Privacy erasure = future dedicated admin workflow (launch requirement) |
+| D33 | Retention (2026-10-02) | No hardcoded legal retention periods, no automatic deletion |
+| D34 | Viewer access (2026-10-02) | Read permission on a document includes opening/downloading the file |
+| D35 | Upload quotas (2026-10-02) | Storage quotas and upload rate limits are a **production launch blocker**; no package/storage limits invented yet |
+| D36 | Pricing (2026-10-02) | A **public pricing page** (Hinnad / Pricing) is required eventually: simple, high value, aggressively affordable vs. electrical/compliance software, aimed at small contractors and independent käidukorraldajad; normal plans publicly priced (no "contact sales"). Prices, plan, storage and feature limits are **not decided** — they follow separate Estonia/EU competitor research. No billing, Stripe or subscription logic until then |
 | — | Out of scope | No AI, payments, IoT, ERP/EAM integrations, email infrastructure, analytics, notifications |
+
+## Production launch blockers
+
+- **Storage quotas and upload rate limits (D35).** Today any member can upload without limit.
+- **Privacy-erasure workflow** for legitimate personal-data deletion (D32), designed with legal input.
+- **Russian terminology review** by a native electrical professional before the RU UI is public.
+- Production Supabase project, migrations pushed, auth email templates, security headers, backups (Phase 10).
 
 ## Open questions (need a decision or domain review)
 
@@ -88,10 +100,10 @@ All decided 2026-10-01 unless noted.
 5. Log entry types and deficiency severity labels — professional review.
 6. Retention: how long must records be kept, and what happens to an organisation's data when it leaves? (Organisation deletion is not implemented.)
 7. ~~Documents attached to log entries: immutable or deletable?~~ Decided by the Phase 7 brief: immutable (D25).
-8. Is one hour the right window for adding photos to a just-saved entry (D26)?
-9. Retention of files: must archived general documents ever be deleted (e.g. GDPR requests for photos showing people)? Today nothing is deleted.
+8. ~~Attachment window~~ — decided: 24 hours (D26).
+9. Retention and privacy erasure (decided 2026-10-02 for now): no hard deletion of operational evidence; general documents are archived/restored; **no automatic deletion and no hardcoded retention periods** — retention is a production/legal/domain decision. A dedicated, audited **privacy-erasure workflow** for legitimate personal-data deletion must exist **before production launch** (not designed yet).
 10. Regulatory documents: which categories must be kept for which installations (e.g. *mõõteprotokoll*, *käidukava* as a document), and for how long? KAIDLY makes no compliance claim until reviewed.
-11. Should viewers (e.g. property owners) be able to download every file, including photos on deficiencies?
+11. ~~Viewer downloads~~ — decided: a viewer who may read a document may open and download it; no "view but not download" pseudo-security. Sensitive documents, if needed later, get real visibility permissions.
 
 ## Risks
 
