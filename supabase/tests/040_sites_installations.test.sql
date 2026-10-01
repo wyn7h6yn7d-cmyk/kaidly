@@ -27,7 +27,7 @@ create function pg_temp.inst(p text) returns uuid language sql immutable as $$
     when 'b' then '1b000000-0000-4000-8000-000000000001'::uuid end $$;
 grant execute on function pg_temp.site(text), pg_temp.inst(text) to authenticated, anon;
 
-select plan(54);
+select plan(58);
 
 -- ===========================================================================
 -- Reading: tenant isolation
@@ -286,6 +286,37 @@ select is(count(*)::int, 0, 'a viewer cannot edit installations') from u;
 select isnt_empty(
   $$ select 1 from public.electrical_installations where id = pg_temp.inst('a') and archived_at is not null $$,
   'archived installations remain readable to members'
+);
+
+-- ===========================================================================
+-- Identifier (tähis): optional, unique within a site
+-- ===========================================================================
+
+select pg_temp.login('a_admin');
+select throws_ok(
+  $$ insert into public.electrical_installations (organisation_id, site_id, name, identifier, installation_type)
+     values (pg_temp.org('a'), pg_temp.site('a'), 'Teine kilp', 'pjk-1', 'switchboard') $$,
+  '23505', null,
+  'an identifier is unique within a site (case-insensitive)'
+);
+select lives_ok(
+  $$ insert into public.sites (organisation_id, name) values (pg_temp.org('a'), 'Teine objekt');
+     insert into public.electrical_installations (organisation_id, site_id, name, identifier, installation_type)
+     select pg_temp.org('a'), id, 'Kilp', 'PJK-1', 'switchboard'
+       from public.sites where name = 'Teine objekt' $$,
+  'the same identifier may be used on another site'
+);
+select lives_ok(
+  $$ insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
+     values (pg_temp.org('a'), pg_temp.site('a'), 'Ilma tähiseta 1', 'other'),
+            (pg_temp.org('a'), pg_temp.site('a'), 'Ilma tähiseta 2', 'other') $$,
+  'the identifier stays optional'
+);
+reset role;
+select lives_ok(
+  $$ insert into public.electrical_installations (organisation_id, site_id, name, identifier, installation_type)
+     values (pg_temp.org('b'), pg_temp.site('b'), 'B kilp', 'PJK-1', 'switchboard') $$,
+  'identifiers are independent between organisations'
 );
 
 -- ===========================================================================

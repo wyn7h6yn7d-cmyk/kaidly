@@ -143,4 +143,4 @@ exists but is not a primary navigation item.
 > 2. Status — are *kasutuses* / *kasutusest väljas* enough (e.g. *ajutiselt välja lülitatud*, *rekonstrueerimisel*)?
 > 3. "Responsible person" on sites and installations — should this be the *käidukorraldaja*, and should it link to a KAIDLY user?
 > 4. Which technical fields are needed for daily operation and audits (voltage level, main fuse, connection point/EIC code, *tehnilise kontrolli* dates) — deliberately not added yet.
-> 5. Is the identifier (*tähis*) expected to be unique per site or per organisation?
+> 5. ~~Is the identifier (*tähis*) unique per site or per organisation?~~ Decided 2026-10-01: optional, unique within a site.

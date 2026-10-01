@@ -36,9 +36,8 @@ create table public.organisations (
   id uuid primary key default gen_random_uuid(),
   name text not null
     check (char_length(name) between 1 and 200 and name = btrim(name)),
-  -- Stable URL identifier: slugified name + random suffix, generated once and never
-  -- changed. The random suffix means slugs can't be guessed or used to probe which
-  -- organisations exist.
+  -- Stable, non-sequential URL identifier: slugified name + random suffix, generated
+  -- once and never changed. Not a security mechanism — access is enforced by RLS.
   slug text not null unique
     check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and char_length(slug) between 3 and 60),
   registry_code text

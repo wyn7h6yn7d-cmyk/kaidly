@@ -27,6 +27,9 @@ export function dbErrorCode(error: unknown): ErrorCode {
   const code = "code" in error && typeof error.code === "string" ? error.code : "";
 
   if (Object.hasOwn(RAISED, message)) return RAISED[message];
+  if (code === "23505" && message.includes("electrical_installations_site_identifier_key")) {
+    return "identifier_taken";
+  }
 
   switch (code) {
     case "42501": // insufficient_privilege, incl. RLS "new row violates row-level security policy"

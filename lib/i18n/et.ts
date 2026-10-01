@@ -107,6 +107,7 @@ export const et = {
       "Kutse on saadetud teisele e-posti aadressile. Logi sisse selle kontoga, millele kutse saadeti.",
     invitation_already_member: "Oled selle organisatsiooni liige juba.",
     site_archived: "Arhiveeritud objektile ei saa paigaldisi lisada ega sinna tõsta.",
+    identifier_taken: "Sellel objektil on sama tähisega paigaldis juba olemas.",
   },
   roles: {
     owner: "Omanik",

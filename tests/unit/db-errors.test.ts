@@ -16,6 +16,17 @@ test("SQLSTATEs map to generic codes", () => {
   assert.equal(dbErrorCode({ code: "22P02", message: "invalid input syntax for type uuid" }), "not_found");
 });
 
+test("a duplicate installation identifier gets its own message", () => {
+  assert.equal(
+    dbErrorCode({
+      code: "23505",
+      message: 'duplicate key value violates unique constraint "electrical_installations_site_identifier_key"',
+    }),
+    "identifier_taken",
+  );
+  assert.equal(dbErrorCode({ code: "23505", message: "duplicate key" }), "duplicate");
+});
+
 test("database text never passes through", () => {
   assert.equal(dbErrorCode({ code: "XX000", message: "relation secret_table does not exist" }), "unknown");
   assert.equal(dbErrorCode({ message: "hasOwnProperty" }), "unknown");

@@ -186,8 +186,9 @@ Both are covered by RLS / storage policies.
 2. `requireMembership(org, minRole)` in the `[org]` layout and in every action — gives a proper 404/403 page instead of empty lists, and hides buttons the user can't use.
 3. Proxy — only refreshes the session and redirects anonymous users to login. Never trusted for authorisation (per the Next.js 16 guidance).
 
-An unknown org slug and an org the user isn't a member of both return **404**, so slugs
-can't be probed.
+An unknown org slug and an org the user isn't a member of both return the same **404**
+page, so the response doesn't reveal whether an organisation exists. Slugs are stable and
+non-sequential URL identifiers, not a security mechanism; access is enforced by RLS.
 
 ## 6. Caching and rendering (Next.js 16, Cache Components)
 

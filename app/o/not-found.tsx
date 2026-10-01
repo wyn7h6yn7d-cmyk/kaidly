@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { t } from "@/lib/i18n";
 
 // Shown when /o/[org] is unknown or the user is not a member — deliberately the same
-// page for both, so organisation slugs can't be probed.
+// page for both, so it doesn't reveal whether an organisation exists. Access itself is
+// enforced by RLS.
 export default function OrganisationNotFound() {
   return (
     <PlainShell userMenu={null}>
