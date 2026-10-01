@@ -705,3 +705,47 @@ review before they are added.
 organisation filter and through joins; forged organisation, site and creator ids;
 cross-organisation FK on insert and move; full role matrix; archived sites; invalid ids;
 history; and a Storage guard (no objects readable or writable before Phase 7).
+
+## 11. Implemented: Phase 4 operating log (käidupäevik)
+
+Migration `supabase/migrations/20261001172710_operating_log.sql` (local only).
+
+**`log_entries`**
+
+| column | notes |
+|---|---|
+| `organisation_id`, `site_id`, `electrical_installation_id` | all required; consistency enforced by three composite FKs: (site, org) → sites, (installation, org) and (installation, site) → installations. `on delete restrict`: nothing with log history can be deleted |
+| `occurred_at` | when it happened; default now; ≥ 1900; not more than 5 min in the future (trigger) |
+| `entry_type` | `inspection` Kontroll · `maintenance` Hooldus · `switching` Lülitamine · `fault` Rike · `repair` Remont · `measurement` Mõõtmine · `other` Muu — descriptive, **not** legal classifications |
+| `description` | required, 1–5000, trimmed |
+| `result` | optional, ≤ 2000 |
+| `performed_by_name` | optional free text (who did the work; defaults to the user's name in the form) |
+| `created_by`, `created_by_name` | who recorded it; **always** the session user (trigger), name snapshotted; no FK so records outlive accounts |
+| `created_at` | `clock_timestamp()` at insert (defined order even within one transaction) |
+| `correction_of_id`, `correction_reason` | set together (check); see below |
+
+**Append-only.** No update/delete grant or policy for any role, and trigger
+`log_entries_no_update_delete` (+ a TRUNCATE statement trigger) rejects changes even from
+the table owner. Insert grant covers only the data columns — never `created_by`.
+
+**Corrections — the chosen model.**
+- A correction is a new row whose `correction_of_id` points at the **original** entry. A
+  trigger rejects pointing at another correction, so there are no chains: each original
+  has one flat, ordered list of corrections.
+- The composite FK `(correction_of_id, electrical_installation_id)` keeps a correction in
+  the same installation (and therefore site and organisation).
+- A correction carries the full corrected content and a required reason; who and when are
+  recorded like any entry. The **newest** correction is the current state.
+- View `log_entry_current` (`security_invoker`) returns one row per original with its
+  current values, `is_corrected`, `correction_count` and the newest correction's metadata.
+
+**Other rules:** archived installations take no new entries (`installation_archived`). An
+installation with log entries can't be deleted or moved to another site (FK restrict →
+UI message "has dependent records").
+
+**Permissions:** read — every member; create and correct — operator, admin, owner; viewer
+read-only. Nobody updates or deletes.
+
+**Tests:** `supabase/tests/050_log_entries.test.sql` (44) + baseline guard "every view is
+security_invoker". Mutation-tested: dropping the append-only trigger, letting viewers write,
+removing `security_invoker`, removing the correction-chain check — each makes tests fail.

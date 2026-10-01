@@ -61,7 +61,12 @@ Phase 3 is not final until the domain review below is done.
 
 **Done when:** an admin can model a real customer (several sites, several installations each) on a phone.
 
-## Phase 4 — Operating log (käidupäevik)
+## Phase 4 — Operating log (käidupäevik) ✅ implemented
+
+As built: DATABASE.md §11. Routes `/o/[org]/paevik` (filters: site, installation, type, date
+range) and `/o/[org]/paigaldised/[installation]/paevik` (+ `/uus`, `/[entry]`, `/[entry]/paranda`).
+Permissions follow the approved brief: operators may correct any entry (not only their own).
+
 
 The most important phase.
 

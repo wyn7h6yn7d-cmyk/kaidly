@@ -1,7 +1,11 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Plus } from "lucide-react";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/app/page-header";
 import { InstallationTabs } from "@/components/sites/installation-tabs";
+import { Button } from "@/components/ui/button";
+import { hasRole } from "@/lib/auth/roles";
 import { ArchivedBadge, StatusMark } from "@/components/sites/status-mark";
 import { requireOrg } from "@/lib/data/organisations";
 import { getInstallation } from "@/lib/data/sites";
@@ -13,7 +17,7 @@ async function InstallationHeader({
   params: Promise<{ org: string; installation: string }>;
 }) {
   const { org: slug, installation: id } = await params;
-  const { org } = await requireOrg(slug);
+  const { org, role } = await requireOrg(slug);
   const installation = await getInstallation(org.id, id);
   if (!installation) notFound();
   const base = `/o/${org.slug}/paigaldised/${installation.id}`;
@@ -36,6 +40,16 @@ async function InstallationHeader({
           </span>
         }
         back={{ href: `/o/${org.slug}/objektid/${installation.site.id}`, label: installation.site.name }}
+        actions={
+          hasRole(role, "operator") && !installation.archivedAt ? (
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href={`${base}/paevik/uus`}>
+                <Plus aria-hidden="true" />
+                {t.app.log.add}
+              </Link>
+            </Button>
+          ) : undefined
+        }
       />
       <InstallationTabs base={base} />
     </>

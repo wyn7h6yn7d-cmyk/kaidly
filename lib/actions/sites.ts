@@ -3,27 +3,13 @@
 import { refresh } from "next/cache";
 import type { ZodError } from "zod";
 import { redirect } from "next/navigation";
-import { hasRole } from "@/lib/auth/roles";
-import { getOrgContext, type OrgContext } from "@/lib/data/organisations";
 import { dbErrorCode } from "@/lib/db/errors";
 import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { field, fieldErrors } from "@/lib/validation/common";
 import { installationSchema, isUuid, siteSchema } from "@/lib/validation/sites";
+import { actionContext } from "./context";
 import { type ActionState, failure } from "./state";
-
-// The organisation comes from the URL slug and is resolved through RLS (getOrgContext),
-// never from a client-supplied organisation id. The admin check here only gives a clear
-// message; the database enforces it independently.
-
-async function adminContext(
-  formData: FormData,
-): Promise<{ ok: false; error: ActionState } | { ok: true; ctx: OrgContext }> {
-  const ctx = await getOrgContext(field(formData, "orgSlug"));
-  if (!ctx) return { ok: false, error: failure("not_found") };
-  if (!hasRole(ctx.role, "admin")) return { ok: false, error: failure("forbidden") };
-  return { ok: true, ctx };
-}
 
 function siteInput(formData: FormData) {
   return siteSchema.safeParse({
@@ -56,7 +42,7 @@ function invalid(error: ZodError): ActionState {
 }
 
 export async function createSite(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const access = await adminContext(formData);
+  const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = siteInput(formData);
@@ -79,7 +65,7 @@ export async function createSite(_prev: ActionState, formData: FormData): Promis
 }
 
 export async function updateSite(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const access = await adminContext(formData);
+  const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const siteId = field(formData, "siteId");
@@ -105,7 +91,7 @@ export async function updateSite(_prev: ActionState, formData: FormData): Promis
 }
 
 export async function setSiteArchived(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const access = await adminContext(formData);
+  const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const siteId = field(formData, "siteId");
@@ -131,7 +117,7 @@ export async function createInstallation(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const access = await adminContext(formData);
+  const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = installationInput(formData);
@@ -164,7 +150,7 @@ export async function updateInstallation(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const access = await adminContext(formData);
+  const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const installationId = field(formData, "installationId");
@@ -191,7 +177,11 @@ export async function updateInstallation(
     .eq("organisation_id", ctx.org.id)
     .eq("id", installationId)
     .select("id");
-  if (error) return failure(dbErrorCode(error));
+  if (error) {
+    // The site of an installation with operating records can't change (their history
+    // stays with the site where it happened).
+    return failure(dbErrorCode(error));
+  }
   if (!data?.length) return failure("not_found");
   redirect(`/o/${ctx.org.slug}/paigaldised/${installationId}`);
 }
@@ -200,7 +190,7 @@ export async function setInstallationArchived(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const access = await adminContext(formData);
+  const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
   const { ctx } = access;
   const installationId = field(formData, "installationId");

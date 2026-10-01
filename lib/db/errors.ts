@@ -19,6 +19,10 @@ const RAISED: Record<string, ErrorCode> = {
   invitation_email_mismatch: "invitation_email_mismatch",
   invitation_already_member: "invitation_already_member",
   site_archived: "site_archived",
+  installation_archived: "installation_archived",
+  occurred_in_future: "occurred_in_future",
+  correction_target_invalid: "correction_target_invalid",
+  log_entries_append_only: "log_entries_append_only",
 };
 
 export function dbErrorCode(error: unknown): ErrorCode {
@@ -29,6 +33,11 @@ export function dbErrorCode(error: unknown): ErrorCode {
   if (Object.hasOwn(RAISED, message)) return RAISED[message];
   if (code === "23505" && message.includes("electrical_installations_site_identifier_key")) {
     return "identifier_taken";
+  }
+  // "update or delete on table … violates foreign key constraint … on table …": the row
+  // has dependent records (e.g. moving an installation that has operating log entries).
+  if (code === "23503" && message.startsWith("update or delete on table")) {
+    return "has_dependent_records";
   }
 
   switch (code) {

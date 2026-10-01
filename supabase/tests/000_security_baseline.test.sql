@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(8);
+select plan(9);
 
 -- Every table in the API-exposed schema has RLS enabled.
 select is_empty(
@@ -60,6 +60,17 @@ select results_eq(
        ('private.org_ids(org_role)'),
        ('revoke_invitation(uuid)') $$,
   'authenticated can execute exactly the reviewed functions'
+);
+
+-- Views run with the caller's rights, so RLS of the underlying tables applies.
+select is_empty(
+  $$ select c.relname
+       from pg_class c
+       join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public'
+        and c.relkind = 'v'
+        and not coalesce('security_invoker=true' = any (c.reloptions), false) $$,
+  'every view in public is security_invoker'
 );
 
 -- Every security definer function pins its search_path.

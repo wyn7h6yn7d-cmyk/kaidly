@@ -157,6 +157,100 @@ export type Database = {
           },
         ]
       }
+      log_entries: {
+        Row: {
+          correction_of_id: string | null
+          correction_reason: string | null
+          created_at: string
+          created_by: string
+          created_by_name: string
+          description: string
+          electrical_installation_id: string
+          entry_type: Database["public"]["Enums"]["log_entry_type"]
+          id: string
+          occurred_at: string
+          organisation_id: string
+          performed_by_name: string | null
+          result: string | null
+          site_id: string
+        }
+        Insert: {
+          correction_of_id?: string | null
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          description: string
+          electrical_installation_id: string
+          entry_type: Database["public"]["Enums"]["log_entry_type"]
+          id?: string
+          occurred_at?: string
+          organisation_id: string
+          performed_by_name?: string | null
+          result?: string | null
+          site_id: string
+        }
+        Update: {
+          correction_of_id?: string | null
+          correction_reason?: string | null
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          description?: string
+          electrical_installation_id?: string
+          entry_type?: Database["public"]["Enums"]["log_entry_type"]
+          id?: string
+          occurred_at?: string
+          organisation_id?: string
+          performed_by_name?: string | null
+          result?: string | null
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_entries_correction_of_id_electrical_installation_id_fkey"
+            columns: ["correction_of_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "log_entries"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_correction_of_id_electrical_installation_id_fkey"
+            columns: ["correction_of_id", "electrical_installation_id"]
+            isOneToOne: false
+            referencedRelation: "log_entry_current"
+            referencedColumns: ["id", "electrical_installation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_electrical_installation_id_organisation_id_fkey"
+            columns: ["electrical_installation_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_electrical_installation_id_site_id_fkey"
+            columns: ["electrical_installation_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "site_id"]
+          },
+          {
+            foreignKeyName: "log_entries_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_entries_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
       organisation_invitations: {
         Row: {
           accepted_at: string | null
@@ -404,7 +498,56 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      log_entry_current: {
+        Row: {
+          corrected_at: string | null
+          corrected_by_name: string | null
+          correction_count: number | null
+          correction_reason: string | null
+          description: string | null
+          electrical_installation_id: string | null
+          entry_type: Database["public"]["Enums"]["log_entry_type"] | null
+          id: string | null
+          is_corrected: boolean | null
+          occurred_at: string | null
+          organisation_id: string | null
+          performed_by_name: string | null
+          recorded_at: string | null
+          recorded_by_name: string | null
+          result: string | null
+          site_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_entries_electrical_installation_id_organisation_id_fkey"
+            columns: ["electrical_installation_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "log_entries_electrical_installation_id_site_id_fkey"
+            columns: ["electrical_installation_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "site_id"]
+          },
+          {
+            foreignKeyName: "log_entries_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "log_entries_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
@@ -440,6 +583,14 @@ export type Database = {
         | "storage"
         | "charging"
         | "industrial"
+        | "other"
+      log_entry_type:
+        | "inspection"
+        | "maintenance"
+        | "switching"
+        | "fault"
+        | "repair"
+        | "measurement"
         | "other"
       org_role: "owner" | "admin" | "operator" | "viewer"
     }
@@ -581,6 +732,15 @@ export const Constants = {
         "storage",
         "charging",
         "industrial",
+        "other",
+      ],
+      log_entry_type: [
+        "inspection",
+        "maintenance",
+        "switching",
+        "fault",
+        "repair",
+        "measurement",
         "other",
       ],
       org_role: ["owner", "admin", "operator", "viewer"],

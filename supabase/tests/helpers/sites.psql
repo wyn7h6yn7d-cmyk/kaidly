@@ -1,0 +1,28 @@
+-- Sites and installations on top of helpers/fixture.psql. Include after it.
+--
+--   organisation A: site a1 (installation a1), site a2 (installation a2)
+--   organisation B: site b1 (installation b1)
+--
+--   pg_temp.site('a1' | 'a2' | 'b1'), pg_temp.inst('a1' | 'a2' | 'b1')
+
+create function pg_temp.site(p text) returns uuid language sql immutable as $$
+  select case p
+    when 'a1' then '5a000000-0000-4000-8000-0000000000a1'::uuid
+    when 'a2' then '5a000000-0000-4000-8000-0000000000a2'::uuid
+    when 'b1' then '5b000000-0000-4000-8000-0000000000b1'::uuid end $$;
+create function pg_temp.inst(p text) returns uuid language sql immutable as $$
+  select case p
+    when 'a1' then '1a000000-0000-4000-8000-0000000000a1'::uuid
+    when 'a2' then '1a000000-0000-4000-8000-0000000000a2'::uuid
+    when 'b1' then '1b000000-0000-4000-8000-0000000000b1'::uuid end $$;
+grant execute on function pg_temp.site(text), pg_temp.inst(text) to authenticated, anon;
+
+insert into public.sites (id, organisation_id, name) values
+  (pg_temp.site('a1'), pg_temp.org('a'), 'A objekt 1'),
+  (pg_temp.site('a2'), pg_temp.org('a'), 'A objekt 2'),
+  (pg_temp.site('b1'), pg_temp.org('b'), 'B objekt 1');
+
+insert into public.electrical_installations (id, organisation_id, site_id, name, installation_type) values
+  (pg_temp.inst('a1'), pg_temp.org('a'), pg_temp.site('a1'), 'A kilp 1', 'switchboard'),
+  (pg_temp.inst('a2'), pg_temp.org('a'), pg_temp.site('a2'), 'A kilp 2', 'switchboard'),
+  (pg_temp.inst('b1'), pg_temp.org('b'), pg_temp.site('b1'), 'B alajaam', 'substation');
