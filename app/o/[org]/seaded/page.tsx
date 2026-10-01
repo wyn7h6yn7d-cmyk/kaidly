@@ -47,8 +47,8 @@ export default function SettingsPage({ params }: { params: Promise<{ org: string
             )}
             <dl className="mt-6 max-w-2xl">
               <ReadOnlyRow label={t.app.settings.address} value={`/o/${org.slug}`} />
-              <p className="mt-2 text-sm text-k-muted">{t.app.settings.addressHint}</p>
             </dl>
+            <p className="mt-2 max-w-2xl text-sm text-k-muted">{t.app.settings.addressHint}</p>
           </section>
 
           <section aria-labelledby="leave" className="mt-12 max-w-2xl border-t border-k-line pt-8">

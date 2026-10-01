@@ -35,7 +35,7 @@ export function MemberRoleForm({
           id={selectId}
           name="role"
           defaultValue={value("role", current)}
-          className="h-9 min-w-40 text-[15px]"
+          className="h-11 min-w-40 text-[15px] sm:h-9"
         >
           {options.map((role) => (
             <option key={role} value={role}>

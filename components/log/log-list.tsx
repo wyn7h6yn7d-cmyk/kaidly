@@ -31,7 +31,7 @@ export function LogList({
               href={hrefFor(item)}
               className="grid gap-x-6 gap-y-2 px-4 py-4 hover:bg-k-paper-2 sm:grid-cols-[150px_1fr_auto] sm:px-5"
             >
-              <div className="flex items-baseline gap-3 sm:block">
+              <div className="flex flex-wrap items-baseline gap-x-3 sm:block">
                 <time dateTime={item.occurredAt} className="font-semibold tabular-nums">
                   {date} <span className="font-normal text-k-muted sm:block">{time}</span>
                 </time>
@@ -39,7 +39,7 @@ export function LogList({
                   {copy.types[item.entryType]}
                 </span>
                 {(item.scheduledActivityId || item.deficiencyId) && (
-                  <span className="text-xs font-semibold uppercase tracking-wider text-k-muted sm:mt-1 sm:block">
+                  <span className="w-full text-xs font-semibold uppercase tracking-wider text-k-muted sm:mt-1 sm:block">
                     {item.scheduledActivityId ? copy.fromActivity : copy.fromDeficiency}
                   </span>
                 )}

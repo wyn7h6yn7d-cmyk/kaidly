@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Activity } from "@/lib/data/schedule";
 import { formatDate, t } from "@/lib/i18n";
+import { dueState } from "@/lib/schedule";
 import { DueDate, DueMark } from "./due-mark";
 
 export function frequencyLabel(activity: Pick<Activity, "frequencyType" | "intervalValue" | "intervalUnit">) {
@@ -32,7 +33,10 @@ export function ActivityList({
       {items.map((item) => {
         const href = `/o/${orgSlug}/kaidukava/${item.id}`;
         const context = contextFor?.(item);
-        const completable = canComplete && item.nextDueOn !== null && !item.archivedAt;
+        // In lists, offer completion when it is due (overdue or due soon); upcoming work
+        // can still be completed early from the activity page. Keeps lists calm.
+        const state = dueState(item.nextDueOn, today);
+        const completable = canComplete && !item.archivedAt && (state === "overdue" || state === "soon");
         return (
           <li key={item.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-5">
             <Link href={href} className="grid min-w-0 flex-1 gap-x-6 gap-y-1 sm:grid-cols-[150px_1fr]">

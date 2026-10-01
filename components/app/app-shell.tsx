@@ -41,7 +41,11 @@ export function AppShell({
       <div className="flex min-h-svh min-w-0 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-k-line bg-k-paper/95 px-3 backdrop-blur-sm lg:hidden">
           <div className="flex min-w-0 items-center gap-1">
-            <Link href={`/o/${orgSlug}`} className="shrink-0 rounded-sm p-1" aria-label={t.brand.name}>
+            <Link
+              href={`/o/${orgSlug}`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-sm"
+              aria-label={t.brand.name}
+            >
               <LogoMark color="green" className="h-6 w-6" />
             </Link>
             {topBarSwitcher}
@@ -76,7 +80,7 @@ export function PlainShell({
     <div className="flex min-h-svh flex-col">
       <header className="border-b border-k-line bg-k-paper">
         <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
-          <Link href="/o?vali=1" className="rounded-sm">
+          <Link href="/o?vali=1" className="inline-flex h-11 items-center rounded-sm">
             <Logo />
           </Link>
           {userMenu}

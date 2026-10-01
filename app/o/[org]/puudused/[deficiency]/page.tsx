@@ -65,6 +65,9 @@ export default function DeficiencyPage({
               actions={
                 canAct ? (
                   <>
+                    <Button asChild size="lg" className="w-full sm:order-last sm:w-auto">
+                      <Link href={`${base}/lahenda`}>{copy.resolve}</Link>
+                    </Button>
                     <Button asChild variant="ghost">
                       <Link href={`${base}/muuda`}>
                         <Pencil aria-hidden="true" />
@@ -81,9 +84,6 @@ export default function DeficiencyPage({
                       label={deficiency.status === "open" ? copy.markInProgress : copy.markOpen}
                       size="default"
                     />
-                    <Button asChild>
-                      <Link href={`${base}/lahenda`}>{copy.resolve}</Link>
-                    </Button>
                   </>
                 ) : undefined
               }
