@@ -111,22 +111,22 @@ export default function OverviewPage({ params }: { params: Promise<{ org: string
                 </h2>
                 {attentionCount === 0 && <p className="mt-1 text-k-muted">{copy.allClear}</p>}
 
-                <dl className="mt-4 grid grid-cols-3 border-y border-k-line">
+                <ul aria-label={copy.summaryLabel} className="mt-4 grid grid-cols-3 border-y border-k-line">
                   {[
                     { label: copy.overdue, value: dashboard.overdue.total, href: `${base}/kaidukava?seis=overdue`, tone: "text-k-danger" },
                     { label: copy.dueSoon, value: dashboard.dueSoon.total, href: `${base}/kaidukava?seis=soon`, tone: "text-k-ink" },
                     { label: copy.serious, value: dashboard.serious.total, href: `${base}/puudused`, tone: "text-k-danger" },
                   ].map((stat) => (
-                    <div key={stat.label} className="min-w-0 border-l border-k-line first:border-l-0">
-                      <Link href={stat.href} className="flex h-full flex-col-reverse justify-end gap-1 px-3 py-3 hover:bg-k-paper-2 sm:px-4">
-                        <dt className="text-xs font-medium leading-snug text-k-muted sm:text-sm">{stat.label}</dt>
-                        <dd className={`text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.value > 0 ? stat.tone : "text-k-muted"}`}>
+                    <li key={stat.label} className="min-w-0 border-l border-k-line first:border-l-0">
+                      <Link href={stat.href} className="flex h-full flex-col gap-1 px-3 py-3 hover:bg-k-paper-2 sm:px-4">
+                        <span className={`text-2xl font-extrabold tabular-nums sm:text-3xl ${stat.value > 0 ? stat.tone : "text-k-muted"}`}>
                           {stat.value}
-                        </dd>
+                        </span>
+                        <span className="text-xs font-medium leading-snug text-k-muted sm:text-sm">{stat.label}</span>
                       </Link>
-                    </div>
+                    </li>
                   ))}
-                </dl>
+                </ul>
 
                 <div className="mt-8 grid gap-10 lg:grid-cols-2">
                   <AttentionSection

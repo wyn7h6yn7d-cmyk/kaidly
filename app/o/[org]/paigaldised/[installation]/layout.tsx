@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus } from "lucide-react";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/app/page-header";
 import { InstallationTabs } from "@/components/sites/installation-tabs";
-import { Button } from "@/components/ui/button";
+import { NewEntryButton } from "@/components/sites/new-entry-button";
 import { hasRole } from "@/lib/auth/roles";
 import { ArchivedBadge, StatusMark } from "@/components/sites/status-mark";
 import { requireOrg } from "@/lib/data/organisations";
@@ -42,12 +40,7 @@ async function InstallationHeader({
         back={{ href: `/o/${org.slug}/objektid/${installation.site.id}`, label: installation.site.name }}
         actions={
           hasRole(role, "operator") && !installation.archivedAt ? (
-            <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href={`${base}/paevik/uus`}>
-                <Plus aria-hidden="true" />
-                {t.app.log.add}
-              </Link>
-            </Button>
+            <NewEntryButton href={`${base}/paevik/uus`} />
           ) : undefined
         }
       />

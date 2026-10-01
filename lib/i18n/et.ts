@@ -700,7 +700,7 @@ export const et = {
         overdue: (n: number) => (n === 1 ? "1 tegevus üle tähtaja" : `${n} tegevust üle tähtaja`),
         dueSoon: (n: number) => (n === 1 ? "1 tähtaeg tulemas" : `${n} tähtaega tulemas`),
         open: (n: number) => (n === 1 ? "1 avatud puudus" : `${n} avatud puudust`),
-        serious: (n: number) => `sh ${n} kõrget/kriitilist`,
+        serious: (n: number) => (n === 1 ? "sh 1 kõrge või kriitiline" : `sh ${n} kõrget või kriitilist`),
       },
       quickEntry: "Lisa sissekanne",
       openLog: "Ava käidupäevik",
