@@ -88,8 +88,7 @@ test.describe("Käidukava", () => {
     await login(page, org.users.viewer, `/o/${org.slug}/kaidukava`);
     const list = page.getByRole("list", { name: "Käidukava tegevused" });
     await expect(list.getByText("Hilinenud mõõtmine")).toBeVisible();
-    await expect(list.getByText("Üle tähtaja")).toBeVisible();
-    await expect(list.getByText("· 3 päeva")).toBeVisible();
+    await expect(list.getByText("3 päeva üle tähtaja")).toBeVisible();
     await expect(page.getByRole("link", { name: "Märgi tehtuks" })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Lisa tegevus" })).toHaveCount(0);
 

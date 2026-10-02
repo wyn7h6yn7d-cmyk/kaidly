@@ -1,30 +1,13 @@
-
-import { daysBetween, dueState, type DueState } from "@/lib/schedule";
-import { cn } from "@/lib/utils";
+import { countdown, countdownText } from "@/lib/schedule";
 import { getT } from "@/lib/i18n/server";
+import { CountdownMark } from "./countdown-mark";
 
-const TONE: Record<DueState, string> = {
-  overdue: "bg-k-danger",
-  soon: "bg-k-warn",
-  upcoming: "bg-k-grey",
-  done: "bg-k-green",
-};
-
-/** Square + word + distance in days. Calm: colour supports the words, never replaces them. */
+/** Countdown to the next due date ("14 päeva jäänud", "Tähtaeg täna", "3 päeva üle tähtaja"). */
 export async function DueMark({ nextDueOn, today }: { nextDueOn: string | null; today: string }) {
   const t = await getT();
-  const state = dueState(nextDueOn, today);
-  const copy = t.app.schedule;
-  let detail = "";
-  if (nextDueOn && state === "overdue") detail = copy.overdueBy(daysBetween(nextDueOn, today));
-  if (nextDueOn && state === "soon") detail = copy.dueIn(daysBetween(today, nextDueOn));
-  return (
-    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-medium text-k-ink">
-      <span aria-hidden="true" className={cn("size-2.5", TONE[state])} />
-      {copy.states[state]}
-      {detail && <span className="text-k-muted">· {detail}</span>}
-    </span>
-  );
+  const value = countdown(nextDueOn, today);
+  if (!value) return <CountdownMark level="done" text={t.app.schedule.states.done} />;
+  return <CountdownMark level={value.level} text={countdownText(value, t.countdown)} />;
 }
 
 export async function DueDate({ nextDueOn }: { nextDueOn: string | null }) {

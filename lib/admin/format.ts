@@ -1,5 +1,8 @@
 // Estonian formatting for the admin console (see lib/admin/strings.ts).
 
+import { et } from "../i18n/et.ts"; // explicit extensions: also loaded by node --test
+import { countdownText } from "../schedule.ts";
+
 const TZ = "Europe/Tallinn";
 
 export const fmtNumber = (n: number) => new Intl.NumberFormat("et-EE").format(n);
@@ -28,10 +31,8 @@ export function fmtBytes(bytes: number) {
   return `${new Intl.NumberFormat("et-EE", { maximumFractionDigits: 1 }).format(value)} ${units[unit]}`;
 }
 
-/** "3 päeva üle tähtaja" / "täna" / "7 päeva jäänud" */
+/** Same wording as the rest of KAIDLY (lib/schedule.ts countdownText), in Estonian. */
 export function fmtDays(days: number | null) {
   if (days === null) return "";
-  if (days === 0) return "Tähtaeg täna";
-  if (days < 0) return `${-days} ${-days === 1 ? "päev" : "päeva"} üle tähtaja`;
-  return `${days} ${days === 1 ? "päev" : "päeva"} jäänud`;
+  return countdownText({ days, level: "neutral" }, et.countdown);
 }

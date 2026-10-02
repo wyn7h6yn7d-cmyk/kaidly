@@ -40,3 +40,34 @@ export function dueStateRange(state: DueState, today: string) {
       return { done: true as const };
   }
 }
+
+/**
+ * Countdown to a due date — the one implementation used by the dashboard, Käidukava,
+ * installation pages, notifications and the admin console. Never stored: it follows from
+ * the due date and today's business date in Tallinn.
+ *
+ * Levels (restrained on purpose): > 30 days neutral · ≤ 30 aware · ≤ 14 warning ·
+ * ≤ 7 strong · due today · overdue.
+ */
+export type CountdownLevel = "neutral" | "aware" | "warning" | "strong" | "today" | "overdue";
+export type Countdown = { days: number; level: CountdownLevel };
+
+export function countdown(dueOn: string | null, today: string): Countdown | null {
+  if (dueOn === null) return null;
+  const days = daysBetween(today, dueOn);
+  const level: CountdownLevel =
+    days < 0 ? "overdue" : days === 0 ? "today" : days <= 7 ? "strong" : days <= 14 ? "warning" : days <= 30 ? "aware" : "neutral";
+  return { days, level };
+}
+
+export type CountdownMessages = {
+  left: (days: number) => string;
+  today: string;
+  overdue: (days: number) => string;
+};
+
+/** "84 päeva jäänud" · "Tähtaeg täna" · "1 päev üle tähtaja" (in the given language). */
+export function countdownText(value: Countdown, messages: CountdownMessages): string {
+  if (value.days === 0) return messages.today;
+  return value.days > 0 ? messages.left(value.days) : messages.overdue(-value.days);
+}

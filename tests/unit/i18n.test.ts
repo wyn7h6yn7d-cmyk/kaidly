@@ -30,7 +30,7 @@ for (const [name, dictionary] of Object.entries(dictionaries)) {
     for (const [key, value] of own) {
       if (typeof value === "string") assert.ok(value.trim().length > 0 || key.endsWith(".label") || key.endsWith(".result"), `${name}.${key} is empty`);
       if (typeof value === "function") {
-        const args = key.endsWith("frequency.every") ? [3, "month"] : [3, "x", "y"];
+        const args = key.endsWith("frequency.every") ? [3, "month"] : key.endsWith("reminders.summary") ? [[30, 14, 0]] : [3, "x", "y"];
         const text = (value as (...a: unknown[]) => unknown)(...args);
         assert.equal(typeof text, "string", `${name}.${key} must return a string`);
       }
