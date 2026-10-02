@@ -187,6 +187,12 @@ export const en: Messages = {
     },
     summary: "Summary",
   },
+  errorPage: {
+    title: "Something went wrong",
+    body: "The page could not be opened. Your data is safe. Try again; if it keeps happening, contact KAIDLY.",
+    retry: "Try again",
+    home: "Home",
+  },
   common: {
     language: "Language",
     loading: "Loading…",
@@ -202,6 +208,7 @@ export const en: Messages = {
     more: "More",
   },
   landing: {
+    legal: { privacy: "Privacy", terms: "Terms of use", label: "Legal" },
     metaTitle: "KAIDLY | Electrical installation operation, simply",
     nav: {
       label: "Main menu",
@@ -350,6 +357,7 @@ export const en: Messages = {
     },
   },
   errors: {
+    upload_rate_limited: "Too many uploads in a short time. Try again later; contact KAIDLY if you need more capacity.",
     company_read_only: "The organisation is read-only: the trial or full access has ended.",
     reminders_invalid: "Check the reminders: the number of days must be 0–365.",
     account_disabled: "This account has been suspended. Contact KAIDLY support.",
@@ -1223,6 +1231,12 @@ export const en: Messages = {
       sessionsBody: "If you are signed in on a device you no longer use, sign out all other devices. This device stays signed in; on the others the sign-in ends within an hour at the latest.",
       signOutOthers: "Sign out other devices",
       signOutOthersConfirm: "Sign out all other devices and browsers?",
+      deletionTitle: "Account deletion request",
+      deletionBody:
+        "You can request deletion of your account and personal data. KAIDLY reviews each request manually: account data (name, email, phone) is deleted, but organisation records (entries, deficiencies, documents) belong to the organisation and their retention is decided separately with it. Nothing is deleted automatically.",
+      deletionRequest: "Send a deletion request",
+      deletionNoContact: "Contact KAIDLY to send the request.",
+      deletionSubject: (email: string) => `Account deletion request (${email})`,
       languageHint: "The interface language. Your choice is saved to your account and applies on all devices.",
     },
   },

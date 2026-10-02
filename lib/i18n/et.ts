@@ -183,6 +183,12 @@ export const et = {
     },
     summary: "Kokkuvõte",
   },
+  errorPage: {
+    title: "Midagi läks valesti",
+    body: "Lehte ei õnnestunud avada. Sinu andmed on alles. Proovi uuesti; kui viga kordub, võta KAIDLYga ühendust.",
+    retry: "Proovi uuesti",
+    home: "Avalehele",
+  },
   common: {
     language: "Keel",
     loading: "Laen…",
@@ -198,6 +204,7 @@ export const et = {
     more: "Rohkem",
   },
   landing: {
+    legal: { privacy: "Privaatsus", terms: "Kasutustingimused", label: "Õiguslik teave" },
     metaTitle: "KAIDLY | Elektripaigaldise käit lihtsalt",
     nav: {
       label: "Põhimenüü",
@@ -349,6 +356,7 @@ export const et = {
   },
   /** Safe, application-controlled messages. Keys are the only thing that travels in URLs. */
   errors: {
+    upload_rate_limited: "Liiga palju üleslaadimisi lühikese aja jooksul. Proovi hiljem uuesti; kui vajad suuremat mahtu, võta KAIDLYga ühendust.",
     company_read_only: "Ettevõte on ainult vaatamiseks: prooviperiood või täiskasutus on lõppenud.",
     reminders_invalid: "Kontrolli meeldetuletusi: päevade arv peab olema 0–365.",
     account_disabled: "See konto on peatatud. Võta ühendust KAIDLY toega.",
@@ -1224,6 +1232,12 @@ export const et = {
       sessionsBody: "Kui oled sisse loginud seadmes, mida sa enam ei kasuta, logi kõik teised seadmed välja. See seade jääb sisse logituks; teistes seadmetes lõpeb sisselogimine hiljemalt tunni jooksul.",
       signOutOthers: "Logi teistest seadmetest välja",
       signOutOthersConfirm: "Logida kõik teised seadmed ja brauserid välja?",
+      deletionTitle: "Konto kustutamise taotlus",
+      deletionBody:
+        "Saad taotleda oma konto ja isikuandmete kustutamist. KAIDLY vaatab taotluse käsitsi üle: kontoandmed (nimi, e-post, telefon) kustutatakse, kuid ettevõtte käiduandmed (sissekanded, puudused, dokumendid) kuuluvad ettevõttele ja nende säilitamine otsustatakse eraldi koos ettevõttega. Midagi ei kustutata automaatselt.",
+      deletionRequest: "Saada kustutamise taotlus",
+      deletionNoContact: "Taotluse saatmiseks võta KAIDLYga ühendust.",
+      deletionSubject: (email: string) => `Konto kustutamise taotlus (${email})`,
       languageHint: "Kasutajaliidese keel. Valik salvestatakse sinu kontole ja kehtib kõigis seadmetes.",
     },
   },

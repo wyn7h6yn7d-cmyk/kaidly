@@ -11,6 +11,14 @@ export async function SiteFooter() {
         <div>
           <p className="font-display text-2xl font-extrabold tracking-wide text-white lg:text-[32px]">{t.brand.name}</p>
           <p className="mt-2 text-base lg:text-xl">{t.landing.footer}</p>
+          <nav aria-label={t.landing.legal.label} className="mt-3 flex flex-wrap gap-x-6 text-base lg:text-lg">
+            <Link href="/privaatsus" className="focus-on-dark inline-flex h-11 items-center underline-offset-4 hover:text-white hover:underline">
+              {t.landing.legal.privacy}
+            </Link>
+            <Link href="/kasutustingimused" className="focus-on-dark inline-flex h-11 items-center underline-offset-4 hover:text-white hover:underline">
+              {t.landing.legal.terms}
+            </Link>
+          </nav>
         </div>
         <div className="flex flex-col gap-4 sm:items-end">
           <nav aria-label={t.landing.footerNav} className="flex flex-wrap gap-x-6 gap-y-1 text-base lg:gap-x-8 lg:text-lg">
@@ -26,7 +34,7 @@ export async function SiteFooter() {
               {t.common.signUp}
             </Link>
           </nav>
-          <LanguageSelector tone="light" large className="-mr-2" />
+          <LanguageSelector tone="light" large className="flex-wrap lg:-mr-2" />
         </div>
       </div>
     </footer>

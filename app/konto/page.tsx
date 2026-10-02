@@ -10,6 +10,7 @@ import { SignOutHere } from "@/components/account/sign-out-here";
 import { ConfirmForm } from "@/components/forms/confirm-form";
 import { ProfileForm } from "@/components/organisations/profile-form";
 import { signOutOtherSessions } from "@/lib/actions/account";
+import { contactMailto } from "@/lib/access";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
@@ -40,6 +41,20 @@ function Section({ id, title, body, children }: { id: string; title: string; bod
       {body && <p className="mt-1 max-w-2xl text-k-muted">{body}</p>}
       <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+async function DeletionRequest() {
+  const [user, t] = await Promise.all([requireUser(), getT()]);
+  const copy = t.app.account;
+  // Server setting, never hard-coded; without it the text says to contact KAIDLY.
+  const href = contactMailto(process.env.KAIDLY_CONTACT_EMAIL, copy.deletionSubject(user.email ?? user.id));
+  return href ? (
+    <a href={href} className="inline-flex min-h-11 items-center font-semibold text-k-green underline underline-offset-4">
+      {copy.deletionRequest}
+    </a>
+  ) : (
+    <p className="text-sm">{copy.deletionNoContact}</p>
   );
 }
 
@@ -77,6 +92,11 @@ export default async function AccountPage() {
           />
           <SignOutHere />
         </div>
+      </Section>
+      <Section id="deletion" title={t.app.account.deletionTitle} body={t.app.account.deletionBody}>
+        <Suspense fallback={null}>
+          <DeletionRequest />
+        </Suspense>
       </Section>
     </PlainPage>
   );
