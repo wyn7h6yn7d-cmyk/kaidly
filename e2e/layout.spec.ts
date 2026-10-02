@@ -82,6 +82,7 @@ test.describe("Paigutus", () => {
       `${base}/seaded/kustuta`,
       `${base}/seaded`,
       "/konto",
+      "/teavitused",
       "/admin",
       "/admin/users",
       `/admin/users/${org.users.viewer.id}`,

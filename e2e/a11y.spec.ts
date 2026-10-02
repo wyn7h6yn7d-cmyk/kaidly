@@ -82,7 +82,13 @@ test("account, company settings and the KAIDLY Admin console pass axe and fit th
   const org = await createOrg(`Admin a11y ${uniqueId("x")}`);
   sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
   await login(page, org.users.owner, "/konto");
+  const site = await createSite(org, "Tallinna tehas");
+  const installation = await createInstallation(org, site, "Peakilp", "PK-01");
+  sql(`insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on)
+       values ('${org.id}', '${site}', '${installation}', 'Hooldus', 'once', (now() at time zone 'Europe/Tallinn')::date + 5);`);
   for (const path of [
+    "/teavitused",
+    `/o/${org.slug}/kaidukava`,
     "/konto",
     `/o/${org.slug}/seaded`,
     "/admin",
