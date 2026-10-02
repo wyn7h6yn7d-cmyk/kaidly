@@ -7,7 +7,7 @@ action by the owner (account, payment, DNS, legal facts, secrets). Runbooks:
 
 **Release gate: RED — do not merge `main`.** Blockers are marked ⛔.
 
-Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION ref: _not created_ ⛔
+Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION `xakpbtmksxvjmsbipwmj` (state as of 2026-10-02)
 
 ## APPLICATION
 - [x] Feature freeze; release baseline green on the feature branch (2026-10-02: 83 unit, 613 pgTAP, 144 E2E, build) — re-verified after the hardening changes (see IMPLEMENTATION_PLAN.md)
@@ -17,13 +17,15 @@ Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION ref: _not created
 - [ ] Release version decided: **v1.0.0**; tag only after the production smoke test
 
 ## DATABASE
-- [ ] ⛔ **(you)** Production Supabase project created (EU region; plan decision in BACKUP_RECOVERY.md)
-- [ ] Production migrations applied from zero (dry-run first, no seed, ref double-checked)
-- [ ] Production verified: tables + RLS, private schema, views, functions, triggers, indexes, pg_cron jobs, bucket + policies
+- [x] Production Supabase project created: `xakpbtmksxvjmsbipwmj` ("KAIDLY Production", eu-west-1)
+- [ ] ⛔ **(you)** Plan with daily backups decided (BACKUP_RECOVERY.md)
+- [x] Production verified empty (no migration history, tables, users, buckets); dry-run listed all 20 migrations in order, `seeds: []`; all 20 applied, no seed
+- [x] Production catalog identical to a local build (17 tables with RLS flags, 2 security_invoker views, 80 functions, 41 triggers, 87 indexes, 32 policies, function grants, private `documents` bucket, pg_cron + pg_trgm, jobs `kaidly-activity-reminders 15 3 * * *` and `kaidly-upload-events-cleanup 40 3 * * *`); only extra object: Supabase's `ensure_rls` / `rls_auto_enable()`; 0 rows; anon refused, signed-in non-member sees nothing
+- [x] CLI re-linked to development; `npm run db:target` shows the target
 - [x] Migration history linear; all migrations forward-only and additive
 
 ## AUTH
-- [ ] **(you/me)** Site URL `https://kaidly.ee`; Redirect URLs only `https://kaidly.ee/**`
+- [ ] **(you)** Production Auth → URL Configuration: Site URL `https://kaidly.ee`; Redirect URLs only `https://kaidly.ee/**`; email templates from `supabase/templates/` (DEPLOYMENT.md §3.5)
 - [x] App-side redirect allowlist (`safeRedirectPath`) and open-redirect tests pass
 - [x] Flows covered by E2E: sign-up + confirmation, login, logout, forgot/reset, password change, email change, invitation, direct authenticated URL, disabled account, session revocation, ET/EN/RU
 - [x] Revoked sessions / disabled accounts lose data access immediately (database check on every request)
@@ -33,17 +35,17 @@ Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION ref: _not created
 - [x] Branded token_hash templates prepared (`supabase/templates/*.html`)
 - [ ] Templates pasted into the production dashboard
 - [ ] ⛔ **(you)** Custom SMTP provider + verified sender domain (`no-reply@kaidly.ee`); fields in DEPLOYMENT.md §5
-- [ ] **(you)** Real contact mailbox for `KAIDLY_CONTACT_EMAIL` (e.g. `info@kaidly.ee`)
+- [x] `KAIDLY_CONTACT_EMAIL` set in Production (info@kaidly.ee); mailbox delivery to be confirmed in the smoke test
 
 ## STORAGE
 - [x] One private bucket `documents`, 25 MB, MIME allowlist, tenant-scoped policies, signed URLs only (pgTAP baseline)
-- [ ] Verified in the production project after migration
+- [x] Verified in the production project after migration (private, 25 MB, MIME list, 3 policies)
 
 ## SECURITY
 - [x] Security headers: CSP, HSTS, nosniff, X-Frame-Options DENY / frame-ancestors 'none', Referrer-Policy, Permissions-Policy; `X-Powered-By` off (E2E)
 - [x] Secret audit: no service-role key, tokens, DB passwords or SMTP credentials in files, git history or build output
 - [x] `npm audit --omit=dev`: 0 vulnerabilities; pdfmake/pdfkit server-only (not in client chunks)
-- [ ] ⛔ Vercel Production env still points at DEVELOPMENT Supabase — replace with production values
+- [ ] ⛔ **(you)** Vercel Production `NEXT_PUBLIC_SUPABASE_URL` has a typo (`…msblpwmj`, NXDOMAIN) — set it to `https://xakpbtmksxvjmsbipwmj.supabase.co`; the publishable key is correct (accepted by production, rejected by development)
 
 ## PRIVACY
 - [x] Manual privacy-request process documented (export, erasure, account vs operating records)
@@ -52,13 +54,15 @@ Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION ref: _not created
 - [ ] Retention periods / automated erasure — open legal decision (not invented)
 
 ## DOMAIN
-- [ ] ⛔ **(you)** `kaidly.ee` owned and added in Vercel (Production); DNS records exactly as Vercel shows
-- [ ] `www.kaidly.ee` (and `kaidly.eu` if owned) redirect to `kaidly.ee`
+- [x] `kaidly.ee` → Production in Vercel, DNS valid (owner-confirmed)
+- [x] `www.kaidly.ee` → 308 → `kaidly.ee` (owner-confirmed; re-checked in the smoke test)
 - [ ] HTTPS valid; HTTP → HTTPS
 
 ## VERCEL
 - [x] Production tracks `main`; Preview = feature branches
-- [ ] Production env: production Supabase URL/key, `KAIDLY_SITE_URL=https://kaidly.ee`, `KAIDLY_CONTACT_EMAIL`
+- [x] Production publishable key and `KAIDLY_CONTACT_EMAIL` set; no development value in the Production scope
+- [ ] ⛔ **(you)** Production `NEXT_PUBLIC_SUPABASE_URL` typo fixed (see SECURITY)
+- [ ] **(you)** Production `KAIDLY_SITE_URL=https://kaidly.ee` added (canonical URLs, indexing)
 - [x] Preview env: development Supabase, no `KAIDLY_SITE_URL` → noindex everywhere
 - [x] Report PDFs: fonts traced with the export route; verified on a Vercel Preview
 
@@ -69,7 +73,7 @@ Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION ref: _not created
 
 ## BACKUP/RECOVERY
 - [x] Runbook and limitations documented (Storage files not in DB backups)
-- [ ] ⛔ **(you)** Plan with daily backups (Pro) chosen for production; record retention/PITR
+- [ ] ⛔ **(you)** Plan with daily backups (Pro) chosen for production; record retention/PITR (project is eu-west-1)
 
 ## PLATFORM ADMIN
 - [x] Database-backed (`private.platform_admins` by user id); org roles never grant it

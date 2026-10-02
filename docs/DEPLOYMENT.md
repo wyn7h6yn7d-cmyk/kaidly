@@ -9,16 +9,25 @@ Companion to [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) (the launch source of 
 |---|---|---|---|---|
 | Local | any | `npm run dev:local` | local CLI stack (Docker) | no |
 | **Development / Preview** | feature branches | Preview | **`gdpzavhkblbcxivoaqax`** ("kaidly", DEVELOPMENT ONLY) | no |
-| **Production** | `main` | Production | **separate PRODUCTION project — ref: _not created yet_** | yes, only on the custom domain |
+| **Production** | `main` | Production | **`xakpbtmksxvjmsbipwmj`** ("KAIDLY Production", eu-west-1 Ireland) | yes, only on the custom domain |
 
 Production must never point at the development project, and the development project's data
 (Preview users, test companies, audit rows) is never copied to production. Project refs are
 configuration (environment variables), never hard-coded in application code.
 
-> **Status 2026-10-02:** Vercel **Production currently points at the development project**
-> (`NEXT_PUBLIC_SUPABASE_URL`/`…_PUBLISHABLE_KEY` in the Production scope reference
-> `gdpzavhkblbcxivoaqax`). This must be replaced with the production project's values
-> before `main` is merged (release gate).
+> **Status 2026-10-02:** all 20 migrations applied to production from zero (no seed) and
+> verified identical to a local build. Vercel Production's publishable key is the
+> production key, but **`NEXT_PUBLIC_SUPABASE_URL` contains a typo** (`…msblpwmj`, a host
+> that does not exist) — it must be `https://xakpbtmksxvjmsbipwmj.supabase.co` before the
+> next Production deploy. `KAIDLY_SITE_URL` is not set yet.
+
+Check which project the CLI targets before any `--linked` command: `npm run db:target`
+(development is the default; production is linked only for a release step and re-linked
+to development right after).
+
+Supabase-managed objects present in production but not created by KAIDLY: the event
+trigger `ensure_rls` with function `public.rls_auto_enable()` (Supabase's "enable RLS on new
+tables" safeguard; an `event_trigger` function cannot be called through the API).
 
 ## 2. Environment variables
 

@@ -1,6 +1,6 @@
 # KAIDLY — Backup and recovery
 
-Status: **no production project exists yet (2026-10-02), so no production backup exists.**
+Status: production project `xakpbtmksxvjmsbipwmj` exists (2026-10-02); **its backup plan is not confirmed yet**, so no backup is assumed.
 Nothing in this document claims a backup that has not been verified in the dashboard.
 
 ## What must be protected
