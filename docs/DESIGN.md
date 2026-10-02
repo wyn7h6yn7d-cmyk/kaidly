@@ -373,6 +373,26 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
 - [ ] photography: the board's photos look illustrative/generated; production marketing needs real, licensed photos (D11)
 - [ ] paper / concrete texture assets
 
+## 8a. UX polish (2026-10-03)
+
+- **App width:** `--k-max-app` 92rem (1472 px incl. gutters, ~1390 px content), still aligned
+  to the sidebar. Long text keeps its own max widths; nothing stretches edge to edge.
+- **Overview while onboarding:** guide (left) + a "Meeldetuletused ja tähtajad" card (right,
+  ≥ 1280 px) linking to Abi — real guidance, no invented dashboard content.
+- **Trial status:** a quiet bordered panel with a clock badge; a warn edge only in the last
+  3 days; expired stays the clear read-only notice. Not a live region.
+- **Onboarding:** progress bar (`role="progressbar"`, same numbers as "1/6 tehtud"), round
+  step numbers, stronger titles, blocked reason as a calm grey tag.
+- **Sidebar:** 4 px rhythm, active item with volt edge + faint inner outline, softer hover.
+- **Landing hero:** engineering-paper grid (40 px fine / 200 px major lines, CSS gradients) is
+  the main layer; the soft panels are secondary (≈ 55 % opacity) and masked away from the
+  text; phones get a 32 px lighter grid.
+- **Reminders on the landing:** "KAIDLY tuletab ise meelde." — six steps and a static HTML
+  mock-up of the notification centre using the real countdown wording; the "Kuidas
+  töötab" anchor now lands on the structure section (site → installation → log/plan → reminders).
+- **Scroll to top:** round 48 px button bottom-right on long public pages, after about one
+  viewport, lifted above the footer, smooth unless reduced motion, focus returns to the header.
+
 ## 9. Layout system (2026-10-02)
 
 **Audit before refactoring** (screenshots at 375/768/1280/1440/1920): no page scrolled
