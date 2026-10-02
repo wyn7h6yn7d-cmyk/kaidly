@@ -35,7 +35,7 @@ backup decision) and the owner's explicit acceptance of the EXCEPTIONS below.
 | GREEN | Production built from zero: 20 migrations in order, no seed; catalog identical to a local build (17 tables with RLS, 2 views, 80 functions, 41 triggers, 87 indexes, 32 policies, private bucket + 3 policies, pg_cron + pg_trgm) |
 | GREEN | Supabase's own `ensure_rls` / `rls_auto_enable()` reviewed and kept |
 | GREEN | Upload-limit and session-check functions byte-identical in production and the repository |
-| READY | Migration `20261002200000_session_guard_inserts` (live session required to create/join a company): applied to development; apply to production at launch (`npm run db:target` first) |
+| GREEN | Migration `20261002200000_session_guard_inserts` (live session required to create/join a company) applied to development and production after dry-runs; production now has all 21 migrations |
 | GREEN | CLI default target is development; `npm run db:target` labels the linked project |
 
 ## AUTH
