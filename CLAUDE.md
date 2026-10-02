@@ -74,6 +74,12 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   or log content, no credentials) and audits mutations in `private.admin_audit_log`. No
   impersonation, no viewing or setting passwords. Admins are granted only through
   `private.bootstrap_platform_admin()` by the database owner (DATABASE.md §5b).
+- Countdowns are derived, never stored: use `countdown`/`countdownText` from `lib/schedule.ts`
+  (one implementation) with `todayInTallinn()`. Reminders are rows in `notifications`, created
+  only by `private.generate_activity_reminders()` (pg_cron daily + activity trigger) with the
+  unique identity (user, activity, due occurrence, threshold, channel); never insert them
+  from the app, never store URLs in them, and keep them user-scoped (platform admins don't
+  read them).
 - After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
 - Files: one private bucket; object paths come from the database; browsers upload only to

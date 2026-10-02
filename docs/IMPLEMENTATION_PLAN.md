@@ -27,31 +27,11 @@ Each phase ends with a deployable app and every check passing: `npm run lint`,
 | CI | GitHub Actions: verify, database, e2e against a local stack in the runner | ARCHITECTURE.md §10 |
 | Design & language | Layout system, refined landing page, ET/EN/RU with profile preference, change history, deficiency photos at creation, tab drafts | DESIGN.md §5a/§9, ARCHITECTURE.md §6b/§6c |
 | Accounts, company details, platform admin (2026-10-02) | Konto (email change, password change with current password, sign out other devices), company contact details editable by owners and admins, database-backed KAIDLY platform admin with `/admin` console, platform-wide deadlines, admin audit log — no service-role key | DATABASE.md §4/§5b, ARCHITECTURE.md §6d |
-| Tests | 492 pgTAP, 68 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
+| Deadline countdowns and reminders (2026-10-02) | Shared countdown, per-activity reminder thresholds, idempotent reminder generation (pg_cron daily + on change), in-app notification centre, bell, toast | DATABASE.md §5c, ARCHITECTURE.md §6e |
+| Tests | 537 pgTAP, 76 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
 | Reviews | Responsive (375/768/1440), accessibility (axe + keyboard), security regression (+ review gates), code quality; Phase 7–8: storage security, cross-tenant oracles, pagination | this file, "Review log" |
 
 **Still not final for Phase 3:** the electrical-professional domain review (PRODUCT.md §8).
-
-## Specified, not started
-
-### Deadline countdown and reminders (specified 2026-10-02, not approved for build)
-- Derived countdown for every active scheduled activity from `next_due_on` and today in
-  Tallinn — never stored ("84 päeva jäänud", "Tähtaeg täna", "3 päeva üle tähtaja"). One
-  shared calculation/formatting module used by dashboard, Käidukava, installation page and
-  notification centre (extend `lib/schedule.ts`; fold in the admin console's `fmtDays`).
-- Urgency steps: > 14 days neutral; ≤ 14 warning; ≤ 7 stronger warning; today; overdue
-  critical. Normal future activities never look alarming.
-- Persistent in-app notifications: default threshold 14 days (designed for 30/14/7/1/custom);
-  content = activity, company, site, installation, due date, days left/overdue, "Vaata
-  tegevust" deep link. Bell/notification centre with unread/read, mark one/all read, newest
-  first; optional bottom-right toast (mobile-appropriate) that is never the only copy.
-- Idempotency key: (activity, due occurrence, threshold, user) — unique constraint; a
-  completed recurring activity advances by the existing anchored logic, old reminders
-  become historical/read, the new occurrence gets its own reminders. No copied dates.
-- Recipients: current members whose role can see the activity; active companies only;
-  RLS-scoped, no cross-tenant leakage.
-- Generation must eventually run in the background (pg_cron or Vercel Cron — **not chosen**);
-  email/push/weekly digest later, not now.
 
 ## Next phases (not started)
 
@@ -129,6 +109,8 @@ All decided 2026-10-01 unless noted.
 - **Estonian electrical-domain wording review** of the ET UI (also listed on /admin/system).
 
 ## Open questions (need a decision or domain review)
+
+- Reminders: should a KAIDLY member be linkable as the responsible person (then only they, or they first, get reminders)? Should viewers be able to opt in? Per-organisation time zone if KAIDLY leaves Estonia. Email/push/digest channels and their consent rules.
 
 1. Installation types, statuses and "responsible person" (käidukorraldaja?) — electrical professional review.
 2. Which technical fields are needed (voltage level, main fuse, EIC code, inspection dates) — none added yet.

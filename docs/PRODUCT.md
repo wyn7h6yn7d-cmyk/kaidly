@@ -139,6 +139,23 @@ See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
   user, or read customer documents and log contents, and they are not members of customer
   companies.
 
+## 6b. Deadline countdowns and reminders (2026-10-02)
+
+- Every active activity shows a countdown ("84 päeva jäänud", "Tähtaeg täna",
+  "3 päeva üle tähtaja") on the dashboard, in Käidukava and on activity pages — derived,
+  never stored. Urgency is restrained: colour only in the last week, today and overdue.
+- Owners and admins choose **when to be reminded** per activity: 30 / 14 / 7 / 1 days
+  before and one custom value (0–365; 0 = on the due date). Default: 14 days.
+- Reminders go to the company's owners, admins and operators (not viewers) as **in-app
+  notifications**: a bell with the unread count, a notification centre (unread first, mark
+  read, mark all read, older pages) and a short toast for a new reminder. "Vaata tegevust"
+  opens the exact activity.
+- A daily background run creates reminders even if nobody opens KAIDLY; each reminder is
+  created once. Completing a recurring activity moves the countdown to the next occurrence
+  and turns the old reminders into history.
+- Not yet: email, push, weekly digest; a responsible KAIDLY member per activity (the
+  responsible person is free text and never guessed).
+
 ## 7. Likely after MVP (not committed)
 
 **Required before or at launch (decided 2026-10-02):**
@@ -158,8 +175,7 @@ Ideas:
 - Offline entry queue for sites without signal
 - PDF export of the operating log and *käidukava* for audits
 - Email reminders for overdue activities
-- **Deadline countdown and in-app reminders** (specified 2026-10-02, not built — see
-  IMPLEMENTATION_PLAN.md "Specified, not started")
+- Email, push and weekly digest delivery of reminders (in-app reminders exist)
 
 ## 8. Terminology
 
