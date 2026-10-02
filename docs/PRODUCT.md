@@ -156,6 +156,18 @@ See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
 - Not yet: email, push, weekly digest; a responsible KAIDLY member per activity (the
   responsible person is free text and never guessed).
 
+## 6c. Trial and manual activation (2026-10-02)
+
+- Every new company gets **14 days of full access** (exactly 14 × 24 h from creation).
+- Afterwards the company is **read-only**: everything stays visible (log, plan, deficiencies,
+  documents, history, notifications), nothing can be added or changed. User accounts are
+  never affected; a person can have one company active and another read-only.
+- KAIDLY activates full access **manually** (after an invoice is paid outside the app) for
+  1/3/6/12 months, until a date, or indefinitely; it can extend trials and end access. Every
+  change is in the admin log. No online payment, invoicing or pricing plans yet.
+- 90 days after expiry a company is flagged for a support decision; nothing is deleted
+  automatically.
+
 ## 7. Likely after MVP (not committed)
 
 **Required before or at launch (decided 2026-10-02):**

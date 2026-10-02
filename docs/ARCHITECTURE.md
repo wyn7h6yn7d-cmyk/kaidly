@@ -376,6 +376,26 @@ action, or who does it).
   or push would add a channel value plus a delivery worker reading the same reminder
   events. Not implemented — no email provider, no push infrastructure.
 
+## 6f. Company access (trial / active / expired)
+
+- `getOrgContext` also loads `organisation_access(org)` → `ctx.access` (status, writable,
+  end, expired since). While a company is read-only, `ctx.role` is **viewer** (pages and
+  components hide write actions with their existing role checks) and `ctx.memberRole` keeps
+  the real role (admin-only *reading* pages such as change history, and the owner's
+  delete/deactivate page, pass `readable` to `OrgPage`).
+- A write page opened anyway shows `ReadOnlyState`; `actionContext` answers
+  `company_read_only`; the database refuses regardless (DATABASE.md §5d).
+- `AccessBanner` (org layout): a quiet line during the trial ("Prooviperioodi lõpuni 9
+  päeva · … aktiivne kuni …"), a warn border in the last 3 days, a persistent notice when
+  expired. "Soovin jätkata" is a `mailto:` to the optional server setting
+  `KAIDLY_CONTACT_EMAIL`; without it the banner says to contact KAIDLY (no billing, no
+  payment provider).
+- `/admin/companies/[company]` → "KAIDLY ligipääs": status, dates, activated by, invoice
+  reference, notes; activate (1/3/6/12 months, indefinite, until a date), extend trial
+  (+7/+14/+30, a date), change reference, end access (typed company name). `/admin` shows
+  access counts; `/admin/companies?ligipaas=` filters trial / active / expired /
+  deactivated / ending_soon / expired_90 (one page of up to 200 when filtered).
+
 ## 7. Auth flow
 
 - Sign-up with name, email + password → confirmation email → `/auth/confirm` → `/o`.
@@ -445,6 +465,6 @@ action, or who does it).
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
 | Unit | `node --test` (built in), 76 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
-| End-to-end | Playwright, 123 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), reminder settings, bell and unread count, notification centre (mark one/all read, direct link), toast once per reminder (desktop and mobile), recurrence history, notification tenant isolation, ET/EN/RU countdowns, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
+| End-to-end | Playwright, 131 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), reminder settings, bell and unread count, notification centre (mark one/all read, direct link), toast once per reminder (desktop and mobile), recurrence history, notification tenant isolation, ET/EN/RU countdowns, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
 | Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit. |
 | CI | GitHub Actions `.github/workflows/ci.yml` | On PRs and pushes to non-main branches: **verify** (lint, typecheck, unit, build with placeholder public config), **database** (fresh local stack in the runner: migrations + seed, pgTAP, generated types up to date), **e2e** (Playwright against the local stack; traces kept on failure). Actions pinned to SHAs, no secrets, no hosted project. |

@@ -28,7 +28,8 @@ Each phase ends with a deployable app and every check passing: `npm run lint`,
 | Design & language | Layout system, refined landing page, ET/EN/RU with profile preference, change history, deficiency photos at creation, tab drafts | DESIGN.md §5a/§9, ARCHITECTURE.md §6b/§6c |
 | Accounts, company details, platform admin (2026-10-02) | Konto (email change, password change with current password, sign out other devices), company contact details editable by owners and admins, database-backed KAIDLY platform admin with `/admin` console, platform-wide deadlines, admin audit log — no service-role key | DATABASE.md §4/§5b, ARCHITECTURE.md §6d |
 | Deadline countdowns and reminders (2026-10-02) | Shared countdown, per-activity reminder thresholds, idempotent reminder generation (pg_cron daily + on change), in-app notification centre, bell, toast | DATABASE.md §5c, ARCHITECTURE.md §6e |
-| Tests | 537 pgTAP, 76 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
+| Trial and manual access (2026-10-02) | 14-day company trial, read-only expiry enforced in `org_ids()`, platform-admin activation/extension/expiry with audit, access banner, admin filters | DATABASE.md §5d, ARCHITECTURE.md §6f |
+| Tests | 593 pgTAP, 76 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
 | Reviews | Responsive (375/768/1440), accessibility (axe + keyboard), security regression (+ review gates), code quality; Phase 7–8: storage security, cross-tenant oracles, pagination | this file, "Review log" |
 
 **Still not final for Phase 3:** the electrical-professional domain review (PRODUCT.md §8).
@@ -106,6 +107,7 @@ All decided 2026-10-01 unless noted.
 - **Russian terminology review** by a native electrical professional before the RU UI is public (all of `lib/i18n/ru.ts`; key terms in PRODUCT.md §8).
 - Production Supabase project, migrations pushed, auth email templates, security headers, backups (Phase 10).
 - **Auth hardening for revocation:** revoked sessions/disabled accounts keep a valid access token until it expires (1 h). Decide on a shorter `jwt_expiry` or a server-side session check before launch.
+- **Contact address for "Soovin jätkata"**: set `KAIDLY_CONTACT_EMAIL` on Vercel; decide what happens to companies expired 90+ days (retention policy).
 - **Estonian electrical-domain wording review** of the ET UI (also listed on /admin/system).
 
 ## Open questions (need a decision or domain review)
