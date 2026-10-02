@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { unstable_rethrow, useRouter } from "next/navigation";
 import { useState } from "react";
 import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,9 @@ export function useSaveThenUpload(
     try {
       result = await action(previous, formData);
     } catch (error) {
+      // A redirect (successful save) arrives as a thrown Next.js signal: let it through
+      // without restoring the draft. Only real failures put the text back.
+      unstable_rethrow(error);
       draft.saveNow();
       throw error;
     }
