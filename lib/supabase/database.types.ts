@@ -1181,6 +1181,14 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      search_kaidly: {
+        Args: {
+          p_entry_types?: Database["public"]["Enums"]["log_entry_type"][]
+          p_per_group?: number
+          p_query: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       activity_frequency: "once" | "recurring"

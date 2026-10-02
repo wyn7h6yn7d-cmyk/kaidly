@@ -390,6 +390,28 @@ owner deactivate/reactivate, extension, activation with date / indefinite, manua
 restore, audit trail, 90-day flag, nothing deleted. Mutation-tested (no access check in
 `org_ids`, history through `org_ids`, never-expiring helper, readable table).
 
+## 5e. Global search (migration `global_search`)
+
+`public.search_kaidly(query, entry_types, per_group)` is **SECURITY INVOKER**: every table it
+reads is filtered by the caller's own RLS, so search returns nothing the user could not
+open anyway. It returns up to `per_group` (default 6, max 25) results per group: companies
+(name), sites (name, address), installations (name, identifier), operating-log entries
+(description, result, performer; plus entry types the app matched from localised labels —
+corrections link to their original), activities (title), deficiencies (title, description)
+and **ready** documents (title, original filename). No storage paths, tokens or internal
+notes are searched or returned. Deactivated companies are left out (their pages only show
+the deactivation notice); expired (read-only) companies stay searchable. Queries under two
+characters return nothing; `%`, `_` and `\` are literal. Trigram GIN indexes
+(`pg_trgm`) exist on exactly the searched text columns, because substring `ILIKE` cannot
+use B-tree indexes.
+
+Reports (ARCHITECTURE.md §6g) need no schema: they read the existing tables through RLS.
+
+pgTAP `160_global_search` (20): every entity and field, localised entry types, literal
+wildcards, unfinished uploads excluded, minimum length, other tenants and outsiders find
+nothing, expired searchable, deactivated left out, multi-company. Mutation-tested
+(SECURITY DEFINER makes the isolation tests fail).
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -421,6 +443,7 @@ restore, audit trail, 90-day flag, nothing deleted. Mutation-tested (no access c
 | `am_platform_admin()`, `admin_*` | platform admins (others: `not_found`) | §5b |
 | `my_notifications(unread_only, limit, offset)` | signed in (security invoker: own rows under RLS) | §5c |
 | `organisation_access(org)` | members (viewer+) | §5d |
+| `search_kaidly(query, entry_types, per_group)` | signed in (security invoker: caller's RLS) | §5e |
 | `admin_set_full_access`, `admin_extend_trial`, `admin_expire_access`, `admin_set_access_reference`, `admin_company_access`, `admin_access_overview`, `admin_company_access_list` | platform admins | §5d |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
@@ -531,7 +554,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 593 tests in 17 files, using the shared fixture
+`npm run test:db` runs pgTAP: 613 tests in 18 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -554,6 +577,7 @@ a user in both) and `helpers/sites.psql`.
 | `130_platform_admin` | 57 | §5b |
 | `140_activity_reminders` | 45 | §5c |
 | `150_organisation_access` | 56 | §5d |
+| `160_global_search` | 20 | §5e |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

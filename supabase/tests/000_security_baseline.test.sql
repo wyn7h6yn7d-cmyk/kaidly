@@ -88,7 +88,8 @@ select results_eq(
        ('private.org_ids(org_role)'),
        ('reactivate_organisation(uuid)'),
        ('resolve_deficiency(uuid,text,log_entry_type,timestamp with time zone,text)'),
-       ('revoke_invitation(uuid)') $$,
+       ('revoke_invitation(uuid)'),
+       ('search_kaidly(text,log_entry_type[],integer)') $$,
   'authenticated can execute exactly the reviewed functions'
 );
 
