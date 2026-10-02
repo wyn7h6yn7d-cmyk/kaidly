@@ -218,6 +218,7 @@ select results_eq(
        ('private.protect_last_owner()'),
        ('private.record_history()'),
        ('private.require_access_row(uuid)'),
+       ('private.require_live_session()'),
        ('private.require_platform_admin()'),
        ('private.scheduled_activity_reminders()'),
        ('private.session_active()'),

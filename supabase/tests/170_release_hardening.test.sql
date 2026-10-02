@@ -6,7 +6,7 @@ create extension if not exists pgtap with schema extensions;
 \ir helpers/fixture.psql
 \ir helpers/sites.psql
 
-select plan(18);
+select plan(20);
 
 -- Small limits for the test (the live values are in private.upload_limits).
 update private.upload_limits set per_user_hour = 3, per_user_day = 5, bytes_per_user_day = 1000, pending_per_user = 10, per_org_day = 6, bytes_per_org_day = 100000;
@@ -83,6 +83,13 @@ insert into auth.sessions (id, user_id) values ('5e000000-0000-4000-8000-0000000
 update auth.users set banned_until = now() + interval '100 years' where id = pg_temp.uid('a_operator');
 select pg_temp.login_session('a_operator', '5e000000-0000-4000-8000-000000000002');
 select is((select count(*)::int from public.sites), 0, 'a disabled account reads nothing, even with a live session');
+select throws_ok($$ select public.create_organisation('Keelatud OÜ', null) $$, '42501', 'session_required', 'a disabled account cannot create companies');
+select pg_temp.logout();
+reset role;
+update auth.users set banned_until = null where id = pg_temp.uid('a_operator');
+delete from auth.sessions where id = '5e000000-0000-4000-8000-000000000002';
+select pg_temp.login_session('a_operator', '5e000000-0000-4000-8000-000000000002');
+select throws_ok($$ select public.create_organisation('Tühistatud OÜ', null) $$, '42501', 'session_required', 'a revoked session cannot create companies either');
 select pg_temp.logout();
 reset role;
 select is((select count(*)::int from private.upload_events where created_at < now() - interval '3 days'), 0, 'old upload counters are cleaned up daily')

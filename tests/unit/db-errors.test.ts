@@ -11,6 +11,7 @@ test("RPC error codes map to their own messages", () => {
 
 test("upload abuse limits get their own message", () => {
   assert.equal(dbErrorCode({ code: "P0001", message: "upload_rate_limited" }), "upload_rate_limited");
+  assert.equal(dbErrorCode({ code: "42501", message: "session_required" }), "session_required");
 });
 
 test("SQLSTATEs map to generic codes", () => {
