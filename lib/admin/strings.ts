@@ -1,10 +1,12 @@
+import { ADMIN_MENU_ENTRY } from "./brand";
+
 // KAIDLY platform administration is used only by the KAIDLY team, so its interface is
 // Estonian-only (a documented exception to the ET/EN/RU rule — docs/ARCHITECTURE.md).
 // Customer-facing screens never use these strings.
 
 export const ADMIN = {
   brand: "KAIDLY Admin",
-  menuEntry: "KAIDLY Admin",
+  menuEntry: ADMIN_MENU_ENTRY,
   backToApp: "Tagasi rakendusse",
   nav: {
     overview: "Ülevaade",

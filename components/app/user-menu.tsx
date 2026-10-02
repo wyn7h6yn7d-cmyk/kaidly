@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { setLocale } from "@/lib/actions/locale";
-import { ADMIN } from "@/lib/admin/strings";
+import { ADMIN_MENU_ENTRY } from "@/lib/admin/brand";
 import { isLocale, LOCALE_NAMES, LOCALES } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -74,7 +74,7 @@ export function UserMenu({
           <DropdownMenuItem asChild>
             <Link href="/admin" lang="et">
               <ShieldCheck aria-hidden="true" />
-              {ADMIN.menuEntry}
+              {ADMIN_MENU_ENTRY}
             </Link>
           </DropdownMenuItem>
         )}

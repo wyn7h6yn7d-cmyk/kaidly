@@ -11,19 +11,13 @@ export async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
   const t = await getT();
   const content = LEGAL_CONTENT[t.locale];
   const d = content[doc];
-  const fill = (text: string) =>
-    text.split(/(\{[a-zA-Z]+\})/).map((part, i) => {
-      const key = /^\{([a-zA-Z]+)\}$/.exec(part)?.[1] as Field | undefined;
-      if (!key) return part;
-      const value = LEGAL[key];
-      return value ? (
-        value
-      ) : (
-        <mark key={i} className="border border-dashed border-k-warn bg-k-surface px-1 font-semibold text-k-ink">
-          [{content.missing[key]}]
-        </mark>
-      );
-    });
+  // A paragraph that needs a fact not supplied yet is replaced by one honest sentence —
+  // nothing is invented and no developer placeholders reach the public page.
+  const fill = (text: string) => {
+    const fields = [...text.matchAll(/\{([a-zA-Z]+)\}/g)].map((m) => m[1] as Field);
+    if (fields.some((f) => !LEGAL[f])) return <span className="italic text-k-muted">{content.pending}</span>;
+    return text.replace(/\{([a-zA-Z]+)\}/g, (_, f: Field) => LEGAL[f] ?? "");
+  };
   return (
     <div className="flex min-h-svh flex-col bg-k-paper text-k-ink">
       <SiteHeader />
@@ -36,9 +30,11 @@ export async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
           )}
           <h1 className="font-display text-display-2 font-extrabold">{d.title}</h1>
           <p className="mt-4 text-lead text-k-muted">{d.intro}</p>
-          <p className="mt-2 text-sm text-k-muted">
-            {content.updated}: {LEGAL.effectiveDate ? t.fmt.date(LEGAL.effectiveDate) : fill("{effectiveDate}")}
-          </p>
+          {LEGAL.effectiveDate && (
+            <p className="mt-2 text-sm text-k-muted">
+              {content.updated}: {t.fmt.date(LEGAL.effectiveDate)}
+            </p>
+          )}
           {d.sections.map((s) => (
             <section key={s.heading} className="mt-10">
               <h2 className="text-xl font-bold lg:text-2xl">{s.heading}</h2>

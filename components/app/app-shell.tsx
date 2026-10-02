@@ -4,7 +4,7 @@ import { BellPlaceholder, NotificationBell } from "@/components/notifications/be
 import { ReminderToastSlot } from "@/components/notifications/toast-slot";
 import { SearchButton } from "@/components/search/search-button";
 import { ShieldCheck } from "lucide-react";
-import { ADMIN } from "@/lib/admin/strings";
+import { ADMIN_MENU_ENTRY } from "@/lib/admin/brand";
 import { Logo, LogoMark } from "@/components/brand/logo";
 import { BottomNav, SidebarNav } from "./nav-links";
 import { getT } from "@/lib/i18n/server";
@@ -59,7 +59,7 @@ export async function AppShell({
               className="focus-on-dark flex h-11 items-center gap-3 rounded-sm px-3 text-[15px] font-semibold text-k-volt hover:bg-white/5"
             >
               <ShieldCheck className="size-[18px] shrink-0" aria-hidden="true" />
-              {ADMIN.menuEntry}
+              {ADMIN_MENU_ENTRY}
             </Link>
           </div>
         )}

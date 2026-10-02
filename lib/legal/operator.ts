@@ -11,7 +11,7 @@ export const LEGAL = {
   privacyEmail: null as string | null, // contact for privacy requests
   effectiveDate: null as string | null, // YYYY-MM-DD the documents take effect
   /** Data-processing region of the PRODUCTION Supabase project, e.g. "EU (Frankfurt)". */
-  hostingRegion: null as string | null,
+  hostingRegion: "EU (Ireland, eu-west-1)" as string | null, // verified: production project region
   /** Set to true only after the texts have been reviewed and approved. */
   approved: false,
 };
