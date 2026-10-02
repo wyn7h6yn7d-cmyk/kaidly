@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(17);
+select plan(18);
 
 -- ---------------------------------------------------------------------------
 -- Fixture: two auth users
@@ -172,6 +172,14 @@ select ok(
   not has_function_privilege('authenticated',
     'private.handle_new_user()', 'execute'),
   'authenticated cannot call the new-user trigger function directly'
+);
+
+-- Every auth user has a profile — including users that existed before the migrations
+-- (migration backfill_profiles); memberships and records reference profiles.
+reset role;
+select is_empty(
+  $$ select u.id from auth.users u where not exists (select 1 from public.profiles p where p.id = u.id) $$,
+  'every auth user has a profile'
 );
 
 select * from finish();

@@ -98,6 +98,9 @@ Helpers live in `private`, a schema not exposed through the Data API. All are
 `phone` ≤ 40, `preferred_locale` (`et` | `en` | `ru` | null — UI language, migration
 `language_preference`). Readable by the user and co-members; the user may update
 `full_name`, `phone` and `preferred_locale` of their own row only (column grants).
+Profiles are created by the `on_auth_user_created` trigger; users that already existed
+when the migrations were applied get theirs from the idempotent `backfill_profiles`
+migration (pgTAP: every auth user has a profile).
 
 ### organisations
 `name` 1–200, `slug` (unique; slugified name + 6 random characters; never changed),
@@ -338,7 +341,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 392 tests in 12 files, using the shared fixture
+`npm run test:db` runs pgTAP: 393 tests in 12 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
