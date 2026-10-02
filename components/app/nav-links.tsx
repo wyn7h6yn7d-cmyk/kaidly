@@ -27,7 +27,7 @@ export function SidebarNav({ orgSlug }: { orgSlug: string }) {
   const pathname = usePathname();
 
   return (
-    <ul className="flex flex-col gap-0.5">
+    <ul className="flex flex-col gap-1">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         const content = (
@@ -37,7 +37,7 @@ export function SidebarNav({ orgSlug }: { orgSlug: string }) {
           </>
         );
         const base =
-          "focus-on-dark flex h-11 items-center gap-3 rounded-sm px-3 text-[15px] font-medium";
+          "focus-on-dark flex h-11 items-center gap-3 rounded-md px-3 text-[15px] font-medium transition-colors motion-reduce:transition-none";
 
         const href = hrefFor(orgSlug, item);
         const active = isActive(pathname, href, item);
@@ -49,8 +49,8 @@ export function SidebarNav({ orgSlug }: { orgSlug: string }) {
               className={cn(
                 base,
                 active
-                  ? "bg-white/10 text-white shadow-[inset_3px_0_0_hsl(var(--k-volt))]"
-                  : "text-white/85 hover:bg-white/5 hover:text-white",
+                  ? "bg-white/[0.12] font-semibold text-white shadow-[inset_3px_0_0_hsl(var(--k-volt)),inset_0_0_0_1px_rgba(255,255,255,0.08)]"
+                  : "text-white/80 hover:bg-white/[0.06] hover:text-white",
               )}
             >
               {content}

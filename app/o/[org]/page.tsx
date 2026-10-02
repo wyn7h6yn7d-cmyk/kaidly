@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronRight, Plus, UserPlus } from "lucide-react";
+import { Bell, ChevronRight, Plus, UserPlus } from "lucide-react";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
@@ -100,19 +100,28 @@ export default async function OverviewPage({
               </section>
             )}
 
-            {!onboarding.complete &&
-              !onboarding.hidden &&
-              // The membership role decides who waits for an administrator; an expired company's
-              // admin sees the guide, which then names the ended trial as the blocker.
-              (counts.sites === 0 && !hasRole(ctx.memberRole, "admin") ? (
-                <div className="mb-10">
+            {!onboarding.complete && !onboarding.hidden && (
+              <div className="mb-10 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-8">
+                {/* The membership role decides who waits for an administrator; an expired company's
+                    admin sees the guide, which then names the ended trial as the blocker. */}
+                {counts.sites === 0 && !hasRole(ctx.memberRole, "admin") ? (
                   <EmptyState title={t.app.emptyStates.sites.title} body={t.app.onboarding.memberWaiting} />
-                </div>
-              ) : (
-                <div className="mb-10">
+                ) : (
                   <OnboardingChecklist orgSlug={org.slug} steps={onboarding.steps} hideable />
-                </div>
-              ))}
+                )}
+                {/* Real product guidance, not filler: how deadlines and reminders will work. */}
+                <aside aria-labelledby="reminders-card" className="border border-k-line bg-k-surface px-5 py-5">
+                  <h2 id="reminders-card" className="flex items-center gap-2 font-bold">
+                    <Bell className="size-4 text-k-green" aria-hidden="true" />
+                    {t.app.help.reminders.title}
+                  </h2>
+                  <p className="mt-2 text-[15px] text-k-ink/75">{t.app.help.reminders.card}</p>
+                  <Link href={`${base}/abi#meeldetuletused`} className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-k-green underline underline-offset-4">
+                    {t.app.help.reminders.cardLink}
+                  </Link>
+                </aside>
+              </div>
+            )}
 
             {showAttention && (
               <section aria-labelledby="attention" className="mb-12">

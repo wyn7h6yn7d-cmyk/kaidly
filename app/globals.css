@@ -55,7 +55,7 @@
     --k-gutter: clamp(1.25rem, 4.2vw, 4rem);
     --k-gutter-app: clamp(1.25rem, 3.6vw, 2.5rem);
     --k-max-site: 100rem; /* 1600 px incl. gutters */
-    --k-max-app: 78rem; /* 1248 px incl. gutters */
+    --k-max-app: 92rem; /* 1472 px incl. gutters — uses wide screens without stretching text */
     --k-section-y: clamp(4.5rem, 3rem + 6vw, 9rem);
   }
 }

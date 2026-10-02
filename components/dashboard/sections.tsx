@@ -111,10 +111,22 @@ export async function OnboardingChecklist({
         <Heading id="onboarding" className="text-xl font-bold">
           {copy.title}
         </Heading>
-        <p className="text-sm font-semibold tabular-nums text-k-muted">{copy.progress(done, steps.length)}</p>
+        <p className="text-sm font-semibold tabular-nums text-k-ink">{copy.progress(done, steps.length)}</p>
       </div>
-      <p className="mt-1 text-k-muted">{done === steps.length ? copy.complete : copy.intro}</p>
-      <ol className="mt-5 grid grid-cols-1 gap-4">
+      {/* Same source of truth as the count: the real onboarding state. */}
+      <div
+        role="progressbar"
+        aria-label={copy.title}
+        aria-valuemin={0}
+        aria-valuemax={steps.length}
+        aria-valuenow={done}
+        aria-valuetext={copy.progress(done, steps.length)}
+        className="mt-3 h-1.5 overflow-hidden rounded-full bg-k-paper-2"
+      >
+        <div className="h-full rounded-full bg-k-green" style={{ width: `${Math.round((done / steps.length) * 100)}%` }} />
+      </div>
+      <p className="mt-3 text-k-ink/75">{done === steps.length ? copy.complete : copy.intro}</p>
+      <ol className="mt-6 grid grid-cols-1 gap-5">
         {steps.map((step, index) => {
           const text = copy.steps[step.key];
           const current = index === next;
@@ -131,23 +143,29 @@ export async function OnboardingChecklist({
             <li key={step.key} className="flex gap-4" aria-current={current ? "step" : undefined}>
               <span
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center border text-sm font-bold",
-                  step.done ? "border-k-green bg-k-green text-white" : current ? "border-k-ink" : "border-k-line text-k-muted",
+                  "flex size-9 shrink-0 items-center justify-center rounded-full border text-[15px] font-bold tabular-nums",
+                  step.done
+                    ? "border-k-green bg-k-green text-white"
+                    : current
+                      ? "border-2 border-k-ink text-k-ink"
+                      : "border-k-line text-k-muted",
                 )}
                 aria-hidden="true"
               >
                 {step.done ? <Check className="size-4" /> : index + 1}
               </span>
-              <div className="min-w-0 flex-1">
-                <p className={cn("font-semibold", !step.done && !current && "text-k-muted")}>
+              <div className="min-w-0 flex-1 pt-1">
+                <p className={cn("text-[17px] font-semibold leading-snug", step.done ? "text-k-ink/70" : !current && "text-k-ink/80")}>
                   <span className="sr-only">{copy.stepLabel(index + 1)}: </span>
                   {text.title}
                   {step.done && <span className="ml-2 text-sm font-medium text-k-green">{copy.done}</span>}
                 </p>
-                {!step.done && <p className="text-sm text-k-muted">{text.body}</p>}
-                {!step.done && reason && <p className="mt-1 text-sm">{reason}</p>}
+                {!step.done && <p className="mt-0.5 text-[15px] text-k-ink/70">{text.body}</p>}
+                {!step.done && reason && (
+                  <p className="mt-2 inline-block rounded-sm bg-k-paper-2 px-2.5 py-1 text-sm text-k-ink/80">{reason}</p>
+                )}
                 {step.href && (
-                  <Button asChild size={current ? "lg" : "sm"} variant={current ? "default" : "outline"} className="mt-2">
+                  <Button asChild size={current ? "lg" : "sm"} variant={current ? "default" : "outline"} className="mt-3">
                     <Link href={step.href}>{"cta" in text ? text.cta : text.title}</Link>
                   </Button>
                 )}

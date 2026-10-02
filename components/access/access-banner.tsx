@@ -53,18 +53,26 @@ export async function AccessBanner({ ctx }: { ctx: OrgContext }) {
   if (!access.endsAt) return null;
   const days = daysLeft(access.endsAt);
   const urgent = days <= 3;
+  // A quiet status panel during the trial; a warn edge only in the last three days.
+  // Not a live region: it is page context, not an event to announce.
   return (
-    <p
+    <section
+      aria-label={t.access.trial(days)}
       data-testid="access-banner"
       className={cn(
-        "mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm",
-        urgent ? "border-l-4 border-k-warn bg-k-surface px-4 py-2" : "text-k-muted",
+        "mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-sm border bg-k-surface px-4 py-3 text-sm",
+        urgent ? "border-k-line border-l-4 border-l-k-warn" : "border-k-line",
       )}
     >
-      <Clock className="size-4 shrink-0" aria-hidden="true" />
-      <span className={cn(urgent && "font-semibold text-k-ink")}>{t.access.trial(days)}</span>
-      <span>{t.access.trialUntil(t.fmt.dateTime(access.endsAt))}</span>
-      {urgent && <ContinueLink ctx={ctx} />}
-    </p>
+      <span
+        aria-hidden="true"
+        className={cn("flex size-8 shrink-0 items-center justify-center rounded-full", urgent ? "bg-k-warn/10 text-k-warn" : "bg-k-paper-2 text-k-muted")}
+      >
+        <Clock className="size-4" />
+      </span>
+      <span className="font-semibold text-k-ink">{t.access.trial(days)}</span>
+      <span className="text-k-muted">{t.access.trialUntil(t.fmt.dateTime(access.endsAt))}</span>
+      {urgent && <ContinueLink ctx={ctx} className="sm:ml-auto" />}
+    </section>
   );
 }
