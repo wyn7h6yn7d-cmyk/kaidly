@@ -266,6 +266,19 @@ only), `.k-grain`, `.k-grid`. Components: `components/marketing/`. Copy: `t.land
   underlined) in the public header/footer from 1024 px, a compact code select below; in
   the app, the account menu and the account page. Switching re-renders in place.
 
+## 5d. Account, company details and KAIDLY Admin (2026-10-02)
+
+- **Konto** is one column of sections (profile, email, password, language, sign-ins), each
+  with a heading and one short explanation; secondary actions are outline buttons.
+- **Company details** sit on Seaded → Ettevõte; read-only roles see the same fields as a
+  definition list.
+- **KAIDLY Admin** must never be mistaken for a customer screen: ink header with a shield
+  icon and "KAIDLY Admin", white work surface, a standing grey notice, tab navigation.
+  Tables scroll inside their own focusable frame on narrow screens (never the page).
+  Confirmations are native dialogs; destructive ones require typing the user's email.
+  Estonian-only by design (ARCHITECTURE.md §6d). Urgency colours as elsewhere: danger for
+  overdue/critical, warn for due soon/high; normal future dates stay neutral.
+
 ## 6. Mobile UX
 
 The app is designed **mobile-first** for the technician on site; desktop gets more columns,

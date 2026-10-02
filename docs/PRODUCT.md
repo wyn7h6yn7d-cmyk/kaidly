@@ -123,6 +123,22 @@ See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
 - **Estonian first.** UI in Estonian; terms as a *käidukorraldaja* uses them.
 - **Calm, precise interface.** The app is a tool, not a showcase.
 
+## 6a. Accounts, company details and KAIDLY administration (2026-10-02)
+
+- **Konto:** name, phone, email change (confirmed through Supabase Auth; the account stays
+  the same), password change with the current password, forgotten-password link, language,
+  sign out here or on all other devices. KAIDLY never stores passwords.
+- **Ettevõte** (EN *Organisation*, RU *Организация*): owners and admins edit name, registry
+  code, contact email, phone, address and notes; operators and viewers read them. The
+  company name is display data; the link address (slug) never changes.
+- **KAIDLY Admin** (platform administration, for the KAIDLY team only): overview of real
+  counts ("Mis toimub KAIDLYs?"), user and company directories with support metadata,
+  platform-wide deadlines, system facts and launch blockers, an audit log of every admin
+  change. Admins can change or remove memberships, disable/re-enable accounts, revoke
+  sign-ins and send a password-reset email. They **cannot** see passwords, sign in as a
+  user, or read customer documents and log contents, and they are not members of customer
+  companies.
+
 ## 7. Likely after MVP (not committed)
 
 **Required before or at launch (decided 2026-10-02):**
@@ -142,6 +158,8 @@ Ideas:
 - Offline entry queue for sites without signal
 - PDF export of the operating log and *käidukava* for audits
 - Email reminders for overdue activities
+- **Deadline countdown and in-app reminders** (specified 2026-10-02, not built — see
+  IMPLEMENTATION_PLAN.md "Specified, not started")
 
 ## 8. Terminology
 

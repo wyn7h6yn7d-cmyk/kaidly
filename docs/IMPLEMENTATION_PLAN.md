@@ -26,10 +26,32 @@ Each phase ends with a deployable app and every check passing: `npm run lint`,
 | 8 Ülevaade | "Mis vajab tähelepanu" dashboard on real tenant-scoped data, first-use checklist, installation status, quick entry | DATABASE.md §10a, DESIGN.md §5 |
 | CI | GitHub Actions: verify, database, e2e against a local stack in the runner | ARCHITECTURE.md §10 |
 | Design & language | Layout system, refined landing page, ET/EN/RU with profile preference, change history, deficiency photos at creation, tab drafts | DESIGN.md §5a/§9, ARCHITECTURE.md §6b/§6c |
-| Tests | 392 pgTAP, 56 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
+| Accounts, company details, platform admin (2026-10-02) | Konto (email change, password change with current password, sign out other devices), company contact details editable by owners and admins, database-backed KAIDLY platform admin with `/admin` console, platform-wide deadlines, admin audit log — no service-role key | DATABASE.md §4/§5b, ARCHITECTURE.md §6d |
+| Tests | 492 pgTAP, 68 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
 | Reviews | Responsive (375/768/1440), accessibility (axe + keyboard), security regression (+ review gates), code quality; Phase 7–8: storage security, cross-tenant oracles, pagination | this file, "Review log" |
 
 **Still not final for Phase 3:** the electrical-professional domain review (PRODUCT.md §8).
+
+## Specified, not started
+
+### Deadline countdown and reminders (specified 2026-10-02, not approved for build)
+- Derived countdown for every active scheduled activity from `next_due_on` and today in
+  Tallinn — never stored ("84 päeva jäänud", "Tähtaeg täna", "3 päeva üle tähtaja"). One
+  shared calculation/formatting module used by dashboard, Käidukava, installation page and
+  notification centre (extend `lib/schedule.ts`; fold in the admin console's `fmtDays`).
+- Urgency steps: > 14 days neutral; ≤ 14 warning; ≤ 7 stronger warning; today; overdue
+  critical. Normal future activities never look alarming.
+- Persistent in-app notifications: default threshold 14 days (designed for 30/14/7/1/custom);
+  content = activity, company, site, installation, due date, days left/overdue, "Vaata
+  tegevust" deep link. Bell/notification centre with unread/read, mark one/all read, newest
+  first; optional bottom-right toast (mobile-appropriate) that is never the only copy.
+- Idempotency key: (activity, due occurrence, threshold, user) — unique constraint; a
+  completed recurring activity advances by the existing anchored logic, old reminders
+  become historical/read, the new occurrence gets its own reminders. No copied dates.
+- Recipients: current members whose role can see the activity; active companies only;
+  RLS-scoped, no cross-tenant leakage.
+- Generation must eventually run in the background (pg_cron or Vercel Cron — **not chosen**);
+  email/push/weekly digest later, not now.
 
 ## Next phases (not started)
 
@@ -103,6 +125,8 @@ All decided 2026-10-01 unless noted.
 - **Privacy-erasure workflow** for legitimate personal-data deletion (D32), designed with legal input.
 - **Russian terminology review** by a native electrical professional before the RU UI is public (all of `lib/i18n/ru.ts`; key terms in PRODUCT.md §8).
 - Production Supabase project, migrations pushed, auth email templates, security headers, backups (Phase 10).
+- **Auth hardening for revocation:** revoked sessions/disabled accounts keep a valid access token until it expires (1 h). Decide on a shorter `jwt_expiry` or a server-side session check before launch.
+- **Estonian electrical-domain wording review** of the ET UI (also listed on /admin/system).
 
 ## Open questions (need a decision or domain review)
 

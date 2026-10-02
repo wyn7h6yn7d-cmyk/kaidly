@@ -145,7 +145,8 @@ code identifiers are English.
 |---|---|---|
 | `/`, `/auth/*` | landing, authentication | public |
 | `/invite/[token]` | invitation preview and accept | signed in |
-| `/o`, `/o/uus`, `/konto` | organisation picker, create, own profile and language | signed in |
+| `/o`, `/o/uus`, `/konto` | organisation picker, create, own account: name/phone, email change (Auth confirmation), password change (current password required), language, sign out here / other devices | signed in |
+| `/admin`, `/admin/users`, `/admin/users/[user]`, `/admin/companies`, `/admin/companies/[company]`, `/admin/deadlines`, `/admin/system`, `/admin/audit` | KAIDLY platform administration (Ülevaade, Kasutajad, Ettevõtted, Tähtajad, Süsteem, Admini logi) — Estonian-only, `noindex` | platform admin (everyone else: ordinary 404) |
 | `/o/[org]` | overview: what needs attention (overdue, due soon, high/critical deficiencies, latest entries, sites with open items), first-use checklist | viewer |
 | `/o/[org]/sissekanne` | quick entry: recently used installations first, then by site; one installation → straight to its form | operator |
 | `/o/[org]/objektid` (+ `?arhiiv`) | sites | viewer |
@@ -164,7 +165,7 @@ code identifiers are English.
 | `/o/[org]/puudused/uus?paigaldis=`, `/[deficiency]/muuda`, `/lahenda` | record, edit, resolve | operator |
 | `/o/[org]/puudused/[deficiency]` | detail; Märgi töös / Lahenda puudus | viewer |
 | `…/[installation]/puudused` | active first; latest 50 resolved with the total and a link to the full list | viewer |
-| `/o/[org]/seaded`, `/seaded/liikmed` | settings (owner edits), members and invitations | viewer (admin manages) |
+| `/o/[org]/seaded`, `/seaded/liikmed` | company details (owners and admins edit; slug stays), members and invitations | viewer (admin manages) |
 | `/o/[org]/seaded/ajalugu` (`?ala=`, `lk`) | change history, read-only | admin |
 | `/o/[org]/seaded/kustuta` | delete (no history) or deactivate (history) the organisation, typed-name confirmation | owner |
 | `/o/[org]/abi` | getting-started guide with real progress, six core terms | viewer |
@@ -325,12 +326,48 @@ action, or who does it).
 - Auth forms use `method="post"` so a submit before hydration can never put credentials in
   the URL.
 
+## 6d. Platform administration (`/admin`)
+
+- **Authorisation is database-backed:** `private.platform_admins` keyed by `auth.users.id`
+  and `private.is_platform_admin()` (DATABASE.md §5b). Never an email comparison, a
+  localStorage flag or a client claim; the founder's email appears only in the one-off
+  bootstrap command, never in code (a unit test checks).
+- `lib/data/admin.ts` (`server-only`): `isPlatformAdmin()` (cached per request, RPC
+  `am_platform_admin`) and `requirePlatformAdmin()` → `notFound()`. The layout, every page
+  and every action call it, and every read/write is an RPC that checks again in the
+  database. Non-admins get the ordinary 404; layout metadata and the loading state contain
+  no admin wording.
+- `lib/actions/admin.ts`: role change, remove membership, disable/re-enable account, revoke
+  sessions, send password reset. High-impact actions use `ConfirmAction` — a native
+  `<dialog>` plus, for removal and disabling, typing the user's email, re-checked on the
+  server. There is deliberately no impersonation and no way to see or set a password.
+- **No service-role key.** Nothing in the app reads `SUPABASE_SERVICE_ROLE_KEY`; no Vercel
+  variable is needed. (E2E fixtures use the *local* stack's key only to create test users.)
+- **Estonian-only exception:** the console is used only by the KAIDLY team, so its copy
+  lives in `lib/admin/strings.ts` (not the ET/EN/RU dictionaries) and its shell sets
+  `lang="et"`. Customer-facing screens stay fully localised.
+- Visually distinct: dark ink header with "KAIDLY Admin", white work surface, a standing
+  notice that the console shows support metadata only and logs every change.
+- The account menu shows "KAIDLY Admin" only when `am_platform_admin()` is true.
+
 ## 7. Auth flow
 
 - Sign-up with name, email + password → confirmation email → `/auth/confirm` → `/o`.
   The name is passed as user metadata and copied into `profiles` by trigger.
 - Sign-in → `?next=` (if allowed) or `/o` (→ last used organisation from Phase 2).
 - Password recovery email → `/auth/confirm?next=/auth/update-password` → new password → `/o`.
+- **Account (`/konto`)**: email change via `supabase.auth.updateUser({ email })` — same
+  user id; Auth sends confirmation (to both addresses with secure email change) and the
+  profile email follows by trigger once confirmed. Password change via the
+  `changePassword` Server Action: the **current password** is verified with a throw-away,
+  non-persisting client (that check session is signed out again), then `updateUser({ password })`
+  and `signOut({ scope: "others" })`. "Sign out other devices" = `signOut({ scope: "others" })`.
+  Passwords travel only in POST bodies, are never stored, logged or returned, and the form
+  never re-renders typed passwords (unit + E2E: no credential in any URL, request URL or table).
+  Revocation removes refresh tokens at once; already-issued access tokens lapse at expiry
+  (≤ 1 h, `jwt_expiry`), because JWTs are verified locally (`getClaims`).
+- Admin-initiated reset sends the normal recovery email; it uses the PKCE flow, so the link
+  works across browsers only with the `token_hash` recovery template (README).
 - A new user with no memberships sees "Loo organisatsioon" (create) or pending invitations
   for their email.
 - Inviting (D4): admin enters email + role → `create_invitation()` returns a random token
@@ -381,7 +418,7 @@ action, or who does it).
 | Level | Tool | Scope |
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
-| Unit | `node --test` (built in), 56 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
-| End-to-end | Playwright, 80 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
+| Unit | `node --test` (built in), 68 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
+| End-to-end | Playwright, 113 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
 | Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit. |
 | CI | GitHub Actions `.github/workflows/ci.yml` | On PRs and pushes to non-main branches: **verify** (lint, typecheck, unit, build with placeholder public config), **database** (fresh local stack in the runner: migrations + seed, pgTAP, generated types up to date), **e2e** (Playwright against the local stack; traces kept on failure). Actions pinned to SHAs, no secrets, no hosted project. |

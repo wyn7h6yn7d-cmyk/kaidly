@@ -64,6 +64,16 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   deleted; history is written by triggers only. Don't add update/delete paths.
 - Organisations with operational history are never deleted (only deactivated); a deactivated
   organisation is read-only through `private.org_ids()` — keep new write paths going through it.
+- Company name is mutable display data; the slug is the stable route identifier and is
+  never regenerated or client-writable.
+- KAIDLY platform administration (`/admin`) is authorised **only** by
+  `private.is_platform_admin()` (table `private.platform_admins`, keyed by user id). Never
+  by email, localStorage or a client claim; organisation roles never grant it; it never
+  adds memberships or bypasses tenant RLS. Every `admin_*` function calls
+  `private.require_platform_admin()` (→ `not_found`), returns metadata only (no document
+  or log content, no credentials) and audits mutations in `private.admin_audit_log`. No
+  impersonation, no viewing or setting passwords. Admins are granted only through
+  `private.bootstrap_platform_admin()` by the database owner (DATABASE.md §5b).
 - After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
 - Files: one private bucket; object paths come from the database; browsers upload only to
@@ -86,6 +96,7 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Select explicit columns. Map database errors to Estonian user messages.
 - Lists that grow over time are paginated with a deterministic order (id tie-break); no
   per-row queries (N+1) and no signing URLs for whole lists.
+- Exception: the internal KAIDLY Admin console is Estonian-only (`lib/admin/strings.ts`).
 - UI strings live in `lib/i18n/et.ts` (source) **and** `en.ts`, `ru.ts` (same keys — the typecheck
   and `tests/unit/i18n.test.ts` fail otherwise). Server code: `const t = await getT()` from
   `@/lib/i18n/server`; client components: `const t = useT()` from `@/lib/i18n/client`. No
