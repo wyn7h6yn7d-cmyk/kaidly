@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, use, useContext, useMemo } from "react";
+import { createContext, use, useContext, useEffect, useMemo } from "react";
 import { et } from "./et";
 import { type Messages, type T, withFormat } from "./index";
 import type { Locale } from "./locales";
@@ -29,6 +29,10 @@ export function I18nProvider({ locale, children }: { locale: Locale; children: R
   const loaded = load(locale);
   const messages = loaded instanceof Promise ? use(loaded) : loaded;
   const value = useMemo(() => withFormat(locale, messages), [locale, messages]);
+  // <html lang> is set by an inline script on page load; keep it right after in-place switches.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
   return <I18nContext value={value}>{children}</I18nContext>;
 }
 

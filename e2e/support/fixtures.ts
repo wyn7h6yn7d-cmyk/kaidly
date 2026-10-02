@@ -115,7 +115,8 @@ export async function login(page: Page, user: TestUser, next?: string) {
   await page.goto(`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
   await page.locator('input[name="email"]:visible').fill(user.email);
   await page.locator('input[name="password"]:visible').fill(user.password);
-  await page.getByRole("button", { name: "Logi sisse" }).click();
+  // Language-independent: the sign-in form's submit button.
+  await page.locator('form button[type="submit"]:visible').click();
   await page.waitForURL((url) => !url.pathname.startsWith("/auth/login"));
 }
 

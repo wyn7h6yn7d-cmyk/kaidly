@@ -858,6 +858,7 @@ export const et = {
       description: "Sinu nimi on näha kolleegidele sinu organisatsioonides ja sinu sissekannete juures.",
       phone: "Telefon",
       emailReadOnly: "E-posti aadressi muutmine ei ole veel võimalik.",
+      languageHint: "Kasutajaliidese keel. Valik salvestatakse sinu kontole ja kehtib kõigis seadmetes.",
     },
   },
   config: {
