@@ -16,6 +16,7 @@ import {
 import { setLocale } from "@/lib/actions/locale";
 import { ADMIN_MENU_ENTRY } from "@/lib/admin/brand";
 import { isLocale, LOCALE_NAMES, LOCALES } from "@/lib/i18n";
+import { clearSessionDrafts } from "@/components/forms/use-session-draft";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/client";
@@ -37,6 +38,7 @@ export function UserMenu({
   const router = useRouter();
 
   const signOut = async () => {
+    clearSessionDrafts();
     await createClient().auth.signOut();
     router.replace("/auth/login");
     router.refresh();

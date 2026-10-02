@@ -54,7 +54,10 @@ async function Notifications({ searchParams }: { searchParams: Search }) {
         )}
       </div>
       {rows.length === 0 ? (
-        <p className="text-k-muted">{all ? copy.empty : copy.emptyUnread}</p>
+        <div className="border border-dashed border-k-line bg-k-surface px-4 py-6 sm:px-6">
+          <p className="font-semibold">{all ? copy.empty : copy.emptyUnread}</p>
+          <p className="mt-1 text-k-muted">{copy.emptyHint}</p>
+        </div>
       ) : (
         <NotificationList items={rows} />
       )}

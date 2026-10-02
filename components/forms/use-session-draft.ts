@@ -13,6 +13,21 @@ function read(form: HTMLFormElement): Record<string, string> {
 }
 
 /**
+ * Removes every unsaved form draft of this tab. Called on explicit sign-out, so the next
+ * person using the same tab never sees someone else's unsaved text. (An expired session is
+ * not cleared: the same person signs in again and keeps the draft.)
+ */
+export function clearSessionDrafts() {
+  try {
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith("kaidly:draft:")) sessionStorage.removeItem(key);
+    }
+  } catch {
+    // Storage unavailable: nothing to clear.
+  }
+}
+
+/**
  * Keeps what was typed into a form in sessionStorage (this tab only) until it is saved,
  * so a reload or a lost connection doesn't cost the text. Not an offline mode: nothing is
  * sent later, and closing the tab discards the draft (shared devices). `key` null = off.

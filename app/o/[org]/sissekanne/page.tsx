@@ -31,7 +31,7 @@ function InstallationLink({
           {installation.identifier && (
             <span className="mr-2 font-mono text-sm font-semibold text-k-green">{installation.identifier}</span>
           )}
-          <span className="font-semibold">{installation.name}</span>
+          <span className="font-semibold [overflow-wrap:anywhere]">{installation.name}</span>
           {context && <span className="block text-sm text-k-muted">{context}</span>}
         </span>
         <ChevronRight className="size-5 shrink-0 text-k-grey" aria-hidden="true" />
@@ -80,7 +80,7 @@ export default async function QuickEntryPage({ params }: { params: Promise<{ org
             {active.length === 0 ? (
               <EmptyState title={copy.none} />
             ) : (
-              <div className="grid max-w-2xl gap-8">
+              <div className="grid max-w-2xl grid-cols-[minmax(0,1fr)] gap-8">
                 {recent.length > 0 && (
                   <section aria-labelledby="quick-recent">
                     <h2 id="quick-recent" className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-k-muted">

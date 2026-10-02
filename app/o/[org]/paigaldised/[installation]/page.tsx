@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Pencil, Plus } from "lucide-react";
+import { CalendarPlus, FilePlus, Pencil, Plus, TriangleAlert } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
 import { OrgPage } from "@/components/app/org-page";
 import { ConfirmForm } from "@/components/forms/confirm-form";
@@ -98,6 +98,36 @@ export default async function InstallationOverviewPage({
                     s.noOpen
                   )}
                 </p>
+              </section>
+            )}
+
+            {canWrite && (
+              <section aria-labelledby="quick-actions" className="mb-8">
+                <h2 id="quick-actions" className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-k-muted">
+                  {s.quickTitle}
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild variant="outline">
+                    <Link href={`/o/${org.slug}/puudused/uus?paigaldis=${installation.id}`}>
+                      <TriangleAlert aria-hidden="true" />
+                      {s.quickDeficiency}
+                    </Link>
+                  </Button>
+                  {isAdmin && (
+                    <Button asChild variant="outline">
+                      <Link href={`/o/${org.slug}/kaidukava/uus?paigaldis=${installation.id}`}>
+                        <CalendarPlus aria-hidden="true" />
+                        {s.quickActivity}
+                      </Link>
+                    </Button>
+                  )}
+                  <Button asChild variant="outline">
+                    <Link href={`/o/${org.slug}/dokumendid/uus?paigaldis=${installation.id}`}>
+                      <FilePlus aria-hidden="true" />
+                      {s.quickDocument}
+                    </Link>
+                  </Button>
+                </div>
               </section>
             )}
 

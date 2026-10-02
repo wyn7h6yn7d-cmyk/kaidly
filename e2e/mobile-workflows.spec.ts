@@ -93,4 +93,27 @@ test.describe("Välitöö telefonis", () => {
     await expect(page.getByText("Taastasime selle vahekaardi salvestamata mustandi.")).toHaveCount(0);
     await expect(field(page, "description")).toHaveValue("");
   });
+  test("drafts stay with their installation and are removed on sign-out", async ({ page }) => {
+    const org = await createOrg();
+    const site = await createSite(org, "Objekt");
+    const first = await createInstallation(org, site, "Peakilp");
+    const second = await createInstallation(org, site, "Lao kilp");
+    const formUrl = (id: string) => `/o/${org.slug}/paigaldised/${id}/paevik/uus`;
+    await login(page, org.users.operator, formUrl(first));
+    await field(page, "description").fill("Poolik kirjeldus peakilbi kohta.");
+    await page.waitForTimeout(500);
+
+    await page.goto(formUrl(second));
+    await expect(field(page, "description")).toHaveValue("");
+
+    await page.goto(formUrl(first));
+    await expect(field(page, "description")).toHaveValue("Poolik kirjeldus peakilbi kohta.");
+    expect(await page.evaluate(() => Object.keys(sessionStorage).filter((k) => k.startsWith("kaidly:draft:")).length)).toBe(1);
+
+    await page.goto(`/o/${org.slug}`);
+    await page.getByRole("button", { name: "Konto" }).first().click();
+    await page.getByRole("menuitem", { name: "Logi välja" }).click();
+    await page.waitForURL(/\/auth\/login/);
+    expect(await page.evaluate(() => Object.keys(sessionStorage).filter((k) => k.startsWith("kaidly:draft:")).length)).toBe(0);
+  });
 });

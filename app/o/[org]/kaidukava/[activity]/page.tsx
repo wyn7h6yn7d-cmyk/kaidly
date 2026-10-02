@@ -87,7 +87,11 @@ export default async function ActivityPage({
             />
             {query.tehtud && (
               <div className="mb-6">
-                <FormMessage success={copy.completed} />
+                <FormMessage
+                  success={`${copy.completed} ${
+                    activity.nextDueOn ? copy.completedNext(t.fmt.date(activity.nextDueOn)) : copy.completedFinal
+                  }`}
+                />
               </div>
             )}
             {activity.archivedAt && (

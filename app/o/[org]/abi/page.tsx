@@ -14,9 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.app.help.title };
 }
 
-const TERMS = ["site", "installation", "log", "schedule", "deficiency", "document"] as const;
+const TERMS = ["site", "installation", "log", "schedule", "deficiency", "document", "reports", "search", "import", "readOnly"] as const;
 
-/** Abi: the getting-started guide with real progress, and the six core terms. No knowledge base. */
+/** Abi: the getting-started guide with real progress, reminders and the core terms. No knowledge base. */
 export default async function HelpPage({ params }: { params: Promise<{ org: string }> }) {
   return (
     <OrgPage

@@ -63,6 +63,8 @@ test("main pages pass axe (WCAG 2.1 AA) and fit the screen @responsive", async (
     `${base}/dokumendid/${doc}`,
     `${base}/abi`,
     `${base}/seaded/kustuta`,
+    `${base}/seaded/import`,
+    "/teavitused",
   ];
   // An empty second organisation: the getting-started checklist and module empty states.
   const empty = await createOrg("Tühi OÜ");
