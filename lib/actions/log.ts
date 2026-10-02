@@ -1,13 +1,13 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { getInstallation } from "@/lib/data/sites";
 import { dbErrorCode } from "@/lib/db/errors";
 import { createClient } from "@/lib/supabase/server";
 import { field } from "@/lib/validation/common";
 import { correctionSchema, logEntrySchema } from "@/lib/validation/log";
 import { actionContext } from "./context";
-import { type ActionState, failure, invalidInput } from "./state";
+import { savedOrRedirect } from "./saved";
+import { type ActionState, failure, invalidInput, type SavedRecord } from "./state";
 
 const LOG_TIME_MESSAGES = { future: "occurred_in_future", time: "invalid_time" } as const;
 
@@ -26,18 +26,10 @@ function input(formData: FormData) {
   };
 }
 
-/** When the form has files to upload, the action returns the new entry instead of redirecting. */
-export type SavedEntry = { entryId: string; href: string };
-
-function done(formData: FormData, entryId: string, href: string): ActionState<SavedEntry> {
-  if (field(formData, "withAttachments") === "1") return { ok: true, data: { entryId, href } };
-  redirect(href);
-}
-
 export async function createLogEntry(
-  _prev: ActionState<SavedEntry>,
+  _prev: ActionState<SavedRecord>,
   formData: FormData,
-): Promise<ActionState<SavedEntry>> {
+): Promise<ActionState<SavedRecord>> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -66,13 +58,13 @@ export async function createLogEntry(
     .single();
   if (error || !data) return failure(dbErrorCode(error));
 
-  return done(formData, data.id, `/o/${ctx.org.slug}/paigaldised/${installation.id}/paevik?salvestatud=1`);
+  return savedOrRedirect(formData, data.id, `/o/${ctx.org.slug}/paigaldised/${installation.id}/paevik?salvestatud=1`);
 }
 
 export async function correctLogEntry(
-  _prev: ActionState<SavedEntry>,
+  _prev: ActionState<SavedRecord>,
   formData: FormData,
-): Promise<ActionState<SavedEntry>> {
+): Promise<ActionState<SavedRecord>> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -117,7 +109,7 @@ export async function correctLogEntry(
     .single();
   if (error || !data) return failure(dbErrorCode(error));
 
-  return done(
+  return savedOrRedirect(
     formData,
     data.id,
     `/o/${ctx.org.slug}/paigaldised/${original.electrical_installation_id}/paevik/${original.id}`,

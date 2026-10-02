@@ -40,7 +40,7 @@ export async function AppShell({
       </aside>
 
       <div className="flex min-h-svh min-w-0 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-k-line bg-k-paper/95 px-3 backdrop-blur-sm lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-2 border-b border-k-line bg-k-paper px-3 lg:hidden">
           <div className="flex min-w-0 items-center gap-1">
             <Link
               href={`/o/${orgSlug}`}
@@ -54,7 +54,7 @@ export async function AppShell({
           {topBarEnd}
         </header>
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-28 pt-6 sm:px-6 lg:px-10 lg:pb-12 lg:pt-10">
+        <main className="k-app-container flex-1 pb-28 pt-6 lg:pb-14 lg:pt-10">
           {children}
         </main>
 
@@ -80,14 +80,14 @@ export function PlainShell({
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b border-k-line bg-k-paper">
-        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-[var(--k-gutter-app)]">
           <Link href="/o?vali=1" className="inline-flex h-11 items-center rounded-sm">
             <Logo />
           </Link>
           {userMenu}
         </div>
       </header>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 pt-8 sm:px-6 sm:pt-12">{children}</main>
+      <main className="mx-auto w-full max-w-3xl flex-1 px-[var(--k-gutter-app)] pb-16 pt-8 sm:pt-12">{children}</main>
     </div>
   );
 }

@@ -702,10 +702,16 @@ export const et = {
       progressSummary: (done: number, total: number) => `Üles laaditud ${done}/${total}`,
       savedWithFailures:
         "Sissekanne on salvestatud. Mõni fail jäi üles laadimata — proovi uuesti või jätka ilma.",
+      deficiencySavedWithFailures:
+        "Puudus on salvestatud. Mõni foto jäi üles laadimata — proovi uuesti või jätka ilma.",
       continueWithout: "Jätka ilma nende failideta",
       entryClosedHint: "Sissekande autor saab faile lisada 24 tunni jooksul. Hiljem lisa parandus ja manusta failid sinna.",
       correctionHint: "Algse sissekande failid jäävad alles. Uued failid lisatakse parandusele.",
       selected: (n: number) => (n === 1 ? "1 fail valitud" : `${n} faili valitud`),
+    },
+    drafts: {
+      restored: "Taastasime selle vahekaardi salvestamata mustandi.",
+      discard: "Alusta tühjalt",
     },
     dashboard: {
       attentionTitle: "Mis vajab tähelepanu",

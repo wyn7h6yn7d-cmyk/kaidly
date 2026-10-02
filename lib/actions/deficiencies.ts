@@ -12,7 +12,8 @@ import { deficiencySchema, progressStatusSchema } from "@/lib/validation/deficie
 import { LOG_ENTRY_TYPES, occurredAt } from "@/lib/validation/log";
 import { isUuid } from "@/lib/validation/sites";
 import { actionContext } from "./context";
-import { type ActionState, failure, invalidInput } from "./state";
+import { savedOrRedirect } from "./saved";
+import { type ActionState, failure, invalidInput, type SavedRecord } from "./state";
 
 function input(formData: FormData) {
   return deficiencySchema.safeParse({
@@ -26,7 +27,10 @@ function input(formData: FormData) {
   });
 }
 
-export async function createDeficiency(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function createDeficiency(
+  _prev: ActionState<SavedRecord>,
+  formData: FormData,
+): Promise<ActionState<SavedRecord>> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -54,10 +58,11 @@ export async function createDeficiency(_prev: ActionState, formData: FormData): 
     .select("id")
     .single();
   if (error || !data) return failure(dbErrorCode(error));
-  redirect(`/o/${ctx.org.slug}/puudused/${data.id}`);
+  return savedOrRedirect(formData, data.id, `/o/${ctx.org.slug}/puudused/${data.id}`);
 }
 
-export async function updateDeficiency(_prev: ActionState, formData: FormData): Promise<ActionState> {
+/** Fails with an error code or redirects; it never returns a success value. */
+export async function updateDeficiency(_prev: ActionState, formData: FormData): Promise<ActionState<never>> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;

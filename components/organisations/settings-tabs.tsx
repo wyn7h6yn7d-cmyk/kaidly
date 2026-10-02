@@ -10,7 +10,7 @@ export async function SettingsTabs({ orgSlug, active }: { orgSlug: string; activ
     { key: "members", href: `/o/${orgSlug}/seaded/liikmed`, label: t.app.settings.tabs.members },
   ] as const;
   return (
-    <nav aria-label={t.app.settings.title} className="-mt-4 mb-8 flex gap-1 border-b border-k-line">
+    <nav aria-label={t.app.settings.title} className="mb-8 flex gap-1 overflow-x-auto border-b border-k-line">
       {tabs.map((tab) => (
         <Link
           key={tab.key}

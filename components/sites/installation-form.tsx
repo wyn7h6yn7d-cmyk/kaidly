@@ -73,7 +73,7 @@ export function InstallationForm({
             aria-invalid={state.fields?.name}
           />
         </Field>
-        <Field id={id("identifier")} label={f.identifier} optional>
+        <Field id={id("identifier")} label={f.identifier} hint={f.identifierHint} optional>
           <Input
             id={id("identifier")}
             name="identifier"
@@ -85,9 +85,6 @@ export function InstallationForm({
           />
         </Field>
       </div>
-      <p id={id("identifier-hint")} className="-mt-3 text-sm text-k-muted">
-        {f.identifierHint}
-      </p>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <Field id={id("installationType")} label={f.type}>

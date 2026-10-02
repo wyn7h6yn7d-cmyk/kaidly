@@ -108,7 +108,7 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
                     <li key={installation.id}>
                       <Link
                         href={`${base}/paigaldised/${installation.id}`}
-                        className="flex min-h-[72px] items-center gap-4 px-4 py-3 hover:bg-k-paper-2 sm:px-5"
+                        className="flex min-min-h-[72px] items-center gap-4 px-4 py-3 hover:bg-k-paper-2 sm:px-5"
                       >
                         <span className="min-w-0 flex-1">
                           <span className="flex min-w-0 items-baseline gap-2">

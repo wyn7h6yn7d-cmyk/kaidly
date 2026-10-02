@@ -80,7 +80,7 @@ export default async function SitesPage({
                   <li key={site.id}>
                     <Link
                       href={`${base}/${site.id}`}
-                      className="flex min-h-[72px] items-center gap-4 px-4 py-3 hover:bg-k-paper-2 sm:px-5"
+                      className="flex min-min-h-[72px] items-center gap-4 px-4 py-3 hover:bg-k-paper-2 sm:px-5"
                     >
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[17px] font-semibold">{site.name}</span>

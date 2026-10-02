@@ -34,7 +34,7 @@ export async function SiteHeader() {
             <Link href="/auth/sign-up">{t.common.signUp}</Link>
           </Button>
           <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-k-line sm:block" />
-          <LanguageSelector />
+          <LanguageSelector compact />
         </nav>
       </div>
     </header>

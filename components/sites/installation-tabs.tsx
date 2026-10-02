@@ -18,7 +18,7 @@ export function InstallationTabs({ base }: { base: string }) {
   const t = useT();
   const pathname = usePathname();
   return (
-    <nav aria-label={t.app.installations.sectionsLabel} className="-mx-4 mb-8 overflow-x-auto border-b border-k-line px-4 sm:mx-0 sm:px-0">
+    <nav aria-label={t.app.installations.sectionsLabel} className="mb-8 overflow-x-auto border-b border-k-line [scrollbar-width:thin]">
       <ul className="flex min-w-max gap-1">
         {TABS.map((tab) => {
           const href = tab.segment ? `${base}/${tab.segment}` : base;

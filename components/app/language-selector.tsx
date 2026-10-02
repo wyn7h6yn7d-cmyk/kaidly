@@ -11,12 +11,28 @@ import { cn } from "@/lib/utils";
  * ET · EN · RU. Switching re-renders in place (router.refresh): the URL, organisation,
  * session and anything typed into forms stay as they are.
  */
-export function LanguageSelector({ tone = "dark", className }: { tone?: "dark" | "light"; className?: string }) {
+export function LanguageSelector({
+  tone = "dark",
+  compact = false,
+  className,
+}: {
+  tone?: "dark" | "light";
+  /** Phones: a compact native select instead of three buttons (saves header width). */
+  compact?: boolean;
+  className?: string;
+}) {
   const t = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  return (
-    <div role="group" aria-label={t.common.language} className={cn("flex items-center", className)}>
+  const choose = (locale: string) =>
+    startTransition(async () => {
+      if (locale === t.locale) return;
+      await setLocale(locale);
+      router.refresh();
+    });
+
+  const buttons = (
+    <div role="group" aria-label={t.common.language} className={cn("flex items-center", compact && "hidden sm:flex", className)}>
       {LOCALES.map((locale) => {
         const active = locale === t.locale;
         return (
@@ -27,13 +43,7 @@ export function LanguageSelector({ tone = "dark", className }: { tone?: "dark" |
             aria-label={LOCALE_NAMES[locale]}
             aria-pressed={active}
             disabled={pending}
-            onClick={() =>
-              startTransition(async () => {
-                if (active) return;
-                await setLocale(locale);
-                router.refresh();
-              })
-            }
+            onClick={() => choose(locale)}
             className={cn(
               "flex h-11 min-w-11 items-center justify-center rounded-sm px-2 text-sm font-semibold uppercase tracking-wide",
               tone === "light" ? "focus-on-dark" : "",
@@ -51,6 +61,30 @@ export function LanguageSelector({ tone = "dark", className }: { tone?: "dark" |
         );
       })}
     </div>
+  );
+  if (!compact) return buttons;
+  return (
+    <>
+      {buttons}
+      <label className="relative flex h-11 items-center sm:hidden">
+        <span className="sr-only">{t.common.language}</span>
+        <select
+          value={t.locale}
+          disabled={pending}
+          onChange={(event) => choose(event.target.value)}
+          className="h-11 appearance-none rounded-sm bg-transparent pl-2 pr-6 text-sm font-semibold uppercase text-k-ink"
+        >
+          {LOCALES.map((locale) => (
+            <option key={locale} value={locale} lang={locale}>
+              {locale.toUpperCase()} · {LOCALE_NAMES[locale]}
+            </option>
+          ))}
+        </select>
+        <span aria-hidden="true" className="pointer-events-none absolute right-1 text-xs text-k-muted">
+          ▾
+        </span>
+      </label>
+    </>
   );
 }
 

@@ -77,7 +77,7 @@ export function ShellSkeleton() {
       <div className="hidden bg-k-green lg:block lg:h-svh" />
       <div className="flex min-h-svh flex-col">
         <div className="h-14 border-b border-k-line bg-k-paper lg:hidden" />
-        <div className="mx-auto w-full max-w-6xl flex-1 px-4 pt-6 sm:px-6 lg:px-10 lg:pt-10">
+        <div className="k-app-container flex-1 pt-6 lg:pt-10">
           <LoadingBlock />
         </div>
         <div className="fixed inset-x-0 bottom-0 h-16 border-t border-k-line bg-k-surface lg:hidden" />

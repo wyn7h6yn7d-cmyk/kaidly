@@ -1,19 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { AttachmentPicker } from "@/components/documents/attachment-picker";
-import { useUploadQueue } from "@/components/documents/use-upload-queue";
+import { DraftNotice, UploadRecovery, useSaveThenUpload } from "@/components/documents/use-save-then-upload";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
 import { useFieldId } from "@/components/forms/use-field-id";
-import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { correctLogEntry, createLogEntry, type SavedEntry } from "@/lib/actions/log";
-import type { ActionState } from "@/lib/actions/state";
+import { correctLogEntry, createLogEntry } from "@/lib/actions/log";
 import type { LogEntryType } from "@/lib/validation/log";
 import { EntryTypeField } from "./entry-type-field";
 import { useT } from "@/lib/i18n/client";
@@ -49,34 +45,17 @@ export function LogEntryForm({
 }) {
   const t = useT();
   const isCorrection = Boolean(correctionOfId);
-  const router = useRouter();
-  const queue = useUploadQueue({ orgSlug, resizeImages: true });
-  const [retrying, setRetrying] = useState(false);
-
-  const save = async (previous: ActionState<SavedEntry>, formData: FormData) => {
-    if (queue.items.length) formData.set("withAttachments", "1");
-    const result = await (isCorrection ? correctLogEntry : createLogEntry)(previous, formData);
-    if (result.ok && result.data) {
-      const allDone = await queue.uploadAll({ kind: "logEntry", id: result.data.entryId });
-      if (allDone) router.push(result.data.href);
-      // The entry is saved; keep it on screen while the user retries or moves on.
-      return { ...result, keepValues: true };
-    }
-    return result;
-  };
-  const [state, action, pending, value] = useFormAction(save);
-  const saved = state.ok ? state.data : undefined;
+  const upload = useSaveThenUpload(
+    orgSlug,
+    isCorrection ? correctLogEntry : createLogEntry,
+    (id) => ({ kind: "logEntry", id }),
+    isCorrection ? `kaidly:draft:correction:${correctionOfId}` : `kaidly:draft:entry:${orgSlug}:${installationId}`,
+  );
+  const { queue, state, formAction: action, pending, value, saved, draft, needsRecovery, retry, retrying, locked } = upload;
+  const { attachForm, restored: draftRestored, discard: discardDraft } = draft;
   const id = useFieldId();
   const copy = t.app.log;
   const attachmentCopy = t.app.attachments;
-
-  const retry = async () => {
-    if (!saved) return;
-    setRetrying(true);
-    const allDone = await queue.uploadAll({ kind: "logEntry", id: saved.entryId });
-    setRetrying(false);
-    if (allDone) router.push(saved.href);
-  };
   const selectedType = value("entryType", defaults.entryType);
   const detailsHaveError = Boolean(
     state.fields?.occurredAt || state.fields?.result || state.fields?.performedByName,
@@ -122,10 +101,12 @@ export function LogEntryForm({
   );
 
   return (
-    <form action={action} className="flex max-w-2xl flex-col gap-6">
+    <form ref={attachForm} action={action} className="flex max-w-2xl flex-col gap-6">
       <input type="hidden" name="orgSlug" value={orgSlug} />
       <input type="hidden" name="installationId" value={installationId} />
       {correctionOfId && <input type="hidden" name="correctionOfId" value={correctionOfId} />}
+
+      {draftRestored && <DraftNotice onDiscard={discardDraft} />}
 
       {isCorrection && (
         <p className="border-l-4 border-k-green bg-k-surface px-4 py-3">{copy.correctionExplanation}</p>
@@ -178,29 +159,24 @@ export function LogEntryForm({
           queue={queue}
           label={attachmentCopy.takePhoto}
           hint={isCorrection ? `${attachmentCopy.correctionHint} ${attachmentCopy.hint}` : attachmentCopy.hint}
-          disabled={pending || retrying || Boolean(saved)}
+          disabled={locked}
         />
       </fieldset>
 
       <FormMessage code={state.errorCode} />
-      {saved && !pending && queue.items.some((item) => item.status === "failed") ? (
-        <div role="alert" className="grid gap-3 border-l-4 border-k-warn bg-k-surface px-4 py-3">
-          <p>{attachmentCopy.savedWithFailures}</p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button type="button" size="lg" onClick={retry} disabled={retrying}>
-              {attachmentCopy.retry}
-            </Button>
-            <Button asChild variant="ghost" size="lg">
-              <Link href={saved.href}>{attachmentCopy.continueWithout}</Link>
-            </Button>
-          </div>
-        </div>
+      {needsRecovery && saved ? (
+        <UploadRecovery
+          message={attachmentCopy.savedWithFailures}
+          href={saved.href}
+          retry={retry}
+          retrying={retrying}
+        />
       ) : (
         <div className="flex flex-col-reverse gap-3 sm:flex-row">
           <Button asChild variant="ghost" size="lg">
             <Link href={cancelHref}>{t.app.cancel}</Link>
           </Button>
-          <Button type="submit" size="lg" disabled={pending || queue.busy || Boolean(saved)} className="sm:min-w-56">
+          <Button type="submit" size="lg" disabled={locked} className="sm:min-w-56">
             {pending ? copy.saving : isCorrection ? copy.submitCorrection : copy.submit}
           </Button>
         </div>
