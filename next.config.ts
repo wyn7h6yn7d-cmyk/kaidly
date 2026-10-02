@@ -1,5 +1,38 @@
 import type { NextConfig } from "next";
 
+// Security headers (docs/DEPLOYMENT.md). The CSP allows only this origin and the project's
+// Supabase API. 'unsafe-inline' for scripts is required by the App Router's inline
+// bootstrap/RSC scripts and the tiny <html lang> script without per-request nonces (which
+// would force every page dynamic); everything else is locked down: no third-party
+// scripts, no framing, no plugins, no foreign form targets.
+const supabase = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").origin;
+  } catch {
+    return "";
+  }
+})();
+const dev = process.env.NODE_ENV === "development";
+// Vercel's toolbar on Preview deployments only (it is not part of KAIDLY).
+const toolbar = process.env.VERCEL_ENV === "preview" ? "https://vercel.live" : "";
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ""} ${toolbar}`,
+  `style-src 'self' 'unsafe-inline' ${toolbar}`,
+  `img-src 'self' data: blob: ${supabase} ${toolbar ? "https://vercel.live https://vercel.com" : ""}`,
+  "font-src 'self' data:",
+  `connect-src 'self' ${supabase} ${supabase.replace(/^http/, "ws")}${dev ? " ws: http://127.0.0.1:* http://localhost:*" : ""} ${toolbar ? "https://vercel.live wss://ws-us3.pusher.com" : ""}`,
+  `frame-src ${toolbar || "'none'"}`,
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  ...(dev ? [] : ["upgrade-insecure-requests"]),
+]
+  .map((d) => d.replace(/\s+/g, " ").trim())
+  .join("; ");
+const indexable = process.env.VERCEL_ENV === "production" && Boolean(process.env.KAIDLY_SITE_URL?.trim());
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   // CLAUDE.md is the single source of agent instructions; don't let `next dev`
@@ -13,6 +46,25 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pdfmake", "pdfkit"],
   outputFileTracingIncludes: {
     "/o/[org]/aruanded/[report]/eksport": ["./node_modules/pdfmake/fonts/Roboto/**", "./node_modules/pdfkit/js/data/**"],
+  },
+  poweredByHeader: false,
+  async headers() {
+    const security = [
+      { key: "Content-Security-Policy", value: csp },
+      { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()" },
+    ];
+    const noindex = { key: "X-Robots-Tag", value: "noindex, nofollow" };
+    return [
+      { source: "/:path*", headers: indexable ? security : [...security, noindex] },
+      // The application is never indexed, even in production.
+      ...["/o/:path*", "/admin/:path*", "/konto", "/auth/:path*", "/invite/:path*", "/otsing", "/teavitused/:path*", "/teavitused", "/admin", "/o", "/api/:path*"].map(
+        (source) => ({ source, headers: [noindex] }),
+      ),
+    ];
   },
   turbopack: {
     // Pin the workspace root so a stray lockfile in a parent folder isn't picked up.

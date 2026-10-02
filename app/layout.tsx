@@ -4,22 +4,28 @@ import { Suspense } from "react";
 import { LocaleBoundary } from "@/components/app/locale-boundary";
 import { DEFAULT_LOCALE, LOCALE_COOKIE } from "@/lib/i18n";
 import { getT } from "@/lib/i18n/server";
+import { isIndexable, siteUrl } from "@/lib/site";
 import "./globals.css";
-
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
-    metadataBase: new URL(defaultUrl),
+    metadataBase: siteUrl(),
+    // Only production on the custom domain may be indexed (lib/site.ts); the application
+    // routes are additionally excluded by robots.txt and an X-Robots-Tag header.
+    robots: isIndexable() ? undefined : { index: false, follow: false },
     title: {
       default: t.landing.metaTitle,
       template: `%s | ${t.brand.name}`,
     },
     description: t.meta.description,
-    openGraph: { title: t.landing.metaTitle, description: t.meta.description, siteName: t.brand.name },
+    openGraph: {
+      title: t.landing.metaTitle,
+      description: t.meta.description,
+      siteName: t.brand.name,
+      type: "website",
+      locale: { et: "et_EE", en: "en_GB", ru: "ru_RU" }[t.locale],
+    },
   };
 }
 

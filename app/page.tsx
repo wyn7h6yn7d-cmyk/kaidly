@@ -13,7 +13,7 @@ import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  return { title: { absolute: t.landing.metaTitle } };
+  return { title: { absolute: t.landing.metaTitle }, alternates: { canonical: "/" } };
 }
 
 // The one handwritten note on the page; the font loads on this page only.

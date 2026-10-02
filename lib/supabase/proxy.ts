@@ -16,6 +16,11 @@ const PUBLIC_PATHS = new Set([
   "/auth/forgot-password",
   "/auth/confirm",
   "/auth/error",
+  "/privaatsus",
+  "/kasutustingimused",
+  "/robots.txt",
+  "/sitemap.xml",
+  "/api/health",
 ]);
 
 /** Public routes a signed-in user has no reason to see. */
