@@ -58,7 +58,7 @@ async function checkEdges(page: Page) {
 
 test.describe("Paigutus", () => {
   test("public and app pages hold their layout from 320 to 1440 px", async ({ page }, testInfo) => {
-    test.setTimeout(240_000);
+    test.setTimeout(480_000);
     const org = await createOrg();
     const site = await createSite(org, "Väga pika nimega logistika- ja tootmiskeskus Näidisküla tööstuspargis");
     const installation = await createInstallation(org, site, "Peajaotuskilp hoone põhjatiivas", "PJK-1-PÕHJA");
@@ -80,7 +80,18 @@ test.describe("Paigutus", () => {
       `${base}/sissekanne`,
       `${base}/abi`,
       `${base}/seaded/kustuta`,
+      `${base}/seaded`,
+      "/konto",
+      "/admin",
+      "/admin/users",
+      `/admin/users/${org.users.viewer.id}`,
+      "/admin/companies",
+      `/admin/companies/${org.id}`,
+      "/admin/deadlines",
+      "/admin/system",
+      "/admin/audit",
     ];
+    sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
     // An empty organisation: checklist and module empty states.
     const empty = await createOrg("Tühi OÜ");
     sql(`insert into public.organisation_members (organisation_id, user_id, role) values ('${empty.id}', '${org.users.owner.id}', 'owner');`);

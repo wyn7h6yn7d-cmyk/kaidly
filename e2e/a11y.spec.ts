@@ -8,6 +8,7 @@ import {
   login,
   sql,
   test,
+  uniqueId,
 } from "./support/fixtures";
 
 // Lightweight automated accessibility check: axe-core (WCAG 2.1 A/AA) on the main pages,
@@ -74,4 +75,32 @@ test("main pages pass axe (WCAG 2.1 AA) and fit the screen @responsive", async (
     await page.locator("main h1").first().waitFor();
     await expectAccessible(page);
   }
+});
+
+test("account, company settings and the KAIDLY Admin console pass axe and fit the screen @responsive", async ({ page }) => {
+  test.setTimeout(300_000);
+  const org = await createOrg(`Admin a11y ${uniqueId("x")}`);
+  sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
+  await login(page, org.users.owner, "/konto");
+  for (const path of [
+    "/konto",
+    `/o/${org.slug}/seaded`,
+    "/admin",
+    "/admin/users",
+    `/admin/users/${org.users.viewer.id}`,
+    "/admin/companies",
+    `/admin/companies/${org.id}`,
+    "/admin/deadlines",
+    "/admin/system",
+    "/admin/audit",
+  ]) {
+    await page.goto(path);
+    await page.locator("main h1").first().waitFor();
+    await expectAccessible(page);
+  }
+  // The confirmation dialog too.
+  await page.goto(`/admin/users/${org.users.viewer.id}`);
+  await page.getByRole("button", { name: "Peata konto" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expectAccessible(page);
 });

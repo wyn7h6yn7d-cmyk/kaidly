@@ -10,6 +10,8 @@ test("allows known internal application paths", () => {
     "/o/kinnisvara-ou",
     "/o/kinnisvara-ou/paigaldised/9b2f4c1e-0d6a-4f7e-8a51-2c3d4e5f6a7b",
     "/konto",
+    "/admin",
+    "/admin/users/9b2f4c1e-0d6a-4f7e-8a51-2c3d4e5f6a7b",
     "/auth/update-password",
     "/invite/AbC123_-xyz",
   ]) {

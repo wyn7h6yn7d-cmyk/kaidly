@@ -4,7 +4,6 @@ import {
   createSite,
   expect,
   expectNoHorizontalScroll,
-  field,
   login,
   sql,
   test,

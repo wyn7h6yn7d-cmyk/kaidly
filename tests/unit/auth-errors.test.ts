@@ -5,6 +5,7 @@ import { authErrorCode } from "../../lib/auth/errors.ts";
 test("maps known Supabase auth error codes", () => {
   assert.equal(authErrorCode({ code: "invalid_credentials" }), "invalid_credentials");
   assert.equal(authErrorCode({ code: "otp_expired" }), "link_expired");
+  assert.equal(authErrorCode({ code: "user_banned" }), "account_disabled");
   assert.equal(authErrorCode({ code: "flow_state_not_found" }), "link_invalid");
   assert.equal(authErrorCode({ code: "pkce_code_verifier_not_found" }), "link_other_browser");
   assert.equal(authErrorCode({ code: "email_exists" }), "user_already_exists");

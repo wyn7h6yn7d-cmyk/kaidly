@@ -51,7 +51,7 @@ select pg_temp.login('a_admin');
 with u as (
   update public.organisations set name = 'Admin rename' where id = pg_temp.org('a') returning 1
 )
-select is(count(*)::int, 0, 'an admin cannot change organisation settings (owner only)') from u;
+select is(count(*)::int, 1, 'an admin can change organisation settings') from u;
 
 select pg_temp.login('a_owner');
 with u as (
