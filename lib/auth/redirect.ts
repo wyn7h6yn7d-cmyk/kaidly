@@ -11,6 +11,7 @@ const SEGMENT = "[A-Za-z0-9_-]+";
 const ALLOWED_PATHS: RegExp[] = [
   new RegExp(`^/o(/${SEGMENT})*$`), // the application
   /^\/konto$/, // own account
+  /^\/teavitused$/, // notification centre
   new RegExp(`^/admin(/${SEGMENT})*$`), // platform administration (404 unless platform admin)
   /^\/auth\/update-password$/, // after a password recovery link
   new RegExp(`^/invite/${SEGMENT}$`), // invitation landing (Phase 2)

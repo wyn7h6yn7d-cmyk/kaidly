@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { BellPlaceholder, NotificationBell } from "@/components/notifications/bell";
+import { ReminderToastSlot } from "@/components/notifications/toast-slot";
 import { ShieldCheck } from "lucide-react";
 import { ADMIN } from "@/lib/admin/strings";
 import { Logo, LogoMark } from "@/components/brand/logo";
@@ -32,10 +35,13 @@ export async function AppShell({
   return (
     <div className="min-h-svh lg:grid lg:grid-cols-[264px_1fr]">
       <aside className="hidden bg-k-green lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col">
-        <div className="flex h-16 items-center px-5">
+        <div className="flex h-16 items-center justify-between pl-5 pr-3">
           <Link href={`/o/${orgSlug}`} className="focus-on-dark rounded-sm">
             <Logo tone="light" />
           </Link>
+          <Suspense fallback={<BellPlaceholder />}>
+            <NotificationBell tone="light" />
+          </Suspense>
         </div>
         <div className="border-y border-white/10 px-3 py-2">{sidebarSwitcher}</div>
         <nav aria-label={t.common.menu} className="flex-1 overflow-y-auto px-3 py-4">
@@ -68,7 +74,12 @@ export async function AppShell({
             </Link>
             {topBarSwitcher}
           </div>
-          {topBarEnd}
+          <div className="flex shrink-0 items-center">
+            <Suspense fallback={<BellPlaceholder />}>
+              <NotificationBell />
+            </Suspense>
+            {topBarEnd}
+          </div>
         </header>
 
         <main className="k-app-container flex-1 pb-28 pt-6 lg:pb-14 lg:pt-10">
@@ -81,6 +92,9 @@ export async function AppShell({
         >
           <BottomNav orgSlug={orgSlug} />
         </nav>
+        <Suspense fallback={null}>
+          <ReminderToastSlot />
+        </Suspense>
       </div>
     </div>
   );
@@ -101,10 +115,18 @@ export function PlainShell({
           <Link href="/o?vali=1" className="inline-flex h-11 items-center rounded-sm">
             <Logo />
           </Link>
-          {userMenu}
+          <div className="flex items-center">
+            <Suspense fallback={<BellPlaceholder />}>
+              <NotificationBell />
+            </Suspense>
+            {userMenu}
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-3xl flex-1 px-[var(--k-gutter-app)] pb-16 pt-8 sm:pt-12">{children}</main>
+      <Suspense fallback={null}>
+        <ReminderToastSlot />
+      </Suspense>
     </div>
   );
 }
