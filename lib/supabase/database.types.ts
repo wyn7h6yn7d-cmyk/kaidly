@@ -638,34 +638,46 @@ export type Database = {
       }
       organisations: {
         Row: {
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string
           created_by: string | null
           deactivated_at: string | null
           deactivated_by: string | null
           id: string
           name: string
+          notes: string | null
           registry_code: string | null
           slug: string
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           id?: string
           name: string
+          notes?: string | null
           registry_code?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string
           created_by?: string | null
           deactivated_at?: string | null
           deactivated_by?: string | null
           id?: string
           name?: string
+          notes?: string | null
           registry_code?: string | null
           slug?: string
           updated_at?: string
@@ -973,6 +985,53 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      admin_audit_entries: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      admin_companies: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string }
+        Returns: Json
+      }
+      admin_company: { Args: { p_org: string }; Returns: Json }
+      admin_deadlines: {
+        Args: {
+          p_company?: string
+          p_from?: string
+          p_include_deactivated?: boolean
+          p_kind?: string
+          p_severity?: string
+          p_site?: string
+          p_state?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
+      admin_overview: { Args: never; Returns: Json }
+      admin_password_reset_target: { Args: { p_user: string }; Returns: string }
+      admin_remove_member: {
+        Args: { p_membership: string }
+        Returns: undefined
+      }
+      admin_revoke_sessions: { Args: { p_user: string }; Returns: undefined }
+      admin_set_member_role: {
+        Args: {
+          p_membership: string
+          p_role: Database["public"]["Enums"]["org_role"]
+        }
+        Returns: undefined
+      }
+      admin_set_user_disabled: {
+        Args: { p_disabled: boolean; p_user: string }
+        Returns: undefined
+      }
+      admin_system: { Args: never; Returns: Json }
+      admin_user: { Args: { p_user: string }; Returns: Json }
+      admin_users: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string }
+        Returns: Json
+      }
+      am_platform_admin: { Args: never; Returns: boolean }
       complete_scheduled_activity: {
         Args: {
           p_activity_id: string

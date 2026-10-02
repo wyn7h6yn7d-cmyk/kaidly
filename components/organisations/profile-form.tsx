@@ -12,7 +12,7 @@ import { useT } from "@/lib/i18n/client";
 export function ProfileForm({
   profile,
 }: {
-  profile: { fullName: string | null; email: string | null; phone: string | null };
+  profile: { fullName: string | null; phone: string | null };
 }) {
   const t = useT();
   const id = useFieldId();
@@ -40,9 +40,6 @@ export function ProfileForm({
           defaultValue={value("phone", profile.phone)}
           aria-invalid={state.fields?.phone}
         />
-      </Field>
-      <Field id={id("email")} label={t.common.email} hint={t.app.account.emailReadOnly}>
-        <Input id={id("email")} value={profile.email ?? ""} readOnly disabled aria-describedby={`${id("email")}-hint`} />
       </Field>
       <FormMessage code={state.errorCode} success={state.ok ? t.app.saved : undefined} />
       <div>

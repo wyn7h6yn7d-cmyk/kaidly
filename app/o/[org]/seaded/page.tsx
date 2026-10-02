@@ -40,17 +40,19 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
               {t.app.settings.organisationTitle}
             </h2>
             <p className="mb-4 mt-1 max-w-2xl text-sm text-k-muted">{t.app.emptyStates.settings.organisation}</p>
-            {role === "owner" ? (
+            {/* Owners and admins edit the details (enforced by RLS and column grants). */}
+            {hasRole(role, "admin") && !org.deactivatedAt ? (
               <OrganisationSettingsForm organisation={org} />
             ) : (
               <>
                 <p className="mb-4 text-sm text-k-muted">{t.app.settings.ownerOnly}</p>
                 <dl className="max-w-2xl border-t border-k-line">
                   <ReadOnlyRow label={t.app.createOrganisation.name} value={org.name} />
-                  <ReadOnlyRow
-                    label={t.app.createOrganisation.registryCode}
-                    value={org.registryCode ?? "—"}
-                  />
+                  <ReadOnlyRow label={t.app.createOrganisation.registryCode} value={org.registryCode ?? "—"} />
+                  <ReadOnlyRow label={t.app.settings.contactEmail} value={org.contactEmail ?? "—"} />
+                  <ReadOnlyRow label={t.app.settings.contactPhone} value={org.contactPhone ?? "—"} />
+                  <ReadOnlyRow label={t.app.settings.postalAddress} value={org.address ?? "—"} />
+                  <ReadOnlyRow label={t.app.settings.notes} value={org.notes ?? "—"} />
                 </dl>
               </>
             )}

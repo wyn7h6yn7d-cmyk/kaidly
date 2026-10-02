@@ -13,6 +13,7 @@ import {
   memberIdSchema,
   memberRoleSchema,
   organisationSchema,
+  organisationSettingsSchema,
   profileSchema,
 } from "@/lib/validation/organisations";
 import { type ActionState, failure, invalidInput } from "./state";
@@ -48,16 +49,29 @@ export async function updateOrganisation(
 ): Promise<ActionState> {
   await requireUser();
   const organisationId = field(formData, "organisationId");
-  const parsed = organisationSchema.safeParse({
+  const parsed = organisationSettingsSchema.safeParse({
     name: field(formData, "name"),
     registryCode: field(formData, "registryCode"),
+    contactEmail: field(formData, "contactEmail"),
+    contactPhone: field(formData, "contactPhone"),
+    address: field(formData, "address"),
+    notes: field(formData, "notes"),
   });
   if (!parsed.success) return invalidInput(parsed.error);
 
+  // Owners and admins (RLS + column grants). The slug is never written: the company name
+  // is display data, the slug is the stable route identifier.
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("organisations")
-    .update({ name: parsed.data.name, registry_code: parsed.data.registryCode ?? null })
+    .update({
+      name: parsed.data.name,
+      registry_code: parsed.data.registryCode ?? null,
+      contact_email: parsed.data.contactEmail ?? null,
+      contact_phone: parsed.data.contactPhone ?? null,
+      address: parsed.data.address ?? null,
+      notes: parsed.data.notes ?? null,
+    })
     .eq("id", organisationId)
     .select("id");
   if (error) return failure(dbErrorCode(error));

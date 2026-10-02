@@ -10,6 +10,10 @@ export type Organisation = {
   name: string;
   slug: string;
   registryCode: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  address: string | null;
+  notes: string | null;
   /** Set when an owner deactivated the organisation: read-only, kept for its history. */
   deactivatedAt: string | null;
 };
@@ -57,7 +61,7 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
 
   const { data: org, error } = await supabase
     .from("organisations")
-    .select("id, name, slug, registry_code, deactivated_at")
+    .select("id, name, slug, registry_code, contact_email, contact_phone, address, notes, deactivated_at")
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
@@ -74,7 +78,17 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
 
   return {
     user,
-    org: { id: org.id, name: org.name, slug: org.slug, registryCode: org.registry_code, deactivatedAt: org.deactivated_at },
+    org: {
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      registryCode: org.registry_code,
+      contactEmail: org.contact_email,
+      contactPhone: org.contact_phone,
+      address: org.address,
+      notes: org.notes,
+      deactivatedAt: org.deactivated_at,
+    },
     role: membership.role,
   };
 });

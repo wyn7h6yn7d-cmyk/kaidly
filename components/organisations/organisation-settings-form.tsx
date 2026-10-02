@@ -5,15 +5,22 @@ import { FormMessage } from "@/components/forms/form-message";
 import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { updateOrganisation } from "@/lib/actions/organisations";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { useT } from "@/lib/i18n/client";
 
-export function OrganisationSettingsForm({
-  organisation,
-}: {
-  organisation: { id: string; name: string; registryCode: string | null };
-}) {
+export type OrganisationSettings = {
+  id: string;
+  name: string;
+  registryCode: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  address: string | null;
+  notes: string | null;
+};
+
+export function OrganisationSettingsForm({ organisation }: { organisation: OrganisationSettings }) {
   const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(updateOrganisation);
@@ -38,6 +45,47 @@ export function OrganisationSettingsForm({
           inputMode="numeric"
           defaultValue={value("registryCode", organisation.registryCode)}
           aria-invalid={state.fields?.registryCode}
+        />
+      </Field>
+      <Field id={id("contactEmail")} label={t.app.settings.contactEmail} optional>
+        <Input
+          id={id("contactEmail")}
+          name="contactEmail"
+          type="email"
+          autoComplete="off"
+          maxLength={254}
+          defaultValue={value("contactEmail", organisation.contactEmail)}
+          aria-invalid={state.fields?.contactEmail}
+        />
+      </Field>
+      <Field id={id("contactPhone")} label={t.app.settings.contactPhone} optional>
+        <Input
+          id={id("contactPhone")}
+          name="contactPhone"
+          type="tel"
+          autoComplete="off"
+          maxLength={40}
+          defaultValue={value("contactPhone", organisation.contactPhone)}
+          aria-invalid={state.fields?.contactPhone}
+        />
+      </Field>
+      <Field id={id("address")} label={t.app.settings.postalAddress} optional>
+        <Input
+          id={id("address")}
+          name="address"
+          maxLength={300}
+          defaultValue={value("address", organisation.address)}
+          aria-invalid={state.fields?.address}
+        />
+      </Field>
+      <Field id={id("notes")} label={t.app.settings.notes} hint={t.app.settings.notesHint} optional>
+        <Textarea
+          id={id("notes")}
+          name="notes"
+          rows={4}
+          maxLength={2000}
+          defaultValue={value("notes", organisation.notes)}
+          aria-invalid={state.fields?.notes}
         />
       </Field>
       <FormMessage code={state.errorCode} success={state.ok ? t.app.saved : undefined} />

@@ -1,10 +1,25 @@
 import { z } from "zod";
-import { ROLES } from "@/lib/auth/roles";
-import { optionalText, requiredText, uuid } from "./common";
+import { ROLES } from "../auth/roles.ts"; // explicit extensions: also loaded by node --test
+import { optionalText, requiredText, uuid } from "./common.ts";
 
 export const organisationSchema = z.object({
   name: requiredText(200),
   registryCode: optionalText(30),
+});
+
+/** Company details editable by owners and admins. The slug is never part of this. */
+export const organisationSettingsSchema = organisationSchema.extend({
+  contactEmail: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(254)
+    .optional()
+    .transform((value) => (value ? value : undefined))
+    .pipe(z.email().optional()),
+  contactPhone: optionalText(40),
+  address: optionalText(300),
+  notes: optionalText(2000),
 });
 
 export const invitationSchema = z.object({

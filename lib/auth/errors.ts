@@ -16,6 +16,8 @@ export function authErrorCode(error: unknown): ErrorCode {
       return "invalid_credentials";
     case "email_not_confirmed":
       return "email_not_confirmed";
+    case "user_banned":
+      return "account_disabled";
     case "user_already_exists":
     case "email_exists":
       return "user_already_exists";
