@@ -20,6 +20,10 @@ test.describe("Väljalase", () => {
     await page.goto("/");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page).toHaveTitle("KAIDLY | Elektripaigaldise käit lihtsalt");
+    // The hero background is decoration only: hidden from assistive tech, never focusable.
+    const backdrop = page.locator('[aria-hidden="true"]:has(> svg[focusable="false"])').first();
+    await expect(backdrop).toBeAttached();
+    expect(await backdrop.locator("a, button, [tabindex]").count()).toBe(0);
 
     const health = await request.get("/api/health");
     expect(health.status()).toBe(200);
@@ -33,7 +37,9 @@ test.describe("Väljalase", () => {
     await page.getByRole("contentinfo").getByRole("link", { name: "Privaatsus" }).click();
     await expect(page.getByRole("heading", { name: "Privaatsus", level: 1 })).toBeVisible();
     await expect(page.getByRole("note")).toContainText("Mustand");
-    await expect(page.getByText("[teenuse osutaja ärinimi]").first()).toBeVisible();
+    await expect(page.getByText("Teenuse osutaja andmed avaldatakse enne teenuse ametlikku käivitamist.").first()).toBeVisible();
+    await expect(page.getByRole("main").getByText(/\[|TODO|null/)).toHaveCount(0);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await page.goto("/kasutustingimused");
     await expect(page.getByRole("heading", { name: "Kasutustingimused", level: 1 })).toBeVisible();
     await expect(page.getByText(/14-päevane prooviperiood/)).toBeVisible();

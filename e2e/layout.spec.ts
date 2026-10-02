@@ -5,7 +5,7 @@ import { createInstallation, createOrg, createSite, expect, login, sql, test } f
 // heading crossing the viewport edge (content inside its own scroll strip, like the
 // installation tabs, is allowed). Screenshots are attached to the report for review —
 // deliberately not pixel-compared, which would be brittle across machines and fonts.
-const WIDTHS = [320, 375, 390, 430, 768, 1280, 1440, 1920];
+const WIDTHS = [320, 375, 390, 430, 768, 1024, 1280, 1440, 1728, 1920];
 
 async function checkEdges(page: Page) {
   const problems = await page.evaluate(() => {
