@@ -194,6 +194,7 @@ export const en: Messages = {
     home: "Home",
   },
   common: {
+    backToTop: "Back to top",
     language: "Language",
     loading: "Loading…",
     signIn: "Sign in",
@@ -208,6 +209,25 @@ export const en: Messages = {
     more: "More",
   },
   landing: {
+    reminders: {
+      title: "KAIDLY reminds you.",
+      body: "When an inspection or maintenance date approaches, you see the days left and get a notification in KAIDLY. One click takes you straight to the right activity.",
+      steps: [
+        "Add an activity to the operating plan.",
+        "Set the next due date and, if needed, reminders.",
+        "KAIDLY counts the days to the due date.",
+        "As the due date approaches, you get an in-app notification.",
+        "The notification takes you straight to the right site, installation and activity.",
+        "When you mark a recurring activity done, the next due date moves on by itself.",
+      ],
+      exampleLabel: "Example of a KAIDLY notification",
+      exampleTitle: "Periodic inspection of the main switchboard",
+      exampleWhere: "Tallinn plant · PK-01",
+      exampleOverdueTitle: "Insulation resistance measurement",
+      exampleOverdueWhere: "Tallinn plant · AJ-2",
+      exampleCta: "View activity",
+      note: "Notifications are in KAIDLY, under the bell.",
+    },
     legal: { privacy: "Privacy", terms: "Terms of use", label: "Legal" },
     metaTitle: "KAIDLY | Electrical installation operation, simply",
     nav: {
@@ -1096,6 +1116,21 @@ export const en: Messages = {
         "There are no sites or installations yet. The organisation's administrator adds them; then you can make entries here.",
     },
     help: {
+      reminders: {
+        title: "Reminders and due dates",
+        intro: "KAIDLY watches the due dates in the operating plan for you. As a due date approaches, the days left are shown and you get an in-app notification that takes you straight to the activity.",
+        items: [
+          { term: "“14 days left”", text: "Every activity shows the days left to its due date. The colour only changes as the date approaches: 14 days or fewer, and especially the last week." },
+          { term: "“Due today” and “overdue”", text: "On the due date it says “Due today”. If the activity has not been marked done, you see e.g. “3 days overdue” and it comes first on the overview." },
+          { term: "Reminders", text: "For each activity you choose when to be reminded: 30, 14, 7 or 1 day before, or your own number of days. The default is 14 days before." },
+          { term: "Notifications", text: "Reminders appear under the bell for owners, admins and operators; the number on the bell shows unread notifications. “View activity” opens the right activity." },
+          { term: "Recurring activities", text: "When you mark a recurring activity done, the next due date moves on by itself and the countdown starts again. Earlier reminders stay as history." },
+        ],
+        note: "Notifications are in KAIDLY; no emails or phone notifications are sent at the moment.",
+        open: "Open notifications",
+        card: "KAIDLY counts down the operating plan's due dates and tells you under the bell when one approaches. You set a due date when you add an activity to the plan.",
+        cardLink: "How reminders work",
+      },
       title: "Help",
       intro: "A short guide and the key terms. For questions, contact your organisation's administrator.",
       termsTitle: "Terms",

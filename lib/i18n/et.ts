@@ -190,6 +190,7 @@ export const et = {
     home: "Avalehele",
   },
   common: {
+    backToTop: "Tagasi üles",
     language: "Keel",
     loading: "Laen…",
     signIn: "Logi sisse",
@@ -204,6 +205,25 @@ export const et = {
     more: "Rohkem",
   },
   landing: {
+    reminders: {
+      title: "KAIDLY tuletab ise meelde.",
+      body: "Kui kontrolli või hoolduse tähtaeg läheneb, näed järelejäänud päevi ja saad KAIDLYs teavituse. Vajutus viib otse õige tegevuse juurde.",
+      steps: [
+        "Lisa käidukavasse tegevus.",
+        "Määra järgmine tähtaeg ja vajadusel meeldetuletused.",
+        "KAIDLY loendab päevad tähtajani.",
+        "Kui tähtaeg läheneb, saad rakenduses teavituse.",
+        "Teavitus viib otse õige objekti, paigaldise ja tegevuse juurde.",
+        "Korduva tegevuse tehtuks märkimisel liigub järgmine tähtaeg ise edasi.",
+      ],
+      exampleLabel: "Näide KAIDLY teavitusest",
+      exampleTitle: "Peakilbi perioodiline kontroll",
+      exampleWhere: "Tallinna tehas · PK-01",
+      exampleOverdueTitle: "Isolatsioonitakistuse mõõtmine",
+      exampleOverdueWhere: "Tallinna tehas · AJ-2",
+      exampleCta: "Vaata tegevust",
+      note: "Teavitused on KAIDLYs, kellukese all.",
+    },
     legal: { privacy: "Privaatsus", terms: "Kasutustingimused", label: "Õiguslik teave" },
     metaTitle: "KAIDLY | Elektripaigaldise käit lihtsalt",
     nav: {
@@ -1158,6 +1178,21 @@ export const et = {
         "Objekte ja paigaldisi veel ei ole. Need lisab ettevõtte administraator; seejärel saad siin sissekandeid teha.",
     },
     help: {
+      reminders: {
+        title: "Meeldetuletused ja tähtajad",
+        intro: "KAIDLY jälgib käidukavas olevaid tähtaegu automaatselt. Kui tegevuse tähtaeg läheneb, kuvatakse järelejäänud päevad ning saad rakenduses teavituse. Teavitus viib otse vastava tegevuse juurde.",
+        items: [
+          { term: "„14 päeva jäänud“", text: "Iga tegevuse juures on näha, mitu päeva on tähtajani. Värv muutub alles siis, kui tähtaeg läheneb: 14 päeva ja vähem ning eriti viimane nädal." },
+          { term: "„Tähtaeg täna“ ja „üle tähtaja“", text: "Tähtaja päeval on kirjas „Tähtaeg täna“. Kui tegevust pole tehtuks märgitud, näed nt „3 päeva üle tähtaja“ ja see on ülevaates esimesena." },
+          { term: "Meeldetuletused", text: "Tegevuse juures saab valida, millal meelde tuletada: 30, 14, 7 või 1 päev enne või oma päevade arv. Vaikimisi 14 päeva enne." },
+          { term: "Teavitused", text: "Meeldetuletus ilmub kellukese alla omanikele, administraatoritele ja käitajatele; number kellukesel näitab lugemata teavitusi. „Vaata tegevust“ avab õige tegevuse." },
+          { term: "Korduvad tegevused", text: "Kui märgid korduva tegevuse tehtuks, liigub järgmine tähtaeg ise edasi ja loendus algab uuesti. Varasemad meeldetuletused jäävad ajalukku." },
+        ],
+        note: "Teavitused on KAIDLYs; e-kirju ega telefoni teavitusi praegu ei saadeta.",
+        open: "Ava teavitused",
+        card: "KAIDLY loendab käidukava tähtaegu ja annab lähenemisest teada kellukese all. Tähtaja saad määrata, kui lisad käidukavasse tegevuse.",
+        cardLink: "Kuidas meeldetuletused töötavad",
+      },
       title: "Abi",
       intro: "Lühike juhend ja mõisted. Küsimuste korral pöördu oma ettevõtte administraatori poole.",
       termsTitle: "Mõisted",

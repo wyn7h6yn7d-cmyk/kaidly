@@ -6,6 +6,8 @@ import { HeroBackdrop } from "@/components/marketing/hero-backdrop";
 import { HeroVisual } from "@/components/marketing/hero-visual";
 import { LogPreview } from "@/components/marketing/log-preview";
 import { PhonePreview } from "@/components/marketing/phone-preview";
+import { ReminderExample } from "@/components/marketing/reminder-example";
+import { ScrollToTop } from "@/components/marketing/scroll-to-top";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SystemDiagram } from "@/components/marketing/system-diagram";
@@ -73,7 +75,7 @@ export default async function Home() {
         </section>
 
         {/* "Excel ei ole käiduraamat." — the product interface is the proof */}
-        <section id="kuidas-toimib" className="k-grain scroll-mt-4 bg-k-green text-white">
+        <section className="k-grain bg-k-green text-white">
           <div className="k-container k-section grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-12">
             <div className="min-w-0 lg:col-span-4">
               <h2 className="font-display text-display-2 font-extrabold">{l.excel.title}</h2>
@@ -121,7 +123,7 @@ export default async function Home() {
         </section>
 
         {/* System structure, drawn like an engineering sheet */}
-        <section className="relative border-y border-k-line bg-k-paper-2">
+        <section id="kuidas-toimib" className="relative scroll-mt-4 border-y border-k-line bg-k-paper-2">
           <div aria-hidden="true" className="k-grid pointer-events-none absolute inset-0 text-k-ink/[0.045]" />
           <div className="k-container k-section relative">
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
@@ -138,6 +140,27 @@ export default async function Home() {
               <p className="border-t border-k-ink/70 px-5 py-3 font-mono text-[13px] uppercase tracking-[0.12em] text-k-muted sm:px-10 lg:px-14">
                 KAIDLY · {l.system.sheet}
               </p>
+            </div>
+
+            {/* Deadlines and in-app reminders: the last step of the same workflow. */}
+            <div className="mt-16 grid grid-cols-1 items-start gap-10 lg:mt-20 lg:grid-cols-12 lg:gap-14">
+              <div className="min-w-0 lg:col-span-6">
+                <h3 className="font-display text-display-3 font-extrabold">{l.reminders.title}</h3>
+                <p className="mt-4 max-w-xl text-lead text-k-muted">{l.reminders.body}</p>
+                <ol className="mt-8 grid gap-3">
+                  {l.reminders.steps.map((step, i) => (
+                    <li key={step} className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-baseline gap-3 text-[17px] lg:text-lg">
+                      <span aria-hidden="true" className="font-mono text-sm font-semibold text-k-green">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="min-w-0 lg:col-span-6 lg:pt-2">
+                <ReminderExample />
+              </div>
             </div>
           </div>
         </section>
@@ -189,6 +212,7 @@ export default async function Home() {
       </main>
 
       <SiteFooter />
+      <ScrollToTop />
     </div>
   );
 }

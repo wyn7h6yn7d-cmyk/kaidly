@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Bell } from "lucide-react";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { OnboardingChecklist } from "@/components/dashboard/sections";
@@ -37,6 +39,26 @@ export default async function HelpPage({ params }: { params: Promise<{ org: stri
                   />
                 )}
               </div>
+              <div className="grid content-start gap-10">
+              <section aria-labelledby="meeldetuletused-title" id="meeldetuletused" className="scroll-mt-6">
+                <h2 id="meeldetuletused-title" className="mb-2 text-xl font-bold">
+                  {h.reminders.title}
+                </h2>
+                <p className="text-k-ink/75">{h.reminders.intro}</p>
+                <dl className="mt-3 divide-y divide-k-line border-y border-k-line">
+                  {h.reminders.items.map((item) => (
+                    <div key={item.term} className="py-3">
+                      <dt className="font-bold">{item.term}</dt>
+                      <dd className="mt-1 text-k-muted">{item.text}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-3 text-sm text-k-muted">{h.reminders.note}</p>
+                <Link href="/teavitused" className="mt-2 inline-flex min-h-11 items-center gap-2 font-semibold text-k-green underline underline-offset-4">
+                  <Bell className="size-4" aria-hidden="true" />
+                  {h.reminders.open}
+                </Link>
+              </section>
               <section aria-labelledby="terms">
                 <h2 id="terms" className="mb-3 text-xl font-bold">
                   {h.termsTitle}
@@ -50,6 +72,7 @@ export default async function HelpPage({ params }: { params: Promise<{ org: stri
                   ))}
                 </dl>
               </section>
+              </div>
             </div>
           </>
         );
