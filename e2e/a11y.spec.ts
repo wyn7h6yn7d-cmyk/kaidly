@@ -114,3 +114,20 @@ test("account, company settings and the KAIDLY Admin console pass axe and fit th
   await expect(page.getByRole("dialog")).toBeVisible();
   await expectAccessible(page);
 });
+
+test("public legal pages and an expired (read-only) company pass axe @responsive", async ({ page }) => {
+  test.setTimeout(180_000);
+  for (const path of ["/", "/privaatsus", "/kasutustingimused", "/auth/login", "/auth/sign-up"]) {
+    await page.goto(path);
+    await page.locator("h1").first().waitFor();
+    await expectAccessible(page);
+  }
+  const org = await createOrg();
+  sql(`update private.organisation_access set trial_started_at = now() - interval '20 days', trial_ends_at = now() - interval '6 days' where organisation_id = '${org.id}';`);
+  await login(page, org.users.owner, `/o/${org.slug}`);
+  for (const path of [`/o/${org.slug}`, `/o/${org.slug}/objektid/uus`, "/konto"]) {
+    await page.goto(path);
+    await page.locator("main h1").first().waitFor();
+    await expectAccessible(page);
+  }
+});
