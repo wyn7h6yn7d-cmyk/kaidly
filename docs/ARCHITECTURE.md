@@ -348,7 +348,7 @@ action, or who does it).
   `lang="et"`. Customer-facing screens stay fully localised.
 - Visually distinct: dark ink header with "KAIDLY Admin", white work surface, a standing
   notice that the console shows support metadata only and logs every change.
-- The account menu shows "KAIDLY Admin" only when `am_platform_admin()` is true.
+- "KAIDLY Admin" appears only when `am_platform_admin()` is true: as its own sidebar entry (above the account menu) inside an organisation, and in the account menu everywhere.
 
 ## 7. Auth flow
 

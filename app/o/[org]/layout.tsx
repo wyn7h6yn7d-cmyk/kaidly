@@ -32,6 +32,7 @@ async function OrganisationFrame({
       sidebarSwitcher={<OrgSwitcher current={current} organisations={organisations} tone="light" />}
       topBarSwitcher={<OrgSwitcher current={current} organisations={organisations} tone="dark" />}
       sidebarFooter={<UserMenu name={user.fullName} email={user.email} tone="light" platformAdmin={platformAdmin} />}
+      platformAdmin={platformAdmin}
       topBarEnd={<UserMenu name={user.fullName} email={user.email} tone="dark" platformAdmin={platformAdmin} />}
     >
       <LocaleSync needed={syncNeeded} />

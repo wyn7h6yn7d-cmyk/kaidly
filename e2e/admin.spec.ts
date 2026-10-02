@@ -22,6 +22,7 @@ test.describe("KAIDLY Admin", () => {
   test("company owners and other users get the ordinary 404 everywhere under /admin", async ({ page }) => {
     const org = await createOrg("Tavaline OÜ");
     await login(page, org.users.owner, `/o/${org.slug}`);
+    await expect(page.getByRole("link", { name: "KAIDLY Admin" })).toHaveCount(0);
     await page.locator(`button[aria-label="Konto"]:visible`).first().click();
     await expect(page.getByRole("menuitem", { name: "KAIDLY Admin" })).toHaveCount(0);
     await page.keyboard.press("Escape");
@@ -37,7 +38,13 @@ test.describe("KAIDLY Admin", () => {
     const admin = await platformAdmin();
     const name = `Klient ${uniqueId("k")} OÜ`;
     const org = await createOrg(name);
-    await login(page, admin, "/o");
+    // Desktop: a separate sidebar entry inside an organisation; everywhere: the account menu.
+    const own = await createOrg(`Admini oma ${uniqueId("o")}`);
+    sql(`insert into public.organisation_members (organisation_id, user_id, role) values ('${own.id}', '${admin.id}', 'owner');`);
+    await login(page, admin, `/o/${own.slug}`);
+    if ((page.viewportSize()?.width ?? 0) >= 1024) {
+      await expect(page.getByRole("complementary").getByRole("link", { name: "KAIDLY Admin" })).toBeVisible();
+    }
     await page.locator(`button[aria-label="Konto"]:visible`).first().click();
     await page.getByRole("menuitem", { name: "KAIDLY Admin" }).click();
     await expect(page.getByRole("heading", { name: "Mis toimub KAIDLYs?" })).toBeVisible();
@@ -56,7 +63,7 @@ test.describe("KAIDLY Admin", () => {
     // The admin is not a member of the customer company and can't open it in the app.
     await page.goto(`/o/${org.slug}`);
     await expect(page.getByRole("heading", { name })).toHaveCount(0);
-    expect(sql(`select count(*) from public.organisation_members where user_id = '${admin.id}'`)).toBe("0");
+    expect(sql(`select count(*) from public.organisation_members where user_id = '${admin.id}' and organisation_id = '${org.id}'`)).toBe("0");
   });
 
   test("admin actions need a deliberate confirmation and are audited", async ({ page }) => {

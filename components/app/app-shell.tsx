@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+import { ADMIN } from "@/lib/admin/strings";
 import { Logo, LogoMark } from "@/components/brand/logo";
 import { BottomNav, SidebarNav } from "./nav-links";
 import { getT } from "@/lib/i18n/server";
@@ -14,6 +16,7 @@ export async function AppShell({
   topBarSwitcher,
   sidebarFooter,
   topBarEnd,
+  platformAdmin = false,
   children,
 }: {
   orgSlug: string;
@@ -21,6 +24,8 @@ export async function AppShell({
   topBarSwitcher: React.ReactNode;
   sidebarFooter: React.ReactNode;
   topBarEnd: React.ReactNode;
+  /** From the database (am_platform_admin); shows the KAIDLY Admin entry. */
+  platformAdmin?: boolean;
   children: React.ReactNode;
 }) {
   const t = await getT();
@@ -36,6 +41,18 @@ export async function AppShell({
         <nav aria-label={t.common.menu} className="flex-1 overflow-y-auto px-3 py-4">
           <SidebarNav orgSlug={orgSlug} />
         </nav>
+        {platformAdmin && (
+          <div className="border-t border-white/10 px-3 py-2">
+            <Link
+              href="/admin"
+              lang="et"
+              className="focus-on-dark flex h-11 items-center gap-3 rounded-sm px-3 text-[15px] font-semibold text-k-volt hover:bg-white/5"
+            >
+              <ShieldCheck className="size-[18px] shrink-0" aria-hidden="true" />
+              {ADMIN.menuEntry}
+            </Link>
+          </div>
+        )}
         <div className="border-t border-white/10 p-3">{sidebarFooter}</div>
       </aside>
 
