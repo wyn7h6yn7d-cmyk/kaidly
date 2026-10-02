@@ -412,6 +412,30 @@ wildcards, unfinished uploads excluded, minimum length, other tenants and outsid
 nothing, expired searchable, deactivated left out, multi-company. Mutation-tested
 (SECURITY DEFINER makes the isolation tests fail).
 
+## 5f. Release hardening (migration `release_hardening`)
+
+**Upload abuse protection.** Trigger `zz_document_upload_limits` (BEFORE INSERT on
+`documents`, after `document_before_insert`) counts every upload registration in
+`private.upload_events` — so abandoned, failed or deleted attempts still count — and raises
+`upload_rate_limited` when a limit in `private.upload_limits` (one row, change with SQL, no
+deploy) would be exceeded. Defaults: per user 100 per hour, 400 and 4 GB per 24 h, 30
+unfinished uploads at once; per company 1500 and 15 GB per 24 h. Registrations of one user
+are serialised (advisory lock). Storage uploads need a registered pending row, so direct
+API calls are covered. Daily pg_cron job `kaidly-upload-events-cleanup` (`40 3 * * *`)
+drops counters older than 3 days. This is abuse protection, not a commercial storage quota.
+
+**Immediate revocation.** `private.session_active()` — the request's Auth session
+(`session_id` claim) must still exist in `auth.sessions` and the account must not be banned —
+is part of `private.org_ids()` and `private.org_ids_readable()`. Revoking sessions, "sign out
+other devices", a password change or a platform-admin disable therefore removes all
+company read and write access on the next request (worst case: one in-flight request), even
+though the access token itself stays valid until its expiry. Tokens without `session_id`
+(maintenance, tests that set claims) have no session to check.
+
+pgTAP `170_release_hardening` (18): hourly, daily-bytes, company and configurable limits;
+deleting pending uploads doesn't reset counters; per-user isolation; limits not readable by
+users; live vs revoked session; banned account; cleanup job. Mutation-tested.
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -554,7 +578,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 613 tests in 18 files, using the shared fixture
+`npm run test:db` runs pgTAP: 631 tests in 19 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -578,6 +602,7 @@ a user in both) and `helpers/sites.psql`.
 | `140_activity_reminders` | 45 | §5c |
 | `150_organisation_access` | 56 | §5d |
 | `160_global_search` | 20 | §5e |
+| `170_release_hardening` | 18 | §5f |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

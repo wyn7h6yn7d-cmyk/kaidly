@@ -440,6 +440,28 @@ lõppenud…"), then a missing earlier step.
 - **Expired companies** can search, preview and export (reading); deactivated companies
   return 404 like their other pages.
 
+## 6h. Production hardening
+
+- **Headers** (`next.config.ts`): CSP (`default-src 'self'`; scripts/styles self +
+  `'unsafe-inline'` — required by the App Router's inline bootstrap without per-request
+  nonces; images/connections only self + the configured Supabase origin; `frame-ancestors
+  'none'`, `object-src 'none'`, `form-action 'self'`, `upgrade-insecure-requests`), HSTS,
+  nosniff, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`,
+  restrictive `Permissions-Policy`, no `X-Powered-By`. Vercel's toolbar is allowed on Preview only.
+- **Indexing** (`lib/site.ts`): only `VERCEL_ENV=production` **with** `KAIDLY_SITE_URL` is
+  indexable; everything else gets `noindex` (meta + `X-Robots-Tag`) and `robots.txt`
+  disallows all. In production the application routes (`/o`, `/admin`, `/konto`, `/auth`,
+  `/otsing`, `/teavitused`, `/invite`, `/api`) stay `noindex`; `sitemap.xml` lists the landing
+  and legal pages; canonical URLs and `metadataBase` use `KAIDLY_SITE_URL`.
+- **Errors:** `app/error.tsx` (translated, digest only), `app/global-error.tsx`
+  (trilingual fallback), structured `onRequestError` logging (`instrumentation.ts`).
+- **Health:** `GET /api/health` → app/auth/storage status + commit, 200/503, no secrets.
+- **Legal pages:** `/privaatsus`, `/kasutustingimused` (ET/EN/RU, `lib/legal/*`); operator
+  facts come only from `lib/legal/operator.ts` and are shown as marked gaps with a "draft"
+  notice until filled and approved.
+- **Account deletion request** on `/konto` (validated mailto to `KAIDLY_CONTACT_EMAIL`).
+- Production setup, environment inventory, email, domain and rollback: DEPLOYMENT.md.
+
 ## 7. Auth flow
 
 - Sign-up with name, email + password → confirmation email → `/auth/confirm` → `/o`.
@@ -508,7 +530,7 @@ lõppenud…"), then a missing earlier step.
 | Level | Tool | Scope |
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
-| Unit | `node --test` (built in), 83 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
-| End-to-end | Playwright, 144 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), reminder settings, bell and unread count, notification centre (mark one/all read, direct link), toast once per reminder (desktop and mobile), recurrence history, notification tenant isolation, ET/EN/RU countdowns, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
+| Unit | `node --test` (built in), 84 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
+| End-to-end | Playwright, 152 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), reminder settings, bell and unread count, notification centre (mark one/all read, direct link), toast once per reminder (desktop and mobile), recurrence history, notification tenant isolation, ET/EN/RU countdowns, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
 | Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit. |
 | CI | GitHub Actions `.github/workflows/ci.yml` | On PRs and pushes to non-main branches: **verify** (lint, typecheck, unit, build with placeholder public config), **database** (fresh local stack in the runner: migrations + seed, pgTAP, generated types up to date), **e2e** (Playwright against the local stack; traces kept on failure). Actions pinned to SHAs, no secrets, no hosted project. |

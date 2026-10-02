@@ -95,6 +95,14 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   the access-checked route. Attachments on log entries and deficiencies are never changed
   or deleted. No `service_role` anywhere, including scripts that upload.
 
+**Environments**
+- Preview/feature branches → DEVELOPMENT Supabase `gdpzavhkblbcxivoaqax`; `main`/Production →
+  a separate PRODUCTION project. Never share a database, never copy development data to
+  production, never hard-code project refs. Production setup and release gate:
+  docs/DEPLOYMENT.md, docs/RELEASE_CHECKLIST.md — do not merge `main` while the gate is red.
+- New tenant policies go through `org_ids()` / `org_ids_readable()`, which also enforce live
+  sessions; upload paths must keep the database upload limits in front of Storage.
+
 **Database**
 - All schema, policy and bucket changes go through `supabase/migrations/`. No manual dashboard changes.
 - Never edit a migration that has been applied outside a local machine (e.g. pushed to the

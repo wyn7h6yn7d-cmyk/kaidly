@@ -29,6 +29,11 @@ npm run dev                    # http://localhost:3000
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` — no path |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | the publishable key (`sb_publishable_…`) |
 
+Production deployment, the full environment-variable inventory (Preview vs Production) and
+the launch runbook: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and
+[docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md). Production uses its own Supabase
+project and additionally `KAIDLY_SITE_URL=https://kaidly.ee`.
+
 Optional (server-side only, not a secret; set it in Vercel for Preview/Production too):
 
 | Variable | Value |

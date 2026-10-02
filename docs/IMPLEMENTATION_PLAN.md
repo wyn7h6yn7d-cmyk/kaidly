@@ -30,7 +30,8 @@ Each phase ends with a deployable app and every check passing: `npm run lint`,
 | Deadline countdowns and reminders (2026-10-02) | Shared countdown, per-activity reminder thresholds, idempotent reminder generation (pg_cron daily + on change), in-app notification centre, bell, toast | DATABASE.md §5c, ARCHITECTURE.md §6e |
 | Trial and manual access (2026-10-02) | 14-day company trial, read-only expiry enforced in `org_ids()`, platform-admin activation/extension/expiry with audit, access banner, admin filters | DATABASE.md §5d, ARCHITECTURE.md §6f |
 | Search and reports (2026-10-02) | Global search (RLS-invoker RPC, trigram indexes), report centre with six reports, preview, PDF (pdfmake) and CSV exports | DATABASE.md §5e, ARCHITECTURE.md §6g |
-| Tests | 613 pgTAP, 83 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
+| Release candidate (2026-10-02) | Upload abuse limits, immediate session revocation, security headers, noindex/canonical, health + structured error logs, error pages, legal page structure, account deletion request, deployment/backup/privacy runbooks, release checklist | DATABASE.md §5f, ARCHITECTURE.md §6h, DEPLOYMENT.md, RELEASE_CHECKLIST.md |
+| Tests | 631 pgTAP, 84 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
 | Reviews | Responsive (375/768/1440), accessibility (axe + keyboard), security regression (+ review gates), code quality; Phase 7–8: storage security, cross-tenant oracles, pagination | this file, "Review log" |
 
 **Still not final for Phase 3:** the electrical-professional domain review (PRODUCT.md §8).
@@ -102,14 +103,14 @@ All decided 2026-10-01 unless noted.
 
 ## Production launch blockers
 
-- **Storage quotas and upload rate limits (D35).** Today any member can upload without limit.
-- **Organisation erasure:** deactivated organisations with history are kept indefinitely until retention rules exist; permanent deletion of such organisations needs the privacy-erasure workflow.
-- **Privacy-erasure workflow** for legitimate personal-data deletion (D32), designed with legal input.
-- **Russian terminology review** by a native electrical professional before the RU UI is public (all of `lib/i18n/ru.ts`; key terms in PRODUCT.md §8).
-- Production Supabase project, migrations pushed, auth email templates, security headers, backups (Phase 10).
-- **Auth hardening for revocation:** revoked sessions/disabled accounts keep a valid access token until it expires (1 h). Decide on a shorter `jwt_expiry` or a server-side session check before launch.
-- **Contact address for "Soovin jätkata"**: set `KAIDLY_CONTACT_EMAIL` on Vercel; decide what happens to companies expired 90+ days (retention policy).
-- **Estonian electrical-domain wording review** of the ET UI (also listed on /admin/system).
+Tracked in [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) (gate RED as of 2026-10-02). Resolved
+in the release-candidate phase: upload quotas/rate limits (abuse protection, D35), session
+revocation delay, security headers, Preview noindex. Still open, needing the owner: production
+Supabase project + plan with backups, production env values in Vercel, SMTP + sender domain,
+contact mailbox, kaidly.ee domain/DNS, legal operator facts + review, Kenneth's production
+account. Still open as decisions: retention periods and automated privacy erasure (manual
+process for launch: PRIVACY_PROCESS.md), Storage file backups, Russian and Estonian domain
+wording reviews.
 
 ## Open questions (need a decision or domain review)
 
