@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, Pencil, Plus } from "lucide-react";
+import { ChevronRight, ClipboardList, Pencil, Plus } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
 import { DocumentList } from "@/components/documents/document-list";
 import { GuidedEmptyState } from "@/components/app/guided-empty";
@@ -50,24 +50,30 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
               description={site.address ?? undefined}
               back={{ href: `${base}/objektid`, label: copy.title }}
               actions={
-                isAdmin ? (
-                  <>
+                <>
+                  <Button asChild variant="outline">
+                    <Link href={`${base}/aruanded/site?objekt=${site.id}`}>
+                      <ClipboardList aria-hidden="true" />
+                      {t.reports.summary}
+                    </Link>
+                  </Button>
+                  {isAdmin && (
                     <Button asChild variant="outline">
                       <Link href={`${base}/objektid/${site.id}/muuda`}>
                         <Pencil aria-hidden="true" />
                         {copy.edit}
                       </Link>
                     </Button>
-                    {canAdd && (
-                      <Button asChild>
-                        <Link href={`${base}/paigaldised/uus?objekt=${site.id}`}>
-                          <Plus aria-hidden="true" />
-                          {t.app.installations.add}
-                        </Link>
-                      </Button>
-                    )}
-                  </>
-                ) : undefined
+                  )}
+                  {isAdmin && canAdd && (
+                    <Button asChild>
+                      <Link href={`${base}/paigaldised/uus?objekt=${site.id}`}>
+                        <Plus aria-hidden="true" />
+                        {t.app.installations.add}
+                      </Link>
+                    </Button>
+                  )}
+                </>
               }
             />
 

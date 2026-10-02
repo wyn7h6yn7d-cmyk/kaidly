@@ -1,4 +1,7 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ClipboardList } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Suspense } from "react";
 import { PageHeader } from "@/components/app/page-header";
 import { InstallationTabs } from "@/components/sites/installation-tabs";
@@ -41,9 +44,15 @@ async function InstallationHeader({
         }
         back={{ href: `/o/${org.slug}/objektid/${installation.site.id}`, label: installation.site.name }}
         actions={
-          hasRole(role, "operator") && !installation.archivedAt ? (
-            <NewEntryButton href={`${base}/paevik/uus`} />
-          ) : undefined
+          <>
+            <Button asChild variant="outline">
+              <Link href={`/o/${org.slug}/aruanded/installation?paigaldis=${installation.id}`}>
+                <ClipboardList aria-hidden="true" />
+                {t.reports.summary}
+              </Link>
+            </Button>
+            {hasRole(role, "operator") && !installation.archivedAt && <NewEntryButton href={`${base}/paevik/uus`} />}
+          </>
         }
       />
       <InstallationTabs base={base} />
