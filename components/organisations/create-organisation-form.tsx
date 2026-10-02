@@ -6,10 +6,11 @@ import { Field } from "@/components/forms/field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createOrganisation } from "@/lib/actions/organisations";
-import { t } from "@/lib/i18n";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { useT } from "@/lib/i18n/client";
 
 export function CreateOrganisationForm() {
+  const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(createOrganisation);
   const copy = t.app.createOrganisation;
@@ -38,7 +39,7 @@ export function CreateOrganisationForm() {
           aria-invalid={state.fields?.registryCode}
         />
       </Field>
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div>
         <Button type="submit" size="lg" disabled={pending} className="w-full sm:w-auto">
           {pending ? copy.submitting : copy.submit}

@@ -1,57 +1,56 @@
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
 /**
- * A faithful, static rendering of the installation log in the product's own visual
- * language (fictional example data). Built in HTML rather than a screenshot so it stays
- * sharp and in sync with the design tokens.
+ * A faithful static rendering of the installation log in the product's own visual
+ * language (fictional example data from the dictionary). HTML, not a screenshot, so it
+ * stays sharp, translatable and in step with the design tokens.
  */
-const ROWS = [
-  { date: "12.03.2026", time: "09:40", type: "Mõõtmine", text: "Isolatsioonitakistuse mõõtmine väljuvatel liinidel.", result: "Kõik > 500 MΩ", by: "Kati Käitaja" },
-  { date: "04.03.2026", time: "14:15", type: "Remont", text: "Lahtine klemm X3 pingutatud, kontrollitud termokaameraga.", label: "Puuduse lahendus", by: "Mati Meister" },
-  { date: "21.02.2026", time: "08:05", type: "Kontroll", text: "Kilbi visuaalne kontroll, klemmide ülevaatus.", result: "Korras", label: "Käidukava", by: "Kati Käitaja" },
-];
-
-export function LogPreview() {
+export async function LogPreview() {
+  const t = await getT();
+  const p = t.landing.preview;
+  const tabs = t.app.installations.tabs;
   return (
-    <div role="img" aria-label={t.landing.excel.previewLabel} className="bg-k-paper text-k-ink shadow-[0_1px_0_hsl(var(--k-line))]">
-      <div className="border-b border-k-line px-6 pb-4 pt-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-k-muted">Näidisküla logistikakeskus</p>
-        <p className="mt-1 font-display text-2xl font-extrabold">Peajaotuskilp</p>
-        <p className="mt-1 flex items-center gap-3 text-sm">
-          <span className="font-mono font-semibold text-k-green">PJK-1</span>
-          <span className="text-k-muted">Jaotuskilp</span>
+    <div role="img" aria-label={t.landing.excel.previewLabel} className="min-w-0 bg-k-paper text-k-ink">
+      <div className="border-b border-k-line px-5 pb-0 pt-6 sm:px-8 sm:pt-8">
+        <p className="truncate text-xs font-semibold uppercase tracking-[0.14em] text-k-muted">{p.site}</p>
+        <p className="mt-1 font-display text-2xl font-extrabold sm:text-[28px]">{p.installation}</p>
+        <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[15px]">
+          <span className="font-mono font-semibold text-k-green">{p.identifier}</span>
+          <span className="text-k-muted">{p.type}</span>
           <span className="inline-flex items-center gap-1.5">
             <span className="size-2.5 bg-k-green" />
-            Kasutuses
+            {p.status}
           </span>
         </p>
-        <div className="mt-4 flex gap-5 overflow-hidden whitespace-nowrap text-sm font-semibold text-k-muted">
-          <span>Ülevaade</span>
-          <span className="border-b-2 border-k-green pb-1 text-k-ink">Käidupäevik</span>
-          <span>Käidukava</span>
-          <span>Puudused</span>
-          <span className="hidden sm:inline">Dokumendid</span>
+        <div className="mt-5 flex gap-6 overflow-hidden whitespace-nowrap text-[15px] font-semibold text-k-muted">
+          <span className="pb-3">{tabs.overview}</span>
+          <span className="border-b-2 border-k-green pb-3 text-k-ink">{tabs.log}</span>
+          <span className="pb-3">{tabs.schedule}</span>
+          <span className="hidden pb-3 sm:inline">{tabs.deficiencies}</span>
+          <span className="hidden pb-3 xl:inline">{tabs.documents}</span>
         </div>
       </div>
       <ol className="divide-y divide-k-line bg-k-surface">
-        {ROWS.map((row) => (
-          <li key={row.date} className="grid gap-x-6 gap-y-1 px-6 py-4 sm:grid-cols-[120px_1fr]">
-            <div className="text-sm">
+        {p.rows.map((row) => (
+          <li key={row.date} className="grid gap-x-8 gap-y-1 px-5 py-5 sm:grid-cols-[136px_1fr] sm:px-8">
+            <div className="text-[15px]">
               <span className="font-semibold tabular-nums">{row.date}</span>{" "}
-              <span className="text-k-muted">{row.time}</span>
+              <span className="text-k-muted tabular-nums">{row.time}</span>
               <span className="block font-semibold text-k-green">{row.type}</span>
               {row.label && (
-                <span className="block text-[11px] font-semibold uppercase tracking-wider text-k-muted">{row.label}</span>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-k-muted">{row.label}</span>
               )}
             </div>
-            <div className="text-sm">
-              <p className="text-[15px]">{row.text}</p>
+            <div className="min-w-0 text-[15px]">
+              <p className="text-base">{row.text}</p>
               {row.result && (
-                <p className="mt-0.5">
-                  <span className="font-semibold">Tulemus:</span> {row.result}
+                <p className="mt-1">
+                  <span className="font-semibold">{p.resultLabel}:</span> {row.result}
                 </p>
               )}
-              <p className="mt-1 text-k-muted">Kirja pannud: {row.by}</p>
+              <p className="mt-1 text-k-muted">
+                {p.recordedBy}: {row.by}
+              </p>
             </div>
           </li>
         ))}

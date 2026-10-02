@@ -10,10 +10,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { createInvitation } from "@/lib/actions/organisations";
 import type { Role } from "@/lib/auth/roles";
-import { formatDate, t } from "@/lib/i18n";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { useT } from "@/lib/i18n/client";
 
 export function InviteForm({ organisationId, roles }: { organisationId: string; roles: Role[] }) {
+  const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(createInvitation);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
@@ -64,7 +65,7 @@ export function InviteForm({ organisationId, roles }: { organisationId: string; 
           {copy.emailHint}
         </p>
       </form>
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
 
       {link && state.data && (
         <section aria-live="polite" className="border-l-4 border-k-volt bg-k-surface p-4 sm:p-5">
@@ -84,7 +85,7 @@ export function InviteForm({ organisationId, roles }: { organisationId: string; 
               {copied ? copy.copied : copy.copy}
             </Button>
           </div>
-          <p className="mt-3 text-sm text-k-muted">{copy.validUntil(formatDate(state.data.expiresAt))}</p>
+          <p className="mt-3 text-sm text-k-muted">{copy.validUntil(t.fmt.date(state.data.expiresAt))}</p>
         </section>
       )}
     </div>

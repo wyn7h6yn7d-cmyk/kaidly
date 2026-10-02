@@ -12,9 +12,9 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createActivity, updateActivity } from "@/lib/actions/schedule";
 import type { Activity } from "@/lib/data/schedule";
-import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { FREQUENCIES, INTERVAL_UNITS, PRIORITIES } from "@/lib/validation/schedule";
+import { useT } from "@/lib/i18n/client";
 
 type InstallationChoice = { id: string; label: string };
 
@@ -35,6 +35,7 @@ export function ActivityForm({
   defaultDueOn: string;
   cancelHref: string;
 }) {
+  const t = useT();
   const [state, action, pending, value] = useFormAction(activity ? updateActivity : createActivity);
   const id = useFieldId();
   const f = t.app.schedule.fields;
@@ -202,7 +203,7 @@ export function ActivityForm({
         />
       </Field>
 
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>

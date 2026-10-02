@@ -42,7 +42,7 @@ export function ConfirmForm({
       <Button type="submit" variant={variant} size={size} disabled={pending}>
         {pending && pendingLabel ? pendingLabel : label}
       </Button>
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
     </form>
   );
 }

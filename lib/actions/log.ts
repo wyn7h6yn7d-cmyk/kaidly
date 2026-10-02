@@ -3,14 +3,13 @@
 import { redirect } from "next/navigation";
 import { getInstallation } from "@/lib/data/sites";
 import { dbErrorCode } from "@/lib/db/errors";
-import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { field } from "@/lib/validation/common";
 import { correctionSchema, logEntrySchema } from "@/lib/validation/log";
 import { actionContext } from "./context";
 import { type ActionState, failure, invalidInput } from "./state";
 
-const LOG_TIME_MESSAGES = { future: t.app.log.futureTime, time: t.app.log.invalidTime };
+const LOG_TIME_MESSAGES = { future: "occurred_in_future", time: "invalid_time" } as const;
 
 // Organisation, site and installation are never taken from the form: the organisation
 // comes from the URL slug (RLS), the installation is looked up inside it, and the site is

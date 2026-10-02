@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 /** A titled list on the dashboard: first rows, the total, and a link to the full list. */
-export function AttentionSection({
+export async function AttentionSection({
   id,
   title,
   total,
@@ -23,6 +23,7 @@ export function AttentionSection({
   allLabel?: string;
   children: React.ReactNode;
 }) {
+  const t = await getT();
   return (
     <section aria-labelledby={id} className="min-w-0">
       <div className="mb-2 flex items-baseline justify-between gap-4 border-b-2 border-k-ink pb-2">
@@ -90,7 +91,8 @@ export type OnboardingStep = {
 };
 
 /** First-use checklist: what is done, and one clear next action. No tours. */
-export function Onboarding({ steps }: { steps: OnboardingStep[] }) {
+export async function Onboarding({ steps }: { steps: OnboardingStep[] }) {
+  const t = await getT();
   const copy = t.app.onboarding;
   const next = steps.findIndex((step) => !step.done);
   return (

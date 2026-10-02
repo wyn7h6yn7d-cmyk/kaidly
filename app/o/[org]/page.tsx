@@ -11,13 +11,14 @@ import { hasRole } from "@/lib/auth/roles";
 import { getDashboard } from "@/lib/data/dashboard";
 import { listInstallationOptions } from "@/lib/data/log";
 import { getOverviewCounts, listSites } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
-import { formatDateTime } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
+
 
 const SITES_SHOWN = 8;
 
-export default function OverviewPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function OverviewPage({ params }: { params: Promise<{ org: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -201,7 +202,7 @@ export default function OverviewPage({ params }: { params: Promise<{ org: string
                         key={entry.id}
                         href={`${base}/paigaldised/${entry.installationId}/paevik/${entry.id}`}
                         title={entry.description}
-                        context={`${formatDateTime(entry.occurredAt)} · ${t.app.log.types[entry.entryType]} · ${where(entry.installationId) ?? ""}`}
+                        context={`${t.fmt.dateTime(entry.occurredAt)} · ${t.app.log.types[entry.entryType]} · ${where(entry.installationId) ?? ""}`}
                       />
                     ))}
                   </AttentionSection>

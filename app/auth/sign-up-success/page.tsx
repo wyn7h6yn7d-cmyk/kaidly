@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AuthHeading } from "@/components/auth/auth-heading";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.auth.signUpSuccess.title };
 
-export default function Page() {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.auth.signUpSuccess.title };
+}
+
+export default async function Page() {
+  const t = await getT();
   return (
     <>
       <AuthHeading

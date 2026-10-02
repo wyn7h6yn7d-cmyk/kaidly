@@ -7,9 +7,13 @@ import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
 import { listRecentInstallationIds } from "@/lib/data/dashboard";
 import { listInstallationOptions, type InstallationOption } from "@/lib/data/log";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.quickEntry.title };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.quickEntry.title };
+}
 
 function InstallationLink({
   href,
@@ -40,7 +44,8 @@ function InstallationLink({
  * Quick entry from anywhere in the organisation: pick the installation, land on its entry
  * form. Recently used installations first; with a single installation, go straight there.
  */
-export default function QuickEntryPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function QuickEntryPage({ params }: { params: Promise<{ org: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

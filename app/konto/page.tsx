@@ -6,9 +6,13 @@ import { LoadingBlock } from "@/components/app/states";
 import { ProfileForm } from "@/components/organisations/profile-form";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.account.title };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.account.title };
+}
 
 async function Profile() {
   const user = await requireUser();
@@ -17,7 +21,8 @@ async function Profile() {
   return <ProfileForm profile={{ fullName: user.fullName, email: user.email, phone: data?.phone ?? null }} />;
 }
 
-export default function AccountPage() {
+export default async function AccountPage() {
+  const t = await getT();
   return (
     <PlainPage>
       <PageHeader

@@ -13,6 +13,7 @@ export const et = {
       "KAIDLY on digitaalne käidupäevik elektripaigaldistele: käidupäevik, käidukava, puudused ja dokumendid ühes kohas.",
   },
   common: {
+    language: "Keel",
     loading: "Laen…",
     signIn: "Logi sisse",
     signUp: "Loo konto",
@@ -27,20 +28,27 @@ export const et = {
   },
   landing: {
     metaTitle: "KAIDLY — Elektripaigaldise käit. Lihtsalt.",
+    nav: {
+      label: "Põhimenüü",
+      howItWorks: "Kuidas töötab",
+      // pricing: "Hinnad" — public pricing page is planned (docs/PRODUCT.md §7)
+    },
     hero: {
       eyebrow: "Digitaalne käidupäevik elektripaigaldistele",
       lineOne: "Elektripaigaldise käit.",
       lineTwo: "Lihtsalt.",
       lead: "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas — inimestele, kes hoiavad elektripaigaldised töös.",
+      primary: "Loo konto",
+      secondary: "Vaata, kuidas töötab",
       note: "kõik kirjas, mitte kellegi peas",
-      figureLabel: "Joonis: peajaotuskilp, käidu märkmetega",
-      figureTitle: "PJK-1 · Peajaotuskilp",
+      figureLabel: "Joonis: peajaotuskilp PK-01 käidu märkmetega",
+      figureTitle: "PK-01 · Peajaotuskilp",
       figureMeta: "Näidisobjekt · leht 1/1",
-      callouts: ["Viimane kontroll 12.03.", "Järgmine mõõtmine 04/2027", "Puudus kõrvaldatud"],
+      callouts: ["Viimane kontroll 12.03.", "Järgmine mõõtmine 04/2027", "Puudus kõrvaldatud ✓"],
     },
     excel: {
       title: "Excel ei ole käiduraamat.",
-      body: "Käidupäevik, käidukava, puudused ja dokumendid ühe objekti all — ilma failide, e-mailide ja paberite tagaajamiseta.",
+      body: "Käidupäevik, käidukava, puudused ja dokumendid ühe objekti all — ilma failide, e-kirjade ja paberite tagaajamiseta.",
       points: [
         "Iga sissekanne on kirjas koos nime ja ajaga.",
         "Parandus lisatakse, algne kanne jääb alles.",
@@ -48,8 +56,25 @@ export const et = {
       ],
       previewLabel: "KAIDLY vaade: paigaldise käidupäevik",
     },
+    preview: {
+      site: "Näidisküla logistikakeskus",
+      installation: "Peajaotuskilp",
+      identifier: "PK-01",
+      type: "Jaotuskilp",
+      status: "Kasutuses",
+      organisation: "Näidis Elektritööd OÜ",
+      resultLabel: "Tulemus",
+      recordedBy: "Kirja pannud",
+      rows: [
+        { date: "12.03.2026", time: "09:40", type: "Mõõtmine", text: "Isolatsioonitakistuse mõõtmine väljuvatel liinidel.", result: "Kõik > 500 MΩ", label: "", by: "Kati Käitaja" },
+        { date: "04.03.2026", time: "14:15", type: "Remont", text: "Lahtine klemm X3 pingutatud, kontrollitud termokaameraga.", result: "", label: "Puuduse lahendus", by: "Mati Meister" },
+        { date: "21.02.2026", time: "08:05", type: "Kontroll", text: "Kilbi visuaalne kontroll, klemmide ülevaatus.", result: "Korras", label: "Käidukava", by: "Kati Käitaja" },
+      ],
+      entryDescription: "Kilbi visuaalne kontroll, klemmid üle vaadatud. Märkusi ei ole.",
+    },
     questions: {
       title: "Küsimused, mida igas majas küsitakse",
+      intro: "Igaühele on KAIDLYs üks koht, kust vastus leida.",
       items: [
         {
           q: "Mis eelmisel hooldusel tehti?",
@@ -76,8 +101,10 @@ export const et = {
     system: {
       eyebrow: "Ülesehitus",
       title: "Üks objekt. Kõik, mis selle käiduga juhtub.",
-      note: "üks koht, mitte kümme faili",
+      body: "KAIDLY järgib sama loogikat, mille järgi elektripaigaldisi hallatakse: ettevõttel on objektid, objektil paigaldised ja igal paigaldisel oma käiduajalugu.",
+      sheet: "Leht 1/1 · Ülesehitus",
       nodes: {
+        organisation: { label: "Ettevõte", detail: "sinu ettevõte või klient" },
         site: { label: "Objekt", detail: "hoone, alajaam või park" },
         installation: { label: "Elektripaigaldis", detail: "kilp, jaam või laadimistaristu" },
         log: { label: "Käidupäevik", detail: "mis tehti ja mis juhtus" },
@@ -86,12 +113,16 @@ export const et = {
         documents: { label: "Dokumendid", detail: "skeemid, protokollid, fotod" },
       },
       diagramLabel:
-        "Skeem: objektil on elektripaigaldised; igal paigaldisel on käidupäevik, käidukava, puudused ja dokumendid.",
+        "Skeem: ettevõttel on objektid, objektil elektripaigaldised; igal paigaldisel on käidupäevik, käidukava, puudused ja dokumendid.",
     },
     phone: {
       title: "Kirja pandud seal, kus töö tehti.",
       body: "Ava paigaldis telefonis, vali sissekande liik, kirjuta paar lauset ja salvesta. Objekti ja paigaldist ei pea uuesti valima.",
-      steps: ["Ava paigaldis", "Lisa sissekanne", "Salvesta"],
+      steps: [
+        { title: "Ava paigaldis", body: "Viimati kasutatud paigaldised on kohe ees." },
+        { title: "Lisa sissekanne", body: "Liik ühe puudutusega, paar lauset, foto kaamerast." },
+        { title: "Salvesta", body: "Nimi ja aeg lähevad kirja ise. Muuta ei saa — ainult parandada." },
+      ],
       previewLabel: "KAIDLY telefonivaade: uus sissekanne",
     },
     cta: {
@@ -99,6 +130,7 @@ export const et = {
       body: "Konto loomine võtab minuti. Esimene objekt ja paigaldis veel paar.",
     },
     footer: "Elektripaigaldise käit. Lihtsalt.",
+    footerNav: "Jaluse menüü",
   },
   auth: {
     login: {
@@ -176,6 +208,9 @@ export const et = {
     identifier_taken: "Sellel objektil on sama tähisega paigaldis juba olemas.",
     installation_archived: "Arhiveeritud paigaldisele ei saa uusi kirjeid lisada. Taasta paigaldis enne.",
     occurred_in_future: "Toimumise aeg ei saa olla tulevikus.",
+    invalid_time: "Kontrolli aega.",
+    interval_invalid: "Korduval tegevusel peab olema intervall (nt iga 12 kuu järel).",
+    future_date: "Kuupäev ei saa olla tulevikus.",
     correction_target_invalid: "Parandust saab lisada ainult algsele sissekandele.",
     log_entries_append_only: "Käidupäeviku sissekandeid ei saa muuta ega kustutada. Lisa parandus.",
     activity_archived: "Arhiveeritud tegevust ei saa tehtuks märkida.",
@@ -396,7 +431,6 @@ export const et = {
       noActiveSites: "Paigaldise lisamiseks peab organisatsioonil olema vähemalt üks aktiivne objekt.",
       submitCreate: "Lisa paigaldis",
       submitting: "Salvestan…",
-      futureDate: "Kuupäev ei saa olla tulevikus.",
     },
     log: {
       title: "Käidupäevik",
@@ -446,8 +480,6 @@ export const et = {
       reason: "Põhjus",
       current: "Kehtiv",
       recordedOn: (date: string, name: string) => `${date} · ${name}`,
-      futureTime: "Toimumise aeg ei saa olla tulevikus.",
-      invalidTime: "Kontrolli toimumise aega.",
       filters: {
         title: "Filtrid",
         site: "Objekt",
@@ -540,7 +572,6 @@ export const et = {
       submitCreate: "Lisa tegevus",
       saving: "Salvestan…",
       filters: { state: "Seis", priority: "Prioriteet" },
-      intervalError: "Korduval tegevusel peab olema intervall (nt iga 12 kuu järel).",
     },
     deficiencies: {
       title: "Puudused",

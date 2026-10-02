@@ -5,16 +5,20 @@ import { PageHeader } from "@/components/app/page-header";
 import { NoticeState } from "@/components/app/states";
 import { CompleteActivityForm } from "@/components/schedule/complete-form";
 import { getActivity } from "@/lib/data/schedule";
-import { formatDate, t } from "@/lib/i18n";
 import { toLocalInput } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.schedule.completeTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.schedule.completeTitle };
+}
 
-export default function CompleteActivityPage({
+export default async function CompleteActivityPage({
   params,
 }: {
   params: Promise<{ org: string; activity: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -39,7 +43,7 @@ export default function CompleteActivityPage({
             <PageHeader
               eyebrow={activity.title}
               title={t.app.schedule.completeTitle}
-              description={t.app.schedule.completeIntro(formatDate(activity.nextDueOn))}
+              description={t.app.schedule.completeIntro(t.fmt.date(activity.nextDueOn))}
               back={{ href, label: activity.title }}
             />
             <CompleteActivityForm

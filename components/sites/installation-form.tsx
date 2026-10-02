@@ -10,9 +10,9 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createInstallation, updateInstallation } from "@/lib/actions/sites";
 import type { Installation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { INSTALLATION_STATUSES, INSTALLATION_TYPES } from "@/lib/validation/sites";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { useT } from "@/lib/i18n/client";
 
 export function InstallationForm({
   orgSlug,
@@ -27,6 +27,7 @@ export function InstallationForm({
   installation?: Installation;
   cancelHref: string;
 }) {
+  const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(
     installation ? updateInstallation : createInstallation,
@@ -176,7 +177,7 @@ export function InstallationForm({
         />
       </Field>
 
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>

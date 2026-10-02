@@ -3,19 +3,23 @@ import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { ActivityForm } from "@/components/schedule/activity-form";
 import { listInstallationOptions } from "@/lib/data/log";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
 import { todayInTallinn } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.schedule.newTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.schedule.newTitle };
+}
 
-export default function NewActivityPage({
+export default async function NewActivityPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<{ paigaldis?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

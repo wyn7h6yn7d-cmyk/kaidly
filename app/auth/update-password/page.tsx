@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { UpdatePasswordForm } from "@/components/auth/update-password-form";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.auth.updatePassword.title };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.auth.updatePassword.title };
+}
 
 // Requires a session (established by /auth/confirm); the proxy redirects anonymous users.
 export default function Page() {

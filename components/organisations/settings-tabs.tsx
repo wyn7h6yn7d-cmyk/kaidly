@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { t } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
 
-export function SettingsTabs({ orgSlug, active }: { orgSlug: string; active: "organisation" | "members" }) {
+import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
+
+export async function SettingsTabs({ orgSlug, active }: { orgSlug: string; active: "organisation" | "members" }) {
+  const t = await getT();
   const tabs = [
     { key: "organisation", href: `/o/${orgSlug}/seaded`, label: t.app.settings.tabs.organisation },
     { key: "members", href: `/o/${orgSlug}/seaded/liikmed`, label: t.app.settings.tabs.members },

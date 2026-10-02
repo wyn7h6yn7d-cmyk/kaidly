@@ -2,10 +2,11 @@
 
 import { Camera, CircleAlert, CircleCheck, FileText, X } from "lucide-react";
 import { useFieldId } from "@/components/forms/use-field-id";
-import { ACCEPT_ATTRIBUTE, formatBytes } from "@/lib/documents/rules";
-import { t } from "@/lib/i18n";
+import { ACCEPT_ATTRIBUTE } from "@/lib/documents/rules";
 import { cn } from "@/lib/utils";
 import type { UploadQueue } from "./use-upload-queue";
+import type { T } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * File chooser and upload list. On phones the chooser offers the camera. Progress is
@@ -14,8 +15,8 @@ import type { UploadQueue } from "./use-upload-queue";
  */
 export function AttachmentPicker({
   queue,
-  label = t.app.attachments.addFiles,
-  hint = t.app.attachments.hint,
+  label,
+  hint,
   disabled,
   multiple = true,
 }: {
@@ -25,6 +26,7 @@ export function AttachmentPicker({
   disabled?: boolean;
   multiple?: boolean;
 }) {
+  const t = useT();
   const id = useFieldId();
   const copy = t.app.attachments;
 
@@ -40,7 +42,7 @@ export function AttachmentPicker({
           )}
         >
           <Camera className="size-[18px]" aria-hidden="true" />
-          {label}
+          {label ?? t.app.attachments.addFiles}
           <input
             id={id("files")}
             type="file"
@@ -57,7 +59,7 @@ export function AttachmentPicker({
           />
         </label>
         <p id={`${id("files")}-hint`} className="mt-2 text-sm text-k-muted">
-          {hint}
+          {hint ?? t.app.attachments.hint}
         </p>
       </div>
 
@@ -79,7 +81,7 @@ export function AttachmentPicker({
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{item.name}</p>
                 <p className={cn("text-sm", item.status === "failed" ? "text-k-danger" : "text-k-muted")}>
-                  {formatBytes(item.size)} · {statusText(item)}
+                  {t.fmt.bytes(item.size)} · {statusText(item, t)}
                 </p>
                 {item.status === "uploading" && (
                   <progress
@@ -111,7 +113,7 @@ export function AttachmentPicker({
   );
 }
 
-function statusText(item: UploadQueue["items"][number]): string {
+function statusText(item: UploadQueue["items"][number], t: T): string {
   const copy = t.app.attachments;
   switch (item.status) {
     case "preparing":

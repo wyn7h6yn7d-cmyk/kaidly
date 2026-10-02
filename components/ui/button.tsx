@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-
 import { cn } from "@/lib/utils";
 
 // Heights: default 44 px and lg 48 px meet the touch-target rule in docs/DESIGN.md §6.
@@ -23,6 +22,8 @@ const buttonVariants = cva(
         default: "h-11 px-5",
         sm: "h-11 px-3 text-sm sm:h-9",
         lg: "h-12 px-6 text-base",
+        // Marketing calls to action next to display-size headings.
+        xl: "h-14 px-7 text-[17px] [&_svg]:size-5",
         icon: "h-11 w-11",
       },
     },

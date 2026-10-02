@@ -6,17 +6,22 @@ import { EmptyState } from "@/components/app/states";
 import { InstallationForm } from "@/components/sites/installation-form";
 import { Button } from "@/components/ui/button";
 import { listActiveSiteOptions } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.installations.new };
 
-export default function NewInstallationPage({
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.installations.new };
+}
+
+export default async function NewInstallationPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<{ objekt?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

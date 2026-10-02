@@ -6,11 +6,16 @@ import { ConfirmForm } from "@/components/forms/confirm-form";
 import { SiteForm } from "@/components/sites/site-form";
 import { setSiteArchived } from "@/lib/actions/sites";
 import { getSite } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.sites.edit };
 
-export default function EditSitePage({ params }: { params: Promise<{ org: string; site: string }> }) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.sites.edit };
+}
+
+export default async function EditSitePage({ params }: { params: Promise<{ org: string; site: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

@@ -7,17 +7,21 @@ import { ActivityForm } from "@/components/schedule/activity-form";
 import { setActivityArchived } from "@/lib/actions/schedule";
 import { getActivity } from "@/lib/data/schedule";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
 import { todayInTallinn } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.schedule.edit };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.schedule.edit };
+}
 
-export default function EditActivityPage({
+export default async function EditActivityPage({
   params,
 }: {
   params: Promise<{ org: string; activity: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

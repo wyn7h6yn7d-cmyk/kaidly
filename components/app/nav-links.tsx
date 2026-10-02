@@ -9,9 +9,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { t } from "@/lib/i18n";
+
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, type NavItem } from "./nav";
+import { useT } from "@/lib/i18n/client";
 
 function hrefFor(orgSlug: string, item: NavItem) {
   return item.segment ? `/o/${orgSlug}/${item.segment}` : `/o/${orgSlug}`;
@@ -22,6 +23,7 @@ function isActive(pathname: string, href: string, item: NavItem) {
 }
 
 export function SidebarNav({ orgSlug }: { orgSlug: string }) {
+  const t = useT();
   const pathname = usePathname();
 
   return (
@@ -31,7 +33,7 @@ export function SidebarNav({ orgSlug }: { orgSlug: string }) {
         const content = (
           <>
             <Icon className="size-[18px] shrink-0" aria-hidden="true" />
-            {item.label}
+            {t.app.nav[item.key]}
           </>
         );
         const base =
@@ -61,6 +63,7 @@ export function SidebarNav({ orgSlug }: { orgSlug: string }) {
 }
 
 export function BottomNav({ orgSlug }: { orgSlug: string }) {
+  const t = useT();
   const pathname = usePathname();
   const primary = NAV_ITEMS.filter((item) => item.mobile);
   const more = NAV_ITEMS.filter((item) => !item.mobile);
@@ -74,7 +77,7 @@ export function BottomNav({ orgSlug }: { orgSlug: string }) {
         const content = (
           <>
             <Icon className="size-5" aria-hidden="true" />
-            <span className="truncate">{item.label}</span>
+            <span className="truncate">{t.app.nav[item.key]}</span>
           </>
         );
         const href = hrefFor(orgSlug, item);
@@ -109,7 +112,7 @@ export function BottomNav({ orgSlug }: { orgSlug: string }) {
                 <DropdownMenuItem key={item.key} asChild>
                   <Link href={hrefFor(orgSlug, item)}>
                     <Icon aria-hidden="true" />
-                    {item.label}
+                    {t.app.nav[item.key]}
                   </Link>
                 </DropdownMenuItem>
               );

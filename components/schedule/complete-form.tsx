@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { completeActivity } from "@/lib/actions/schedule";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
+
 
 /** Completing writes the operating-log entry, so the form is the log entry, prefilled. */
 export function CompleteActivityForm({
@@ -30,6 +31,7 @@ export function CompleteActivityForm({
   performedByName: string | null;
   cancelHref: string;
 }) {
+  const t = useT();
   const [state, action, pending, value] = useFormAction(completeActivity);
   const id = useFieldId();
   const log = t.app.log;
@@ -85,7 +87,7 @@ export function CompleteActivityForm({
         </Field>
       </div>
 
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>

@@ -10,16 +10,19 @@ import { hasRole } from "@/lib/auth/roles";
 import { listAttachments } from "@/lib/data/documents";
 import { getLogEntry, type LogEntryVersion } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
-import { formatDate, t } from "@/lib/i18n";
-import { formatDateTime, isWithin } from "@/lib/time";
+import { isWithin } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.log.entryTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.log.entryTitle };
+}
 
 /** Matches the database rule: the author may attach files for 24 hours after recording. */
 const ATTACH_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-function Version({
+async function Version({
   label,
   version,
   isCurrent,
@@ -28,6 +31,7 @@ function Version({
   version: LogEntryVersion;
   isCurrent: boolean;
 }) {
+  const t = await getT();
   const copy = t.app.log;
   return (
     <li className={cn("px-4 py-4 sm:px-5", !isCurrent && "text-k-muted")}>
@@ -38,7 +42,7 @@ function Version({
             {copy.current}
           </span>
         )}
-        <span>{copy.recordedOn(formatDateTime(version.createdAt), version.createdByName)}</span>
+        <span>{copy.recordedOn(t.fmt.dateTime(version.createdAt), version.createdByName)}</span>
       </p>
       {version.correctionReason && (
         <p className="mt-2 text-sm text-k-ink">
@@ -46,7 +50,7 @@ function Version({
         </p>
       )}
       <p className="mt-2 text-sm">
-        {formatDateTime(version.occurredAt)} · {copy.types[version.entryType]}
+        {t.fmt.dateTime(version.occurredAt)} · {copy.types[version.entryType]}
         {version.performedByName ? ` · ${copy.performedBy}: ${version.performedByName}` : ""}
       </p>
       <p className="mt-1 whitespace-pre-line break-words">{version.description}</p>
@@ -59,11 +63,12 @@ function Version({
   );
 }
 
-export default function LogEntryPage({
+export default async function LogEntryPage({
   params,
 }: {
   params: Promise<{ org: string; installation: string; entry: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -97,7 +102,7 @@ export default function LogEntryPage({
           <>
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-xl font-bold">
-                {copy.entryTitle} · {formatDateTime(current.occurredAt)}
+                {copy.entryTitle} · {t.fmt.dateTime(current.occurredAt)}
               </h2>
               {canCorrect && (
                 <Button asChild variant="outline">
@@ -109,7 +114,7 @@ export default function LogEntryPage({
             {entry.corrections.length > 0 && (
               <p className="mb-6 inline-flex items-center gap-2 font-semibold">
                 <span aria-hidden="true" className="size-2.5 bg-k-warn" />
-                {copy.correctedOn(formatDateTime(current.createdAt), current.createdByName)}
+                {copy.correctedOn(t.fmt.dateTime(current.createdAt), current.createdByName)}
               </p>
             )}
 
@@ -124,7 +129,7 @@ export default function LogEntryPage({
                             href={`/o/${org.slug}/kaidukava/${entry.scheduledActivityId}`}
                             className="font-semibold text-k-green underline underline-offset-4"
                           >
-                            {t.app.schedule.dueOnLabel(formatDate(entry.scheduledDueOn ?? ""))}
+                            {t.app.schedule.dueOnLabel(t.fmt.date(entry.scheduledDueOn ?? ""))}
                           </Link>
                         ),
                       },
@@ -146,13 +151,13 @@ export default function LogEntryPage({
                     ]
                   : []),
                 { label: copy.fields.type, value: copy.types[current.entryType] },
-                { label: copy.fields.occurredAt, value: formatDateTime(current.occurredAt) },
+                { label: copy.fields.occurredAt, value: t.fmt.dateTime(current.occurredAt) },
                 { label: copy.fields.description, value: current.description },
                 { label: copy.fields.result, value: current.result },
                 { label: copy.performedBy, value: current.performedByName },
                 {
                   label: copy.recordedBy,
-                  value: copy.recordedOn(formatDateTime(entry.original.createdAt), entry.original.createdByName),
+                  value: copy.recordedOn(t.fmt.dateTime(entry.original.createdAt), entry.original.createdByName),
                 },
               ]}
             />

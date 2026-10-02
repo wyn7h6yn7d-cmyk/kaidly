@@ -7,13 +7,15 @@ import { hasRole } from "@/lib/auth/roles";
 import { ArchivedBadge, StatusMark } from "@/components/sites/status-mark";
 import { requireOrg } from "@/lib/data/organisations";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
+
 
 async function InstallationHeader({
   params,
 }: {
   params: Promise<{ org: string; installation: string }>;
 }) {
+  const t = await getT();
   const { org: slug, installation: id } = await params;
   const { org, role } = await requireOrg(slug);
   const installation = await getInstallation(org.id, id);

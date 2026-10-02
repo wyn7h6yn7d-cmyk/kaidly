@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { changeMemberRole } from "@/lib/actions/organisations";
 import type { Role } from "@/lib/auth/roles";
-import { t } from "@/lib/i18n";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { useT } from "@/lib/i18n/client";
 
 export function MemberRoleForm({
   memberId,
@@ -20,6 +20,7 @@ export function MemberRoleForm({
   options: Role[];
   label: string;
 }) {
+  const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(changeMemberRole);
   const selectId = id(`role-${memberId}`);
@@ -47,7 +48,7 @@ export function MemberRoleForm({
           {t.app.save}
         </Button>
       </div>
-      <FormMessage error={state.error} success={state.ok ? t.app.members.roleChanged : undefined} />
+      <FormMessage code={state.errorCode} success={state.ok ? t.app.members.roleChanged : undefined} />
     </form>
   );
 }

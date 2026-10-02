@@ -17,18 +17,22 @@ import { listDocuments, parseDocumentFilters } from "@/lib/data/documents";
 import { listInstallationOptions } from "@/lib/data/log";
 import { listActiveSiteOptions } from "@/lib/data/sites";
 import { DOCUMENT_CATEGORIES } from "@/lib/documents/rules";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.documents.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.documents.title };
+}
 
-export default function DocumentsPage({
+export default async function DocumentsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

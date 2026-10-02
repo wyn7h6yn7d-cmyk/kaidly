@@ -9,16 +9,20 @@ import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
 import { listInstallationDeficiencies } from "@/lib/data/deficiencies";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { todayInTallinn } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.deficiencies.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.deficiencies.title };
+}
 
-export default function InstallationDeficienciesPage({
+export default async function InstallationDeficienciesPage({
   params,
 }: {
   params: Promise<{ org: string; installation: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

@@ -13,18 +13,22 @@ import { Select } from "@/components/ui/select";
 import { hasRole } from "@/lib/auth/roles";
 import { listInstallationOptions, listOrganisationLog, parseLogFilters } from "@/lib/data/log";
 import { listActiveSiteOptions } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { LOG_ENTRY_TYPES } from "@/lib/validation/log";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.log.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.log.title };
+}
 
-export default function OrganisationLogPage({
+export default async function OrganisationLogPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

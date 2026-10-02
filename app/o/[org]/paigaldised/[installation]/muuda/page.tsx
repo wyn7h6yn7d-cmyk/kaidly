@@ -5,15 +5,20 @@ import { ConfirmForm } from "@/components/forms/confirm-form";
 import { InstallationForm } from "@/components/sites/installation-form";
 import { setInstallationArchived } from "@/lib/actions/sites";
 import { getInstallation, listActiveSiteOptions } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.installations.edit };
 
-export default function EditInstallationPage({
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.installations.edit };
+}
+
+export default async function EditInstallationPage({
   params,
 }: {
   params: Promise<{ org: string; installation: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

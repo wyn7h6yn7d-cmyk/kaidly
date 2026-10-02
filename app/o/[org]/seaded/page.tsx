@@ -5,9 +5,13 @@ import { ConfirmForm } from "@/components/forms/confirm-form";
 import { OrganisationSettingsForm } from "@/components/organisations/organisation-settings-form";
 import { SettingsTabs } from "@/components/organisations/settings-tabs";
 import { leaveOrganisation } from "@/lib/actions/organisations";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.settings.title };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.settings.title };
+}
 
 function ReadOnlyRow({ label, value }: { label: string; value: string }) {
   return (
@@ -18,7 +22,8 @@ function ReadOnlyRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function SettingsPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function SettingsPage({ params }: { params: Promise<{ org: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

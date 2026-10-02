@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { resolveDeficiency } from "@/lib/actions/deficiencies";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
+
 
 export function ResolveDeficiencyForm({
   orgSlug,
@@ -25,6 +26,7 @@ export function ResolveDeficiencyForm({
   performedByName: string | null;
   cancelHref: string;
 }) {
+  const t = useT();
   const [state, action, pending, value] = useFormAction(resolveDeficiency);
   const id = useFieldId();
   const copy = t.app.deficiencies;
@@ -72,7 +74,7 @@ export function ResolveDeficiencyForm({
         </Field>
       </div>
 
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>

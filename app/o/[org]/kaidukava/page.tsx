@@ -14,20 +14,24 @@ import { hasRole } from "@/lib/auth/roles";
 import { listInstallationOptions } from "@/lib/data/log";
 import { listActivities, parseActivityFilters } from "@/lib/data/schedule";
 import { listActiveSiteOptions } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
 import { todayInTallinn } from "@/lib/time";
 import { PRIORITIES } from "@/lib/validation/schedule";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.schedule.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.schedule.title };
+}
 
-export default function SchedulePage({
+export default async function SchedulePage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

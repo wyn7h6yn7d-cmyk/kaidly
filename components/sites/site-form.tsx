@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createSite, updateSite } from "@/lib/actions/sites";
 import type { Site } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { useT } from "@/lib/i18n/client";
 
 export function SiteForm({
   orgSlug,
@@ -21,6 +21,7 @@ export function SiteForm({
   site?: Site;
   cancelHref: string;
 }) {
+  const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(site ? updateSite : createSite);
   const f = t.app.sites.fields;
@@ -70,7 +71,7 @@ export function SiteForm({
           aria-invalid={state.fields?.description}
         />
       </Field>
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>

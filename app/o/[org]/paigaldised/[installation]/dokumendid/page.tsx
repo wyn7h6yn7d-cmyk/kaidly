@@ -11,17 +11,22 @@ import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
 import { listDocuments } from "@/lib/data/documents";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.installations.tabs.documents };
 
-export default function InstallationDocumentsPage({
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.installations.tabs.documents };
+}
+
+export default async function InstallationDocumentsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string; installation: string }>;
   searchParams: Promise<{ lk?: string; salvestatud?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

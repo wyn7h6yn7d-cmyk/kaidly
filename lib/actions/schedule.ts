@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { getActivity } from "@/lib/data/schedule";
 import { getInstallation } from "@/lib/data/sites";
 import { dbErrorCode } from "@/lib/db/errors";
-import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { field, optionalText } from "@/lib/validation/common";
 import { LOG_ENTRY_TYPES, occurredAt } from "@/lib/validation/log";
@@ -34,7 +33,7 @@ export async function createActivity(_prev: ActionState, formData: FormData): Pr
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = activityInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { interval: t.app.schedule.intervalError });
+  if (!parsed.success) return invalidInput(parsed.error, { interval: "interval_invalid" });
   const input = parsed.data;
 
   // The site is the installation's own; the installation must be in this organisation.
@@ -70,7 +69,7 @@ export async function updateActivity(_prev: ActionState, formData: FormData): Pr
   const activityId = field(formData, "activityId");
   if (!isUuid(activityId)) return failure("not_found");
   const parsed = activityInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { interval: t.app.schedule.intervalError });
+  if (!parsed.success) return invalidInput(parsed.error, { interval: "interval_invalid" });
   const input = parsed.data;
 
   const supabase = await createClient();
@@ -139,7 +138,7 @@ export async function completeActivity(_prev: ActionState, formData: FormData): 
     result: field(formData, "result"),
     performedByName: field(formData, "performedByName"),
   });
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.log.futureTime });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "occurred_in_future" });
   const input = parsed.data;
   // Resolve within the organisation first, so the redirect target is always ours.
   const activity = await getActivity(ctx.org.id, input.activityId);

@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { SiteForm } from "@/components/sites/site-form";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.sites.new };
 
-export default function NewSitePage({ params }: { params: Promise<{ org: string }> }) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.sites.new };
+}
+
+export default async function NewSitePage({ params }: { params: Promise<{ org: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

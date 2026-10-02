@@ -10,8 +10,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { t } from "@/lib/i18n";
+
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 type Org = { slug: string; name: string };
 
@@ -25,6 +26,7 @@ export function OrgSwitcher({
   /** light = on the deep green sidebar */
   tone: "light" | "dark";
 }) {
+  const t = useT();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger

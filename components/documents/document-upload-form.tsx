@@ -11,9 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import type { UploadTarget } from "@/lib/actions/documents";
 import { DOCUMENT_CATEGORIES, type DocumentCategory, titleFromFilename } from "@/lib/documents/rules";
-import { t } from "@/lib/i18n";
 import { AttachmentPicker } from "./attachment-picker";
 import { useUploadQueue } from "./use-upload-queue";
+import { useT } from "@/lib/i18n/client";
 
 type Choice = { id: string; label: string };
 
@@ -45,6 +45,7 @@ export function DocumentUploadForm({
   defaultScope: string;
   cancelHref: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const id = useFieldId();
   const copy = t.app.documents;

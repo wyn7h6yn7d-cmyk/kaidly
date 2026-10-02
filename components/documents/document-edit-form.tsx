@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { updateDocument } from "@/lib/actions/documents";
 import { DOCUMENT_CATEGORIES, type DocumentCategory } from "@/lib/documents/rules";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
+
 
 /** Title and category of a general document (admins). The file itself never changes. */
 export function DocumentEditForm({
@@ -23,6 +24,7 @@ export function DocumentEditForm({
   title: string;
   category: DocumentCategory;
 }) {
+  const t = useT();
   const [state, action, pending, value] = useFormAction(updateDocument);
   const id = useFieldId();
   const copy = t.app.documents;
@@ -54,7 +56,7 @@ export function DocumentEditForm({
           ))}
         </Select>
       </Field>
-      <FormMessage error={state.error} success={state.ok ? t.app.saved : undefined} />
+      <FormMessage code={state.errorCode} success={state.ok ? t.app.saved : undefined} />
       <div>
         <Button type="submit" disabled={pending}>
           {pending ? t.app.saving : t.app.save}

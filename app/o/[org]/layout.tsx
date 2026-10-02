@@ -2,7 +2,9 @@ import { Suspense } from "react";
 import { AppShell } from "@/components/app/app-shell";
 import { OrgSwitcher } from "@/components/app/org-switcher";
 import { ShellSkeleton } from "@/components/app/states";
+import { LocaleSync } from "@/components/app/language-selector";
 import { UserMenu } from "@/components/app/user-menu";
+import { localeSyncNeeded } from "@/lib/i18n/server";
 import { listMyOrganisations, requireOrg } from "@/lib/data/organisations";
 
 /**
@@ -20,6 +22,7 @@ async function OrganisationFrame({
   const { org: slug } = await params;
   const [{ org, user }, organisations] = await Promise.all([requireOrg(slug), listMyOrganisations()]);
   const current = { slug: org.slug, name: org.name };
+  const syncNeeded = await localeSyncNeeded(user.preferredLocale);
 
   return (
     <AppShell
@@ -29,6 +32,7 @@ async function OrganisationFrame({
       sidebarFooter={<UserMenu name={user.fullName} email={user.email} tone="light" />}
       topBarEnd={<UserMenu name={user.fullName} email={user.email} tone="dark" />}
     >
+      <LocaleSync needed={syncNeeded} />
       {children}
     </AppShell>
   );

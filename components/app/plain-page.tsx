@@ -1,11 +1,19 @@
 import { Suspense } from "react";
 import { requireUser } from "@/lib/auth/session";
 import { PlainShell } from "./app-shell";
+import { localeSyncNeeded } from "@/lib/i18n/server";
+import { LocaleSync } from "./language-selector";
 import { UserMenu } from "./user-menu";
 
 async function CurrentUserMenu() {
   const user = await requireUser();
-  return <UserMenu name={user.fullName} email={user.email} tone="dark" />;
+  const syncNeeded = await localeSyncNeeded(user.preferredLocale);
+  return (
+    <>
+      <LocaleSync needed={syncNeeded} />
+      <UserMenu name={user.fullName} email={user.email} tone="dark" />
+    </>
+  );
 }
 
 /** Signed-in page outside an organisation, with the account menu in the header. */

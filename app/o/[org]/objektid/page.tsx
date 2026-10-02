@@ -7,17 +7,22 @@ import { EmptyState } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
 import { countArchivedSites, listSites } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.sites.title };
 
-export default function SitesPage({
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.sites.title };
+}
+
+export default async function SitesPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<{ arhiiv?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

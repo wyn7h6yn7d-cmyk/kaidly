@@ -1,15 +1,17 @@
 import type { InstallationStatus } from "@/lib/validation/sites";
-import { t } from "@/lib/i18n";
+
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 /** Square + word: status is never colour-only (docs/DESIGN.md §5). */
-export function StatusMark({
+export async function StatusMark({
   status,
   archived,
 }: {
   status?: InstallationStatus;
   archived?: boolean;
 }) {
+  const t = await getT();
   const label = archived
     ? t.app.installations.archived
     : status

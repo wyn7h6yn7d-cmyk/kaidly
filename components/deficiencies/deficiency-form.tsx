@@ -11,9 +11,9 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createDeficiency, updateDeficiency } from "@/lib/actions/deficiencies";
 import type { Deficiency } from "@/lib/data/deficiencies";
-import { t } from "@/lib/i18n";
 import { toLocalInput } from "@/lib/time";
 import { SEVERITIES } from "@/lib/validation/deficiencies";
+import { useT } from "@/lib/i18n/client";
 
 type Choice = { id: string; label: string };
 
@@ -32,6 +32,7 @@ export function DeficiencyForm({
   detectedAt: string;
   cancelHref: string;
 }) {
+  const t = useT();
   const [state, action, pending, value] = useFormAction(deficiency ? updateDeficiency : createDeficiency);
   const id = useFieldId();
   const copy = t.app.deficiencies;
@@ -141,7 +142,7 @@ export function DeficiencyForm({
         </Field>
       </div>
 
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row">
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>

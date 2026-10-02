@@ -2,11 +2,16 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/app/page-header";
 import { PlainPage } from "@/components/app/plain-page";
 import { CreateOrganisationForm } from "@/components/organisations/create-organisation-form";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.createOrganisation.title };
 
-export default function NewOrganisationPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.createOrganisation.title };
+}
+
+export default async function NewOrganisationPage() {
+  const t = await getT();
   return (
     <PlainPage>
       <PageHeader

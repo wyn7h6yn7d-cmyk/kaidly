@@ -13,15 +13,20 @@ import { archiveDocument, restoreDocument } from "@/lib/actions/documents";
 import { hasRole } from "@/lib/auth/roles";
 import { getDocument, getDocumentPlacement } from "@/lib/data/documents";
 import { getInstallation } from "@/lib/data/sites";
-import { formatBytes } from "@/lib/documents/rules";
-import { t } from "@/lib/i18n";
-import { formatDateTime } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.documents.detailsTitle };
+
+
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.documents.detailsTitle };
+}
 
 const linkClass = "font-semibold text-k-green underline underline-offset-4";
 
-export default function DocumentPage({ params }: { params: Promise<{ org: string; document: string }> }) {
+export default async function DocumentPage({ params }: { params: Promise<{ org: string; document: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -78,7 +83,7 @@ export default function DocumentPage({ params }: { params: Promise<{ org: string
             {doc.archivedAt && (
               <p className="mb-6 inline-flex items-center gap-2 font-semibold">
                 <span aria-hidden="true" className="size-2.5 bg-k-grey" />
-                {copy.archived} {formatDateTime(doc.archivedAt)}
+                {copy.archived} {t.fmt.dateTime(doc.archivedAt)}
               </p>
             )}
             {historical && (
@@ -88,7 +93,7 @@ export default function DocumentPage({ params }: { params: Promise<{ org: string
             <DetailList
               items={[
                 { label: f.filename, value: <span className="break-all">{doc.originalFilename}</span> },
-                { label: f.size, value: formatBytes(doc.sizeBytes) },
+                { label: f.size, value: t.fmt.bytes(doc.sizeBytes) },
                 { label: f.scope, value: belongsTo },
                 ...(doc.logEntryId && installation && placement.logEntryOriginalId
                   ? [
@@ -118,7 +123,7 @@ export default function DocumentPage({ params }: { params: Promise<{ org: string
                     ]
                   : []),
                 { label: f.uploadedBy, value: doc.uploadedByName || null },
-                { label: f.uploadedAt, value: formatDateTime(doc.createdAt) },
+                { label: f.uploadedAt, value: t.fmt.dateTime(doc.createdAt) },
               ]}
             />
 

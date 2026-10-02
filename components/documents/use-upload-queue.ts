@@ -4,7 +4,8 @@ import { useCallback, useRef, useState } from "react";
 import { discardUpload, finalizeUpload, registerUpload, type UploadTarget } from "@/lib/actions/documents";
 import { checkFile, type DocumentCategory, IMAGE_TYPES, type FileProblem } from "@/lib/documents/rules";
 import { isConvertibleImage, prepareImage, uploadObject } from "@/lib/documents/upload-client";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
+
 
 export type QueueStatus = "preparing" | "queued" | "uploading" | "done" | "failed";
 
@@ -28,6 +29,7 @@ let counter = 0;
  * cleaned up and can be retried; files already uploaded are never sent twice.
  */
 export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; resizeImages: boolean }) {
+  const t = useT();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [rejected, setRejected] = useState<Rejected[]>([]);
   const [announcement, setAnnouncement] = useState("");
@@ -115,7 +117,7 @@ export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; res
           title,
         });
         if (!registered.ok || !registered.data) {
-          patch(item.key, { status: "failed", error: registered.error ?? copy.failed });
+          patch(item.key, { status: "failed", error: (registered.errorCode ? t.errors[registered.errorCode] : copy.failed) });
           setAnnouncement(`${item.name}: ${copy.failed}`);
           return;
         }
@@ -132,7 +134,7 @@ export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; res
         setAnnouncement(`${item.name}: ${copy.done}`);
       }
     },
-    [orgSlug, patch],
+    [orgSlug, patch, t],
   );
 
   const clear = useCallback(() => update(() => []), [update]);

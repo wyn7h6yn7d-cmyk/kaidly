@@ -14,11 +14,16 @@ import { setSiteArchived } from "@/lib/actions/sites";
 import { hasRole } from "@/lib/auth/roles";
 import { listDocuments } from "@/lib/data/documents";
 import { getSite, listSiteInstallations } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.sites.title };
 
-export default function SitePage({ params }: { params: Promise<{ org: string; site: string }> }) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.sites.title };
+}
+
+export default async function SitePage({ params }: { params: Promise<{ org: string; site: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

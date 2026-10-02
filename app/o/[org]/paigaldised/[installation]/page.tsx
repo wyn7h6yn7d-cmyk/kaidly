@@ -11,16 +11,21 @@ import { setInstallationArchived } from "@/lib/actions/sites";
 import { hasRole } from "@/lib/auth/roles";
 import { getInstallationSummary } from "@/lib/data/dashboard";
 import { getInstallation } from "@/lib/data/sites";
-import { formatDate, t } from "@/lib/i18n";
-import { formatDateTime } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.installations.tabs.overview };
 
-export default function InstallationOverviewPage({
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.installations.tabs.overview };
+}
+
+export default async function InstallationOverviewPage({
   params,
 }: {
   params: Promise<{ org: string; installation: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -73,7 +78,7 @@ export default function InstallationOverviewPage({
                 <p>
                   <span className="font-semibold">{s.lastEntry}:</span>{" "}
                   <Link href={`${base}/paevik/${summary.lastEntry.id}`} className={linkClass}>
-                    {formatDateTime(summary.lastEntry.occurredAt)} · {t.app.log.types[summary.lastEntry.entryType]}
+                    {t.fmt.dateTime(summary.lastEntry.occurredAt)} · {t.app.log.types[summary.lastEntry.entryType]}
                   </Link>
                 </p>
                 <p>
@@ -105,7 +110,7 @@ export default function InstallationOverviewPage({
                 { label: f.location, value: installation.location },
                 {
                   label: f.commissionedOn,
-                  value: installation.commissionedOn ? formatDate(installation.commissionedOn) : null,
+                  value: installation.commissionedOn ? t.fmt.date(installation.commissionedOn) : null,
                 },
                 { label: f.responsiblePerson, value: installation.responsiblePerson },
                 { label: f.description, value: installation.description },

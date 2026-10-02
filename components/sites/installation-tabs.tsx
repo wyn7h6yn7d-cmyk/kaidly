@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 const TABS = [
-  { segment: "", label: t.app.installations.tabs.overview },
-  { segment: "paevik", label: t.app.installations.tabs.log },
-  { segment: "kaidukava", label: t.app.installations.tabs.schedule },
-  { segment: "puudused", label: t.app.installations.tabs.deficiencies },
-  { segment: "dokumendid", label: t.app.installations.tabs.documents },
+  { segment: "", key: "overview" },
+  { segment: "paevik", key: "log" },
+  { segment: "kaidukava", key: "schedule" },
+  { segment: "puudused", key: "deficiencies" },
+  { segment: "dokumendid", key: "documents" },
 ] as const;
 
 /** Scrolls sideways inside itself on narrow screens; the page never scrolls sideways. */
 export function InstallationTabs({ base }: { base: string }) {
+  const t = useT();
   const pathname = usePathname();
   return (
     <nav aria-label={t.app.installations.sectionsLabel} className="-mx-4 mb-8 overflow-x-auto border-b border-k-line px-4 sm:mx-0 sm:px-0">
@@ -32,7 +33,7 @@ export function InstallationTabs({ base }: { base: string }) {
                   active ? "border-k-green text-k-ink" : "border-transparent text-k-muted hover:text-k-ink",
                 )}
               >
-                {tab.label}
+                {t.app.installations.tabs[tab.key]}
               </Link>
             </li>
           );

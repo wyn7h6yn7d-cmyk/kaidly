@@ -6,14 +6,15 @@ import { useFormAction } from "@/components/forms/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { updateOrganisation } from "@/lib/actions/organisations";
-import { t } from "@/lib/i18n";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { useT } from "@/lib/i18n/client";
 
 export function OrganisationSettingsForm({
   organisation,
 }: {
   organisation: { id: string; name: string; registryCode: string | null };
 }) {
+  const t = useT();
   const id = useFieldId();
   const [state, action, pending, value] = useFormAction(updateOrganisation);
   return (
@@ -39,7 +40,7 @@ export function OrganisationSettingsForm({
           aria-invalid={state.fields?.registryCode}
         />
       </Field>
-      <FormMessage error={state.error} success={state.ok ? t.app.saved : undefined} />
+      <FormMessage code={state.errorCode} success={state.ok ? t.app.saved : undefined} />
       <div>
         <Button type="submit" disabled={pending}>
           {pending ? t.app.saving : t.app.save}

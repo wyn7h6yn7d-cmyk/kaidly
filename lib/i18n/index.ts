@@ -1,4 +1,8 @@
-import { et } from "./et";
+import type { et } from "./et";
+import { makeFormat, type Format } from "./format";
+import type { Locale } from "./locales";
+
+export { DEFAULT_LOCALE, INTL_LOCALE, isLocale, LOCALE_COOKIE, LOCALE_NAMES, LOCALES, type Locale } from "./locales";
 
 /** Same shape as the Estonian dictionary, with literal strings widened to `string`. */
 type Widen<T> = T extends string
@@ -6,31 +10,22 @@ type Widen<T> = T extends string
   : T extends (...args: infer A) => infer R
     ? (...args: A) => Widen<R>
     : T extends readonly (infer U)[]
-    ? readonly Widen<U>[]
-    : { readonly [K in keyof T]: Widen<T[K]> };
+      ? readonly Widen<U>[]
+      : { readonly [K in keyof T]: Widen<T[K]> };
 
+/** Every language file must have exactly this shape (missing keys fail the typecheck). */
 export type Messages = Widen<typeof et>;
 
 export type ErrorCode = keyof Messages["errors"];
 
-/**
- * The active dictionary. The MVP is Estonian-only; adding English means adding
- * `en.ts` typed as `Messages` and choosing the dictionary here per request.
- */
-export const t: Messages = et;
+/** The active dictionary plus locale-aware formatting. */
+export type T = Messages & { locale: Locale; fmt: Format };
 
-export const locale = "et";
-
-/** Estonian date format, e.g. 12.03.2026. */
-export function formatDate(value: string | Date): string {
-  return new Intl.DateTimeFormat("et-EE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    timeZone: "Europe/Tallinn",
-  }).format(typeof value === "string" ? new Date(value) : value);
+export function withFormat(locale: Locale, messages: Messages): T {
+  return { ...messages, locale, fmt: makeFormat(locale) };
 }
 
-export function isErrorCode(value: unknown): value is ErrorCode {
-  return typeof value === "string" && Object.hasOwn(t.errors, value);
+/** Server code: `await getT()` from "@/lib/i18n/server". Client components: `useT()` from "@/lib/i18n/client". */
+export function isErrorCode(value: unknown, messages: Messages): value is ErrorCode {
+  return typeof value === "string" && Object.hasOwn(messages.errors, value);
 }

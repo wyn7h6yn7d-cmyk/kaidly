@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { Logo, LogoMark } from "@/components/brand/logo";
-import { t } from "@/lib/i18n";
 import { BottomNav, SidebarNav } from "./nav-links";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Signed-in frame for one organisation (docs/DESIGN.md §6):
  * desktop — deep green sidebar with organisation switcher, navigation, account;
  * mobile — top bar (switcher + account) and a bottom tab bar in thumb reach.
  */
-export function AppShell({
+export async function AppShell({
   orgSlug,
   sidebarSwitcher,
   topBarSwitcher,
@@ -23,6 +23,7 @@ export function AppShell({
   topBarEnd: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const t = await getT();
   return (
     <div className="min-h-svh lg:grid lg:grid-cols-[264px_1fr]">
       <aside className="hidden bg-k-green lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col">

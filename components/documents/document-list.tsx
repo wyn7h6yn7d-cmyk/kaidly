@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { FileText, ImageIcon } from "lucide-react";
 import type { DocumentItem } from "@/lib/data/documents";
-import { formatBytes, IMAGE_TYPES } from "@/lib/documents/rules";
-import { formatDate, t } from "@/lib/i18n";
+import { IMAGE_TYPES } from "@/lib/documents/rules";
+import { getT } from "@/lib/i18n/server";
+
 
 export function openHref(orgSlug: string, documentId: string, download = false) {
   return `/o/${orgSlug}/dokumendid/${documentId}/ava${download ? "?lae=1" : ""}`;
@@ -11,10 +12,10 @@ export function openHref(orgSlug: string, documentId: string, download = false) 
 const isImage = (doc: DocumentItem) => IMAGE_TYPES.includes(doc.mimeType as never);
 
 /** Document rows: title links to the details; the file opens through a short-lived link. */
-export function DocumentList({
+export async function DocumentList({
   orgSlug,
   items,
-  label = t.app.documents.listLabel,
+  label,
   contextFor,
 }: {
   orgSlug: string;
@@ -22,9 +23,10 @@ export function DocumentList({
   label?: string;
   contextFor?: (doc: DocumentItem) => string | null;
 }) {
+  const t = await getT();
   const copy = t.app.documents;
   return (
-    <ul aria-label={label} className="divide-y divide-k-line border-y border-k-line">
+    <ul aria-label={label ?? copy.listLabel} className="divide-y divide-k-line border-y border-k-line">
       {items.map((doc) => {
         const Icon = isImage(doc) ? ImageIcon : FileText;
         const context = contextFor?.(doc);
@@ -39,7 +41,7 @@ export function DocumentList({
                 {doc.title}
               </Link>
               <p className="text-sm text-k-muted">
-                {copy.categories[doc.category]} · {formatDate(doc.createdAt)} · {formatBytes(doc.sizeBytes)}
+                {copy.categories[doc.category]} · {t.fmt.date(doc.createdAt)} · {t.fmt.bytes(doc.sizeBytes)}
                 {doc.archivedAt && ` · ${copy.archived}`}
               </p>
               {context && <p className="truncate text-sm text-k-muted">{context}</p>}
@@ -64,7 +66,8 @@ export function DocumentList({
  * Attachments of a record: photos as thumbnails (each loads through the access-checked
  * route, so no URLs are signed for images nobody looks at), other files as links.
  */
-export function AttachmentGallery({ orgSlug, items }: { orgSlug: string; items: DocumentItem[] }) {
+export async function AttachmentGallery({ orgSlug, items }: { orgSlug: string; items: DocumentItem[] }) {
+  const t = await getT();
   const copy = t.app.documents;
   const images = items.filter(isImage);
   const files = items.filter((doc) => !isImage(doc));

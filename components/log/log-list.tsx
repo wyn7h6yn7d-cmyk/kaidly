@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { LogListItem } from "@/lib/data/log";
-import { t } from "@/lib/i18n";
-import { formatDateTime } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
+
+
 
 /**
  * Operating log rows: time and type on the left, what happened on the right. One list,
  * no cards. On phones the two columns stack. Corrected entries show their current state
  * with a "Parandatud" mark.
  */
-export function LogList({
+export async function LogList({
   items,
   hrefFor,
   contextFor,
@@ -19,12 +20,13 @@ export function LogList({
   /** Optional line above the description, e.g. site · installation in the organisation log. */
   contextFor?: (item: LogListItem) => string | null;
 }) {
+  const t = await getT();
   const copy = t.app.log;
   return (
     <ol aria-label={copy.listLabel} className="divide-y divide-k-line border border-k-line bg-k-surface">
       {items.map((item) => {
         const context = contextFor?.(item);
-        const [date, time] = formatDateTime(item.occurredAt).split(" ");
+        const [date, time] = t.fmt.dateTime(item.occurredAt).split(" ");
         return (
           <li key={item.id}>
             <Link
@@ -63,7 +65,7 @@ export function LogList({
                 {item.isCorrected && item.correctedAt && (
                   <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-k-ink">
                     <span aria-hidden="true" className="size-2.5 bg-k-warn" />
-                    {copy.correctedOn(formatDateTime(item.correctedAt), item.correctedByName ?? "")}
+                    {copy.correctedOn(t.fmt.dateTime(item.correctedAt), item.correctedByName ?? "")}
                   </p>
                 )}
               </div>
@@ -76,7 +78,7 @@ export function LogList({
   );
 }
 
-export function Pager({
+export async function Pager({
   page,
   hasMore,
   hrefFor,
@@ -88,6 +90,7 @@ export function Pager({
   /** Plain "previous/next page" labels for lists that aren't the operating log. */
   generic?: boolean;
 }) {
+  const t = await getT();
   const labels = generic ? t.app.pagination : { previous: t.app.log.newer, next: t.app.log.older };
   if (page <= 1 && !hasMore) return null;
   return (

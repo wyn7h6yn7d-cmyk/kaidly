@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export default function NotFound() {
+
+export default async function NotFound() {
+  const t = await getT();
   return (
     <main className="mx-auto flex min-h-svh max-w-md flex-col justify-center px-4">
       <Logo className="mb-10" />

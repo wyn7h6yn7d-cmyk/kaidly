@@ -3,17 +3,21 @@ import { notFound } from "next/navigation";
 import { OrgPage } from "@/components/app/org-page";
 import { LogEntryForm } from "@/components/log/log-entry-form";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { toLocalInput } from "@/lib/time";
 import { NoticeState } from "@/components/app/states";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.log.newTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.log.newTitle };
+}
 
-export default function NewLogEntryPage({
+export default async function NewLogEntryPage({
   params,
 }: {
   params: Promise<{ org: string; installation: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

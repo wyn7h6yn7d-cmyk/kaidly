@@ -1,5 +1,8 @@
+"use client";
+
 import { Label } from "@/components/ui/label";
-import { t } from "@/lib/i18n";
+import { useT } from "@/lib/i18n/client";
+
 
 /** Label above, control, optional hint below. One column, as in docs/DESIGN.md §5. */
 export function Field({
@@ -15,6 +18,7 @@ export function Field({
   optional?: boolean;
   children: React.ReactNode;
 }) {
+  const t = useT();
   return (
     <div className="grid gap-2">
       <Label htmlFor={id}>

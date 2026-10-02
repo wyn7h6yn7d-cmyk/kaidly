@@ -5,16 +5,20 @@ import { PageHeader } from "@/components/app/page-header";
 import { NoticeState } from "@/components/app/states";
 import { ResolveDeficiencyForm } from "@/components/deficiencies/resolve-form";
 import { getDeficiency } from "@/lib/data/deficiencies";
-import { t } from "@/lib/i18n";
 import { toLocalInput } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.deficiencies.resolveTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.deficiencies.resolveTitle };
+}
 
-export default function ResolveDeficiencyPage({
+export default async function ResolveDeficiencyPage({
   params,
 }: {
   params: Promise<{ org: string; deficiency: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

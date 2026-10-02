@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
+
 
 /** One sentence on what to do next and the button to do it. No illustrations. */
 export function EmptyState({
@@ -22,7 +23,8 @@ export function EmptyState({
   );
 }
 
-export function ForbiddenState({ orgSlug }: { orgSlug: string }) {
+export async function ForbiddenState({ orgSlug }: { orgSlug: string }) {
+  const t = await getT();
   return (
     <section className="max-w-xl border border-k-line bg-k-surface p-6">
       <Lock className="mb-3 size-5 text-k-muted" aria-hidden="true" />
@@ -55,7 +57,8 @@ export function NoticeState({
   );
 }
 
-export function LoadingBlock({ lines = 3 }: { lines?: number }) {
+export async function LoadingBlock({ lines = 3 }: { lines?: number }) {
+  const t = await getT();
   return (
     <div aria-busy="true" aria-live="polite" className="animate-pulse space-y-3">
       <span className="sr-only">{t.common.loading}</span>

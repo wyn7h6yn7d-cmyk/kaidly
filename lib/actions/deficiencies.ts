@@ -6,7 +6,6 @@ import { z } from "zod";
 import { getDeficiency } from "@/lib/data/deficiencies";
 import { getInstallation } from "@/lib/data/sites";
 import { dbErrorCode } from "@/lib/db/errors";
-import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { field, fieldErrors, optionalText, requiredText } from "@/lib/validation/common";
 import { deficiencySchema, progressStatusSchema } from "@/lib/validation/deficiencies";
@@ -32,7 +31,7 @@ export async function createDeficiency(_prev: ActionState, formData: FormData): 
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = input(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.log.futureTime });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "occurred_in_future" });
   const d = parsed.data;
 
   const installation = await getInstallation(ctx.org.id, d.installationId);
@@ -65,7 +64,7 @@ export async function updateDeficiency(_prev: ActionState, formData: FormData): 
   const deficiencyId = field(formData, "deficiencyId");
   if (!isUuid(deficiencyId)) return failure("not_found");
   const parsed = input(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.log.futureTime });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "occurred_in_future" });
   const d = parsed.data;
 
   const supabase = await createClient();
@@ -131,7 +130,7 @@ export async function resolveDeficiency(_prev: ActionState, formData: FormData):
     if (parsed.error.issues.some((issue) => issue.path[0] === "resolution")) {
       return failure("resolution_required", fieldErrors(parsed.error));
     }
-    return invalidInput(parsed.error, { future: t.app.log.futureTime });
+    return invalidInput(parsed.error, { future: "occurred_in_future" });
   }
   const r = parsed.data;
   const deficiency = await getDeficiency(ctx.org.id, r.deficiencyId);

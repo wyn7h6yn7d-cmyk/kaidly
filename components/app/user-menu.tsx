@@ -8,12 +8,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { setLocale } from "@/lib/actions/locale";
+import { isLocale, LOCALE_NAMES, LOCALES } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
-import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { useT } from "@/lib/i18n/client";
 
 export function UserMenu({
   name,
@@ -25,6 +29,7 @@ export function UserMenu({
   /** light = on the deep green sidebar */
   tone?: "dark" | "light";
 }) {
+  const t = useT();
   const router = useRouter();
 
   const signOut = async () => {
@@ -61,6 +66,23 @@ export function UserMenu({
             {t.app.account.title}
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-xs font-normal text-k-muted">{t.common.language}</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={t.locale}
+          onValueChange={async (value) => {
+            if (!isLocale(value) || value === t.locale) return;
+            await setLocale(value);
+            router.refresh();
+          }}
+        >
+          {LOCALES.map((locale) => (
+            <DropdownMenuRadioItem key={locale} value={locale} lang={locale}>
+              {LOCALE_NAMES[locale]}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={signOut}>
           <LogOut aria-hidden="true" />
           {t.common.signOut}

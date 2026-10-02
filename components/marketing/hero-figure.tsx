@@ -8,7 +8,9 @@ export function HeroFigure({
   title,
   meta,
   callouts,
+  tag = "PK-01",
 }: {
+  tag?: string;
   label: string;
   title: string;
   meta: string;
@@ -50,7 +52,7 @@ export function HeroFigure({
       <rect x={52} y={68} width={194} height={384} fill="none" stroke="currentColor" strokeOpacity={0.35} />
       <rect x={52} y={68} width={194} height={30} fill="currentColor" fillOpacity={0.08} />
       <text x={62} y={88} fill="currentColor" fontSize={13} fontWeight={700} letterSpacing={1.5}>
-        PJK-1
+        {tag}
       </text>
 
       {/* busbar + breaker rows */}

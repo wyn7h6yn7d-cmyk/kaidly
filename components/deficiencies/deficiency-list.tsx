@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { isOverdue, type Deficiency } from "@/lib/data/deficiencies";
-import { formatDate, t } from "@/lib/i18n";
 import { SeverityMark, StatusBadge } from "./marks";
+import { getT } from "@/lib/i18n/server";
 
-export function DeficiencyList({
+export async function DeficiencyList({
   items,
   orgSlug,
   today,
@@ -17,6 +17,7 @@ export function DeficiencyList({
   contextFor?: (item: Deficiency) => string | null;
   label?: string;
 }) {
+  const t = await getT();
   const copy = t.app.deficiencies;
   return (
     <ol aria-label={label ?? copy.listLabel} className="divide-y divide-k-line border border-k-line bg-k-surface">
@@ -41,9 +42,9 @@ export function DeficiencyList({
                 <span className="mt-0.5 line-clamp-2 block break-words text-sm text-k-muted">{item.description}</span>
                 <span className="mt-1 block text-sm text-k-muted">
                   {item.status === "resolved" && item.resolvedAt
-                    ? `${copy.statuses.resolved} ${formatDate(item.resolvedAt)} · ${item.resolvedByName}`
+                    ? `${copy.statuses.resolved} ${t.fmt.date(item.resolvedAt)} · ${item.resolvedByName}`
                     : [
-                        item.dueOn ? `${copy.fields.dueOn}: ${formatDate(item.dueOn)}` : null,
+                        item.dueOn ? `${copy.fields.dueOn}: ${t.fmt.date(item.dueOn)}` : null,
                         item.responsiblePersonName,
                       ]
                         .filter(Boolean)

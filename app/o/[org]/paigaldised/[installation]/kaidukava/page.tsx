@@ -10,18 +10,22 @@ import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
 import { listActivities } from "@/lib/data/schedule";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { todayInTallinn } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.schedule.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.schedule.title };
+}
 
-export default function InstallationSchedulePage({
+export default async function InstallationSchedulePage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string; installation: string }>;
   searchParams: Promise<{ lk?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

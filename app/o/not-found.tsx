@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PlainShell } from "@/components/app/app-shell";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
+
 
 // Shown when /o/[org] is unknown or the user is not a member — deliberately the same
 // page for both, so it doesn't reveal whether an organisation exists. Access itself is
 // enforced by RLS.
-export default function OrganisationNotFound() {
+export default async function OrganisationNotFound() {
+  const t = await getT();
   return (
     <PlainShell userMenu={null}>
       <h1 className="text-3xl font-extrabold">{t.app.notFound.orgTitle}</h1>

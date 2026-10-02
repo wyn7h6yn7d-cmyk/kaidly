@@ -1,90 +1,64 @@
-import { t } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
-
-type Node = { label: string; detail: string };
+import { getT } from "@/lib/i18n/server";
 
 /**
- * A terminal: square marker with the label beside it. With `trunk`, a line continues down
- * from the marker along the label, like a conductor in a single-line diagram.
+ * The product structure drawn like an engineering sheet: Ettevõte → Objekt →
+ * Elektripaigaldis → four modules. Structure is plain grid flow; connector lines are
+ * decorative borders, so nothing depends on absolute positioning.
  */
-function Terminal({ node, index, trunk }: { node: Node; index: string; trunk?: boolean }) {
+export async function SystemDiagram() {
+  const t = await getT();
+  const s = t.landing.system;
+  const n = s.nodes;
+  const modules = [n.log, n.schedule, n.deficiencies, n.documents];
+
   return (
-    <div className="flex gap-4">
-      <div aria-hidden="true" className="flex w-3 shrink-0 flex-col items-center">
-        <span className="mt-1 size-3 shrink-0 border-2 border-k-ink bg-k-paper" />
-        {trunk && <span className="w-px flex-1 bg-k-ink" />}
+    <div role="img" aria-label={s.diagramLabel} className="grid">
+      <div className="grid max-w-md">
+        <Node index="A" node={n.organisation} />
+        <Wire />
+        <Node index="B" node={n.site} />
+        <Wire />
+        <Node index="C" node={n.installation} strong />
+        <Wire />
       </div>
-      <div className="pb-1">
-        <p className="font-mono text-[11px] leading-none text-k-muted">{index}</p>
-        <p className="mt-1.5 font-display text-lg font-extrabold uppercase leading-tight tracking-[0.06em]">
-          {node.label}
-        </p>
-        <p className="mt-0.5 text-sm text-k-muted">{node.detail}</p>
-      </div>
+      {/* Bus: a rail along the left on phones, a horizontal busbar from tablet up. */}
+      <ol className="ml-8 grid gap-3 border-l-2 border-k-ink pl-6 sm:ml-10 sm:gap-4 md:ml-0 md:grid-cols-4 md:gap-0 md:border-l-0 md:pl-0">
+        {modules.map((module, i) => (
+          <li
+            key={module.label}
+            className="min-w-0 md:border-t-2 md:border-k-ink md:pr-4 md:pt-0 md:first:border-l-0 md:last:pr-0"
+          >
+            <div aria-hidden="true" className="hidden h-8 w-0.5 bg-k-ink md:ml-10 md:block" />
+            <div className="border border-k-ink/70 bg-k-surface px-5 py-4">
+              <p className="font-mono text-xs text-k-green">0{i + 1}</p>
+              <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.06em] [overflow-wrap:anywhere]">
+                {module.label}
+              </p>
+              <p className="mt-0.5 text-[15px] text-k-muted">{module.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
 
-/**
- * The KAIDLY structure drawn like a single-line diagram: site → installation → busbar with
- * four outgoing branches. Columns have no gaps so every connector meets its terminal
- * exactly (terminal centres sit at 6 px from each column edge).
- */
-export function SystemDiagram() {
-  const n = t.landing.system.nodes;
-  const branches = [
-    { node: n.log, index: "Q1" },
-    { node: n.schedule, index: "Q2" },
-    { node: n.deficiencies, index: "Q3" },
-    { node: n.documents, index: "Q4" },
-  ];
-
+function Node({ index, node, strong }: { index: string; node: { label: string; detail: string }; strong?: boolean }) {
   return (
-    <figure aria-label={t.landing.system.diagramLabel}>
-      {/* phones: vertical trunk with branches to the right */}
-      <div className="md:hidden">
-        <Terminal node={n.site} index="A" trunk />
-        <div aria-hidden="true" className="ml-[5.5px] h-6 w-px bg-k-ink" />
-        <Terminal node={n.installation} index="B" trunk />
-        <ul className="relative ml-[5px]">
-          <span aria-hidden="true" className="absolute bottom-[calc(100%-1.6rem)] left-0 top-0 w-[3px] bg-k-green" />
-          {branches.map((b, i) => (
-            <li key={b.index} className={cn("relative pl-8", i === 0 ? "pt-4" : "pt-5")}>
-              <span aria-hidden="true" className="absolute left-0 top-[calc(theme(spacing.5)+0.55rem)] h-px w-8 bg-k-ink" />
-              <div className="-ml-0.5">
-                <Terminal node={b.node} index={b.index} />
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* tablet and up: horizontal */}
-      <div className="hidden md:block">
-        <div className="relative grid grid-cols-4">
-          <span aria-hidden="true" className="absolute left-[12px] top-[10px] h-px w-[calc(50%-12px)] bg-k-ink" />
-          <div className="pr-6">
-            <Terminal node={n.site} index="A" />
-          </div>
-          <div />
-          <div className="pr-6">
-            <Terminal node={n.installation} index="B" trunk />
-          </div>
-          <div />
-        </div>
-        <div aria-hidden="true" className="relative h-10">
-          <span className="absolute left-[calc(50%+5.5px)] top-0 h-full w-px bg-k-ink" />
-          <span className="absolute bottom-0 left-[5px] h-[3px] w-[calc(75%+1px)] bg-k-green" />
-        </div>
-        <ul className="grid grid-cols-4">
-          {branches.map((b) => (
-            <li key={b.index} className="pr-6">
-              <div aria-hidden="true" className="ml-[5.5px] h-7 w-px bg-k-ink" />
-              <Terminal node={b.node} index={b.index} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </figure>
+    <div
+      className={
+        strong
+          ? "border-2 border-k-ink bg-k-surface px-5 py-4 sm:px-6"
+          : "border border-k-ink/70 bg-k-surface px-5 py-4 sm:px-6"
+      }
+    >
+      <p className="font-mono text-xs text-k-muted">{index}</p>
+      <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.08em] sm:text-xl">{node.label}</p>
+      <p className="mt-0.5 text-[15px] text-k-muted">{node.detail}</p>
+    </div>
   );
+}
+
+function Wire() {
+  return <div aria-hidden="true" className="ml-8 h-8 w-0.5 bg-k-ink sm:ml-10 sm:h-10" />;
 }

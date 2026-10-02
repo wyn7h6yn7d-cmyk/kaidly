@@ -14,18 +14,22 @@ import { setActivityArchived } from "@/lib/actions/schedule";
 import { hasRole } from "@/lib/auth/roles";
 import { getActivity, listCompletions } from "@/lib/data/schedule";
 import { getInstallation } from "@/lib/data/sites";
-import { formatDate, t } from "@/lib/i18n";
-import { formatDateTime, todayInTallinn } from "@/lib/time";
+import { todayInTallinn } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.schedule.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.schedule.title };
+}
 
-export default function ActivityPage({
+export default async function ActivityPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string; activity: string }>;
   searchParams: Promise<{ tehtud?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -101,13 +105,13 @@ export default function ActivityPage({
 
             <DetailList
               items={[
-                { label: f.frequency, value: frequencyLabel(activity) },
-                { label: f.nextDueOn, value: activity.nextDueOn ? formatDate(activity.nextDueOn) : copy.states.done },
+                { label: f.frequency, value: frequencyLabel(activity, t) },
+                { label: f.nextDueOn, value: activity.nextDueOn ? t.fmt.date(activity.nextDueOn) : copy.states.done },
                 { label: f.priority, value: copy.priorities[activity.priority] },
                 { label: f.responsible, value: activity.responsiblePersonName },
                 {
                   label: f.lastCompleted,
-                  value: activity.lastCompletedAt ? formatDateTime(activity.lastCompletedAt) : f.neverCompleted,
+                  value: activity.lastCompletedAt ? t.fmt.dateTime(activity.lastCompletedAt) : f.neverCompleted,
                 },
                 { label: f.description, value: activity.description },
               ]}
@@ -128,8 +132,8 @@ export default function ActivityPage({
                         className="block px-4 py-3 hover:bg-k-paper-2 sm:px-5"
                       >
                         <span className="block font-semibold tabular-nums">
-                          {formatDateTime(c.occurredAt)}{" "}
-                          <span className="font-normal text-k-muted">({copy.dueOnLabel(formatDate(c.dueOn))})</span>
+                          {t.fmt.dateTime(c.occurredAt)}{" "}
+                          <span className="font-normal text-k-muted">({copy.dueOnLabel(t.fmt.date(c.dueOn))})</span>
                         </span>
                         <span className="block break-words">{c.description}</span>
                         <span className="block text-sm text-k-muted">

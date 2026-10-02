@@ -2,11 +2,15 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Activity } from "@/lib/data/schedule";
-import { formatDate, t } from "@/lib/i18n";
 import { dueState } from "@/lib/schedule";
 import { DueDate, DueMark } from "./due-mark";
+import type { T } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export function frequencyLabel(activity: Pick<Activity, "frequencyType" | "intervalValue" | "intervalUnit">) {
+export function frequencyLabel(
+  activity: Pick<Activity, "frequencyType" | "intervalValue" | "intervalUnit">,
+  t: T,
+) {
   const copy = t.app.schedule.frequency;
   return activity.frequencyType === "recurring" && activity.intervalValue && activity.intervalUnit
     ? copy.every(activity.intervalValue, activity.intervalUnit)
@@ -14,7 +18,7 @@ export function frequencyLabel(activity: Pick<Activity, "frequencyType" | "inter
 }
 
 /** Due date and state first: what needs doing, and when. Rows, not cards. */
-export function ActivityList({
+export async function ActivityList({
   items,
   today,
   orgSlug,
@@ -27,6 +31,7 @@ export function ActivityList({
   canComplete: boolean;
   contextFor?: (item: Activity) => string | null;
 }) {
+  const t = await getT();
   const copy = t.app.schedule;
   return (
     <ol aria-label={copy.listLabel} className="divide-y divide-k-line border border-k-line bg-k-surface">
@@ -57,9 +62,9 @@ export function ActivityList({
                   )}
                 </span>
                 <span className="block text-sm text-k-muted">
-                  {frequencyLabel(item)}
+                  {frequencyLabel(item, t)}
                   {item.responsiblePersonName ? ` · ${item.responsiblePersonName}` : ""}
-                  {item.lastCompletedAt ? ` · ${copy.fields.lastCompleted} ${formatDate(item.lastCompletedAt)}` : ""}
+                  {item.lastCompletedAt ? ` · ${copy.fields.lastCompleted} ${t.fmt.date(item.lastCompletedAt)}` : ""}
                 </span>
               </span>
             </Link>

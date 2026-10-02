@@ -14,9 +14,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { correctLogEntry, createLogEntry, type SavedEntry } from "@/lib/actions/log";
 import type { ActionState } from "@/lib/actions/state";
-import { t } from "@/lib/i18n";
 import type { LogEntryType } from "@/lib/validation/log";
 import { EntryTypeField } from "./entry-type-field";
+import { useT } from "@/lib/i18n/client";
 
 export type LogEntryDefaults = {
   entryType?: LogEntryType;
@@ -47,6 +47,7 @@ export function LogEntryForm({
   correctionOfId?: string;
   cancelHref: string;
 }) {
+  const t = useT();
   const isCorrection = Boolean(correctionOfId);
   const router = useRouter();
   const queue = useUploadQueue({ orgSlug, resizeImages: true });
@@ -181,7 +182,7 @@ export function LogEntryForm({
         />
       </fieldset>
 
-      <FormMessage error={state.error} />
+      <FormMessage code={state.errorCode} />
       {saved && !pending && queue.items.some((item) => item.status === "failed") ? (
         <div role="alert" className="grid gap-3 border-l-4 border-k-warn bg-k-surface px-4 py-3">
           <p>{attachmentCopy.savedWithFailures}</p>

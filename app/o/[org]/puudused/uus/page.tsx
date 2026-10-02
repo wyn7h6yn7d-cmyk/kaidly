@@ -3,19 +3,23 @@ import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { DeficiencyForm } from "@/components/deficiencies/deficiency-form";
 import { listInstallationOptions } from "@/lib/data/log";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
 import { toLocalInput } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.deficiencies.newTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.deficiencies.newTitle };
+}
 
-export default function NewDeficiencyPage({
+export default async function NewDeficiencyPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<{ paigaldis?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

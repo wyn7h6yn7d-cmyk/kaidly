@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
+
 
 /**
  * GET filter form (works without JavaScript; filters live in the URL so they can be
  * shared and survive reloads). Collapsed until filters are active, so lists start high
  * on the screen on phones.
  */
-export function FilterPanel({
+export async function FilterPanel({
   action,
   activeCount,
   children,
@@ -16,6 +17,7 @@ export function FilterPanel({
   activeCount: number;
   children: React.ReactNode;
 }) {
+  const t = await getT();
   const copy = t.app.log.filters;
   return (
     <details className="group mb-6 border border-k-line bg-k-surface" open={activeCount > 0 || undefined}>

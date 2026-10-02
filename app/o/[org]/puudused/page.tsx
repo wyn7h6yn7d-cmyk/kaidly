@@ -14,20 +14,24 @@ import { hasRole } from "@/lib/auth/roles";
 import { listDeficiencies, parseDeficiencyFilters } from "@/lib/data/deficiencies";
 import { listInstallationOptions } from "@/lib/data/log";
 import { listActiveSiteOptions } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
 import { todayInTallinn } from "@/lib/time";
 import { DEFICIENCY_STATUSES, SEVERITIES } from "@/lib/validation/deficiencies";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.deficiencies.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.deficiencies.title };
+}
 
-export default function DeficienciesPage({
+export default async function DeficienciesPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

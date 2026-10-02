@@ -1,6 +1,7 @@
-import { t } from "@/lib/i18n";
+
 import { cn } from "@/lib/utils";
 import type { DeficiencyStatus, Severity } from "@/lib/validation/deficiencies";
+import { getT } from "@/lib/i18n/server";
 
 const SEVERITY_TONE: Record<Severity, string> = {
   low: "bg-k-grey",
@@ -10,7 +11,8 @@ const SEVERITY_TONE: Record<Severity, string> = {
 };
 
 /** Word + mark; critical is the only one shown in bold. Never colour alone. */
-export function SeverityMark({ severity }: { severity: Severity }) {
+export async function SeverityMark({ severity }: { severity: Severity }) {
+  const t = await getT();
   return (
     <span
       className={cn(
@@ -30,7 +32,8 @@ const STATUS_TONE: Record<DeficiencyStatus, string> = {
   resolved: "border-k-green bg-k-green text-white",
 };
 
-export function StatusBadge({ status }: { status: DeficiencyStatus }) {
+export async function StatusBadge({ status }: { status: DeficiencyStatus }) {
+  const t = await getT();
   return (
     <span className={cn("inline-flex h-6 items-center rounded-sm border px-2 text-xs font-semibold", STATUS_TONE[status])}>
       {t.app.deficiencies.statuses[status]}

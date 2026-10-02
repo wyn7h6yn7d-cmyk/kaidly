@@ -3,7 +3,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { ConfigurationError, getSupabaseEnv } from "@/lib/env";
 import { DEFAULT_AFTER_LOGIN } from "@/lib/auth/redirect";
 import { LAST_ORG_COOKIE } from "@/lib/org-cookie";
-import { t } from "@/lib/i18n";
+import { en } from "@/lib/i18n/en";
+import { et } from "@/lib/i18n/et";
+import { ru } from "@/lib/i18n/ru";
 
 /** Routes reachable without a session. Everything else requires sign-in. */
 const PUBLIC_PATHS = new Set([
@@ -24,7 +26,7 @@ function configurationErrorResponse(error: ConfigurationError) {
   console.error(error.message);
   const body =
     process.env.NODE_ENV === "production"
-      ? `${t.config.title}. ${t.config.body}`
+      ? [et, en, ru].map((m) => `${m.config.title}. ${m.config.body}`).join("\n\n")
       : `${error.message}\n\nRestart \`npm run dev\` after changing .env.local.`;
   return new NextResponse(body, {
     status: 500,

@@ -1,8 +1,10 @@
 import type { Role } from "@/lib/auth/roles";
-import { t } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
 
-export function RoleBadge({ role, className }: { role: Role; className?: string }) {
+import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
+
+export async function RoleBadge({ role, className }: { role: Role; className?: string }) {
+  const t = await getT();
   return (
     <span
       className={cn(

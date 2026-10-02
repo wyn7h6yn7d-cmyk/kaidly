@@ -5,16 +5,20 @@ import { NoticeState } from "@/components/app/states";
 import { LogEntryForm } from "@/components/log/log-entry-form";
 import { getLogEntry } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { toLocalInput } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.log.correctionTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.log.correctionTitle };
+}
 
-export default function CorrectLogEntryPage({
+export default async function CorrectLogEntryPage({
   params,
 }: {
   params: Promise<{ org: string; installation: string; entry: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

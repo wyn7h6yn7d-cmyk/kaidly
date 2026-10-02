@@ -1,12 +1,16 @@
-import { t } from "@/lib/i18n";
+"use client";
+
+
 import { cn } from "@/lib/utils";
 import { LOG_ENTRY_TYPES, type LogEntryType } from "@/lib/validation/log";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * Entry type as large radio chips (one tap on a phone). `selected` is the default; the
  * key remounts the group when it changes, so a form reset shows the submitted choice.
  */
 export function EntryTypeField({ selected, invalid }: { selected?: string; invalid?: boolean }) {
+  const t = useT();
   return (
     <fieldset key={selected ?? "none"} aria-invalid={invalid}>
       <legend className="mb-2 text-sm font-semibold">{t.app.log.fields.type}</legend>

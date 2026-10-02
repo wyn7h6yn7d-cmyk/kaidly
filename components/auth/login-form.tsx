@@ -6,14 +6,16 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { authErrorCode } from "@/lib/auth/errors";
 import { safeRedirectPath } from "@/lib/auth/redirect";
-import { t } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthHeading, FormError } from "./auth-heading";
 import { useFieldId } from "@/components/forms/use-field-id";
+import { syncLocale } from "@/lib/actions/locale";
+import { useT } from "@/lib/i18n/client";
 
 export function LoginForm() {
+  const t = useT();
   const id = useFieldId();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +35,8 @@ export function LoginForm() {
         setError(t.errors[authErrorCode(error)]);
         return;
       }
+      // Bring this device in step with the language saved on the profile before landing.
+      await syncLocale().catch(() => undefined);
       router.replace(next);
       router.refresh();
     } catch (err) {

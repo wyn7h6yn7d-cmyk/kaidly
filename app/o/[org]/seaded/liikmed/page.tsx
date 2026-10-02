@@ -9,11 +9,16 @@ import { SettingsTabs } from "@/components/organisations/settings-tabs";
 import { removeMember, revokeInvitation } from "@/lib/actions/organisations";
 import { assignableRoles, canManageMember, hasRole } from "@/lib/auth/roles";
 import { listMembers, listPendingInvitations } from "@/lib/data/organisations";
-import { formatDate, t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.members.title };
 
-export default function MembersPage({ params }: { params: Promise<{ org: string }> }) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.members.title };
+}
+
+export default async function MembersPage({ params }: { params: Promise<{ org: string }> }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -111,7 +116,7 @@ export default function MembersPage({ params }: { params: Promise<{ org: string 
                           <div className="min-w-0 flex-1">
                             <p className="truncate font-semibold">{invitation.email}</p>
                             <p className="text-sm text-k-muted">
-                              {t.roles[invitation.role]} · {t.app.invitations.expires(formatDate(invitation.expiresAt))}
+                              {t.roles[invitation.role]} · {t.app.invitations.expires(t.fmt.date(invitation.expiresAt))}
                             </p>
                           </div>
                           {canManageMember(role, invitation.role) && (

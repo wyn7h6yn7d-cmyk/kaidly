@@ -5,18 +5,22 @@ import { DocumentUploadForm } from "@/components/documents/document-upload-form"
 import { hasRole } from "@/lib/auth/roles";
 import { listInstallationOptions } from "@/lib/data/log";
 import { listActiveSiteOptions } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.documents.uploadTitle };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.documents.uploadTitle };
+}
 
-export default function UploadDocumentPage({
+export default async function UploadDocumentPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string }>;
   searchParams: Promise<{ paigaldis?: string; objekt?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

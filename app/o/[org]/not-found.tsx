@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
+
 
 // A record inside an organisation that doesn't exist or belongs to another organisation.
-export default function RecordNotFound() {
+export default async function RecordNotFound() {
+  const t = await getT();
   return (
     <section className="max-w-xl">
       <h1 className="text-3xl font-extrabold">{t.app.notFound.pageTitle}</h1>

@@ -1,6 +1,7 @@
-import { formatDate, t } from "@/lib/i18n";
+
 import { daysBetween, dueState, type DueState } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/server";
 
 const TONE: Record<DueState, string> = {
   overdue: "bg-k-danger",
@@ -10,7 +11,8 @@ const TONE: Record<DueState, string> = {
 };
 
 /** Square + word + distance in days. Calm: colour supports the words, never replaces them. */
-export function DueMark({ nextDueOn, today }: { nextDueOn: string | null; today: string }) {
+export async function DueMark({ nextDueOn, today }: { nextDueOn: string | null; today: string }) {
+  const t = await getT();
   const state = dueState(nextDueOn, today);
   const copy = t.app.schedule;
   let detail = "";
@@ -25,11 +27,12 @@ export function DueMark({ nextDueOn, today }: { nextDueOn: string | null; today:
   );
 }
 
-export function DueDate({ nextDueOn }: { nextDueOn: string | null }) {
+export async function DueDate({ nextDueOn }: { nextDueOn: string | null }) {
+  const t = await getT();
   if (!nextDueOn) return <span className="text-k-muted">—</span>;
   return (
     <time dateTime={nextDueOn} className="font-semibold tabular-nums">
-      {formatDate(nextDueOn)}
+      {t.fmt.date(nextDueOn)}
     </time>
   );
 }

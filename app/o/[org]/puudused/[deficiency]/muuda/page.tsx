@@ -6,17 +6,21 @@ import { NoticeState } from "@/components/app/states";
 import { DeficiencyForm } from "@/components/deficiencies/deficiency-form";
 import { getDeficiency } from "@/lib/data/deficiencies";
 import { getInstallation } from "@/lib/data/sites";
-import { t } from "@/lib/i18n";
 import { installationLabel } from "@/lib/labels";
 import { toLocalInput } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.deficiencies.edit };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.deficiencies.edit };
+}
 
-export default function EditDeficiencyPage({
+export default async function EditDeficiencyPage({
   params,
 }: {
   params: Promise<{ org: string; deficiency: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}

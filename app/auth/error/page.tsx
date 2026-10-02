@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { AuthHeading } from "@/components/auth/auth-heading";
-import { isErrorCode, t } from "@/lib/i18n";
+import { isErrorCode } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.auth.error.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.auth.error.title };
+}
 
 /**
  * Shows only application-controlled messages. The URL carries an error *code*; any
@@ -12,16 +16,18 @@ export const metadata: Metadata = { title: t.auth.error.title };
  * page display text of their choosing.
  */
 async function ErrorMessage({ searchParams }: { searchParams: Promise<{ code?: string | string[] }> }) {
+  const t = await getT();
   const { code } = await searchParams;
-  const message = isErrorCode(code) ? t.errors[code] : t.errors.unknown;
+  const message = isErrorCode(code, t) ? t.errors[code] : t.errors.unknown;
   return <p className="mb-8 text-k-muted">{message}</p>;
 }
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
   searchParams: Promise<{ code?: string | string[] }>;
 }) {
+  const t = await getT();
   return (
     <>
       <AuthHeading title={t.auth.error.title} />

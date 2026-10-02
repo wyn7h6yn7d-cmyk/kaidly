@@ -16,18 +16,22 @@ import { hasRole } from "@/lib/auth/roles";
 import { getDeficiency, getResolutionEntryId, isOverdue } from "@/lib/data/deficiencies";
 import { listAttachments } from "@/lib/data/documents";
 import { getInstallation } from "@/lib/data/sites";
-import { formatDate, t } from "@/lib/i18n";
-import { formatDateTime, todayInTallinn } from "@/lib/time";
+import { todayInTallinn } from "@/lib/time";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.deficiencies.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.deficiencies.title };
+}
 
-export default function DeficiencyPage({
+export default async function DeficiencyPage({
   params,
   searchParams,
 }: {
   params: Promise<{ org: string; deficiency: string }>;
   searchParams: Promise<{ lahendatud?: string }>;
 }) {
+  const t = await getT();
   return (
     <OrgPage
       params={params}
@@ -105,7 +109,7 @@ export default function DeficiencyPage({
                 </h2>
                 <p className="mt-1 whitespace-pre-line break-words">{deficiency.resolution}</p>
                 <p className="mt-2 text-sm text-k-muted">
-                  {f.resolvedBy}: {copy.resolvedOn(formatDateTime(deficiency.resolvedAt), deficiency.resolvedByName ?? "")}
+                  {f.resolvedBy}: {copy.resolvedOn(t.fmt.dateTime(deficiency.resolvedAt), deficiency.resolvedByName ?? "")}
                 </p>
                 {resolutionEntryId && (
                   <p className="mt-2">
@@ -123,8 +127,8 @@ export default function DeficiencyPage({
             <DetailList
               items={[
                 { label: f.description, value: deficiency.description },
-                { label: f.detectedAt, value: formatDateTime(deficiency.detectedAt) },
-                { label: f.dueOn, value: deficiency.dueOn ? formatDate(deficiency.dueOn) : null },
+                { label: f.detectedAt, value: t.fmt.dateTime(deficiency.detectedAt) },
+                { label: f.dueOn, value: deficiency.dueOn ? t.fmt.date(deficiency.dueOn) : null },
                 { label: f.responsible, value: deficiency.responsiblePersonName },
                 { label: f.recordedBy, value: deficiency.createdByName },
               ]}

@@ -9,16 +9,20 @@ import { PlainPage } from "@/components/app/plain-page";
 import { EmptyState, LoadingBlock } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import { listMyOrganisations } from "@/lib/data/organisations";
-import { t } from "@/lib/i18n";
 import { LAST_ORG_COOKIE } from "@/lib/org-cookie";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.organisations.title };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.organisations.title };
+}
 
 async function OrganisationList({
   searchParams,
 }: {
   searchParams: Promise<{ vali?: string }>;
 }) {
+  const t = await getT();
   const [{ vali }, organisations, cookieStore] = await Promise.all([
     searchParams,
     listMyOrganisations(),
@@ -73,11 +77,12 @@ async function OrganisationList({
   );
 }
 
-export default function OrganisationsPage({
+export default async function OrganisationsPage({
   searchParams,
 }: {
   searchParams: Promise<{ vali?: string }>;
 }) {
+  const t = await getT();
   return (
     <PlainPage>
       <PageHeader

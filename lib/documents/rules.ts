@@ -78,8 +78,3 @@ export function titleFromFilename(name: string): string {
   const stem = extension ? clean.slice(0, -(extension.length + 1)) : clean;
   return (stem.replace(/[_]+/g, " ").trim() || clean).slice(0, 200);
 }
-
-export function formatBytes(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} kB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
-}

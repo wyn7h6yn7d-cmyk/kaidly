@@ -7,9 +7,13 @@ import { LoadingBlock } from "@/components/app/states";
 import { AcceptInvitationForm } from "@/components/organisations/accept-invitation-form";
 import { Button } from "@/components/ui/button";
 import { previewInvitation } from "@/lib/data/organisations";
-import { formatDate, t } from "@/lib/i18n";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata: Metadata = { title: t.app.invite.title, referrer: "no-referrer" };
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return { title: t.app.invite.title, referrer: "no-referrer" };
+}
 
 const STATUS_ERROR = {
   invalid: "invitation_invalid",
@@ -21,6 +25,7 @@ const STATUS_ERROR = {
 // Requires a session (the proxy sends anonymous visitors to login with ?next=/invite/…).
 // Organisation details are shown only for a live invitation (invitation_preview).
 async function Invitation({ params }: { params: Promise<{ token: string }> }) {
+  const t = await getT();
   const { token } = await params;
   const preview = await previewInvitation(token);
 
@@ -41,7 +46,7 @@ async function Invitation({ params }: { params: Promise<{ token: string }> }) {
         {t.app.invite.joinAs(preview.organisationName, t.roles[preview.role].toLowerCase())}
       </p>
       <p className="mt-2 text-k-muted">{t.roleDescriptions[preview.role]}</p>
-      <p className="mt-1 text-sm text-k-muted">{t.app.invitations.validUntil(formatDate(preview.expiresAt))}</p>
+      <p className="mt-1 text-sm text-k-muted">{t.app.invitations.validUntil(t.fmt.date(preview.expiresAt))}</p>
 
       <div className="mt-8">
         {preview.alreadyMember ? (
@@ -65,7 +70,8 @@ async function Invitation({ params }: { params: Promise<{ token: string }> }) {
   );
 }
 
-export default function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  const t = await getT();
   return (
     <PlainPage>
       <PageHeader title={t.app.invite.title} />

@@ -3,7 +3,6 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { dbErrorCode } from "@/lib/db/errors";
-import { t } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/server";
 import { field } from "@/lib/validation/common";
 import { installationSchema, isUuid, siteSchema } from "@/lib/validation/sites";
@@ -39,7 +38,7 @@ export async function createSite(_prev: ActionState, formData: FormData): Promis
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = siteInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "future_date" });
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -64,7 +63,7 @@ export async function updateSite(_prev: ActionState, formData: FormData): Promis
   const siteId = field(formData, "siteId");
   if (!isUuid(siteId)) return failure("not_found");
   const parsed = siteInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "future_date" });
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -114,7 +113,7 @@ export async function createInstallation(
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = installationInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "future_date" });
   const input = parsed.data;
 
   const supabase = await createClient();
@@ -149,7 +148,7 @@ export async function updateInstallation(
   const installationId = field(formData, "installationId");
   if (!isUuid(installationId)) return failure("not_found");
   const parsed = installationInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: t.app.installations.futureDate });
+  if (!parsed.success) return invalidInput(parsed.error, { future: "future_date" });
   const input = parsed.data;
 
   const supabase = await createClient();
