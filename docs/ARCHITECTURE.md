@@ -28,6 +28,7 @@ resizing). Proposed additions for the whole MVP:
 | `supabase` 2.115.0 (CLI, dev dependency) | Migrations, type generation, `supabase test db` | **Added in Phase 1**, pinned so every machine and CI use the same CLI |
 | `zod` | Validate every Server Action input on the server | Approved (D8); added in Phase 2 with the first Server Action |
 | `@playwright/test` 1.63.0 (dev) | E2E suite (`npm run test:e2e`, local stack only) | **Added after Phase 6** |
+| `pdfmake` 0.3.11 | Report PDFs from structured data: tables with repeating headers, header/footer with page numbers, page breaks, bundled Roboto (Estonian + Cyrillic); server-side only | **Added for reports (2026-10-02)**; typed locally (`types/pdfmake.d.ts`), no `@types` package |
 
 Unit tests use Node's built-in test runner (`node --test`, native TypeScript type
 stripping) — no test library. Removed in Phase 1: `next-themes`, `@radix-ui/react-checkbox`.
@@ -148,6 +149,10 @@ code identifiers are English.
 | `/o`, `/o/uus`, `/konto` | organisation picker, create, own account: name/phone, email change (Auth confirmation), password change (current password required), language, sign out here / other devices | signed in |
 | `/teavitused` (`?vaade=lugemata|koik`, `lk`) | notification centre: unread first, mark one / all read, older pages | signed in |
 | `/teavitused/[id]` | route handler: marks read and redirects to `/o/<slug>/kaidukava/<activity>` built from database ids (no stored URLs, no open redirect) | signed in (own notification) |
+| `/otsing` (`?q=`) | global search across the user's companies, grouped by type, direct links | signed in |
+| `/o/[org]/aruanded` | report centre: operating log, operating plan, deficiencies, document register, site summary, installation summary | viewer |
+| `/o/[org]/aruanded/[report]` (filters `objekt`, `paigaldis`, `alates`, `kuni`, `tyyp`, `seis`, `raskus`, `tahtaeg`, `liik`, `arhiiv`) | filters + preview (count, first 25 rows) + export buttons | viewer |
+| `/o/[org]/aruanded/[report]/eksport?format=pdf\|csv` | route handler: builds the report for the signed-in member and returns the file (`Content-Disposition: attachment`, `Cache-Control: private, no-store`); 404 for non-members and deactivated companies | viewer |
 | `/admin`, `/admin/users`, `/admin/users/[user]`, `/admin/companies`, `/admin/companies/[company]`, `/admin/deadlines`, `/admin/system`, `/admin/audit` | KAIDLY platform administration (Ülevaade, Kasutajad, Ettevõtted, Tähtajad, Süsteem, Admini logi) — Estonian-only, `noindex` | platform admin (everyone else: ordinary 404) |
 | `/o/[org]` | overview: what needs attention (overdue, due soon, high/critical deficiencies, latest entries, sites with open items), first-use checklist | viewer |
 | `/o/[org]/sissekanne` | quick entry: recently used installations first, then by site; one installation → straight to its form | operator |
@@ -400,6 +405,41 @@ lõppenud…"), then a missing earlier step.
   access counts; `/admin/companies?ligipaas=` filters trial / active / expired /
   deactivated / ending_soon / expired_90 (one page of up to 200 when filtered).
 
+## 6g. Search and reports
+
+- **Search** (`lib/data/search.ts`, `app/otsing`): one `search_kaidly` RPC (caller's RLS,
+  DATABASE.md §5e). The app adds localised entry-type matching and builds links from
+  database ids. Entry: a search button in the sidebar header (desktop), the top bar (mobile)
+  and the plain header; **Ctrl/Cmd+K** opens or focuses search. Results are a plain grouped
+  list (no command palette) with a polite result count.
+- **Reports** (`lib/reports/*`): `build.ts` turns filters into a structured `Report`
+  (facts + tables + a raw CSV table) using the user's own Supabase session — RLS decides
+  every row, so a report can never contain more than the user can open, for any role
+  (viewers included). Site and installation names are read once per report; large tables are
+  read in pages of 1000 up to **5000 rows** per export (the preview reads 25 and shows the
+  exact count, and says when an export would be cut). Corrections stay visible: each
+  correction names the entry it corrects and its reason, corrected originals say how often.
+- **PDF** (`lib/reports/pdf.ts`): pdfmake 0.3 (pdfkit) from the structured data — A4
+  (tables landscape, summaries portrait), KAIDLY header and footer with company, report
+  title, generation time and page numbers on every page, repeating table header rows, rows
+  kept together, grey/black for black-and-white printing. Roboto (bundled) covers Estonian
+  and Cyrillic. No network access (`setUrlAccessPolicy(() => false)`), local file access only
+  to the font folder; `serverExternalPackages` + `outputFileTracingIncludes` ship the fonts
+  with the route on Vercel.
+- **CSV** (`lib/reports/csv.ts`): UTF-8 with BOM, `;` separators (Estonian Excel default),
+  CRLF, quoting, raw local times (`YYYY-MM-DD HH:mm`, Tallinn), no HTML, no internal ids,
+  formula-looking values prefixed with `'`.
+- **File names** (`lib/reports/filename.ts`): `KAIDLY_<Report>_<scope>_<YYYY-MM-DD>.<ext>`,
+  ASCII only (diacritics folded; a Cyrillic-only scope falls back to the company slug).
+- **Privacy:** reports are generated on request and streamed back — never stored, no public
+  or signed URLs, `no-store`; document registers list titles and filenames only (no storage
+  paths or links). Platform admins have no customer report export. Report generation is not
+  logged (no audit noise, no report contents anywhere).
+- **Language:** the report is built with `getT()`, i.e. in the language active when it was
+  generated (PDF, CSV headings and values).
+- **Expired companies** can search, preview and export (reading); deactivated companies
+  return 404 like their other pages.
+
 ## 7. Auth flow
 
 - Sign-up with name, email + password → confirmation email → `/auth/confirm` → `/o`.
@@ -468,7 +508,7 @@ lõppenud…"), then a missing earlier step.
 | Level | Tool | Scope |
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
-| Unit | `node --test` (built in), 76 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
-| End-to-end | Playwright, 131 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), reminder settings, bell and unread count, notification centre (mark one/all read, direct link), toast once per reminder (desktop and mobile), recurrence history, notification tenant isolation, ET/EN/RU countdowns, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
+| Unit | `node --test` (built in), 83 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
+| End-to-end | Playwright, 144 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, account (email change, password change with current password, other devices), company details by role, platform admin (404 for owners and others, console pages at 375/768/1440, confirmations and audit, disabled account can't sign in, deadlines filters), reminder settings, bell and unread count, notification centre (mark one/all read, direct link), toast once per reminder (desktop and mobile), recurrence history, notification tenant isolation, ET/EN/RU countdowns, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
 | Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit. |
 | CI | GitHub Actions `.github/workflows/ci.yml` | On PRs and pushes to non-main branches: **verify** (lint, typecheck, unit, build with placeholder public config), **database** (fresh local stack in the runner: migrations + seed, pgTAP, generated types up to date), **e2e** (Playwright against the local stack; traces kept on failure). Actions pinned to SHAs, no secrets, no hosted project. |

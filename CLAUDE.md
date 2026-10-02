@@ -78,6 +78,10 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   `private.organisation_access` and enforced inside `private.org_ids()` for every role above
   viewer. New write policies must go through `org_ids(<role>)`; admin-level READ policies use
   `org_ids_readable(<role>)`. Only platform-admin RPCs change access; never trust UI state.
+- Search and reports read through the user's own session (search_kaidly is SECURITY
+  INVOKER; reports use the RLS client) — never a definer function or service key for
+  customer content. Reports are generated on request and never stored or exposed by URL;
+  no storage paths in exports. Build PDF/CSV from `lib/reports` structured data.
 - Countdowns are derived, never stored: use `countdown`/`countdownText` from `lib/schedule.ts`
   (one implementation) with `todayInTallinn()`. Reminders are rows in `notifications`, created
   only by `private.generate_activity_reminders()` (pg_cron daily + activity trigger) with the

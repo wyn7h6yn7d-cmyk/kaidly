@@ -168,6 +168,19 @@ See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
 - 90 days after expiry a company is flagged for a support decision; nothing is deleted
   automatically.
 
+## 6d. Search and reports (2026-10-02)
+
+- **Otsing** (Ctrl/Cmd+K): companies, sites, installations (name or identifier), log entries,
+  activities, deficiencies and documents across all the user's companies, grouped, each a
+  direct link. Only what the user may already open.
+- **Aruanded** per company: operating log (with corrections shown as corrections), operating
+  plan (countdown, last done, reminders), deficiencies, document register, site summary and
+  installation summary. Shared filters, an on-screen preview, then **PDF** (A4, KAIDLY
+  header/footer, page numbers) or **CSV** (tables). Read-only (expired) companies can still
+  export their data.
+- Not yet: scheduled or e-mailed reports, saved report settings, attachments in exports
+  (zip), more than 5000 rows per export.
+
 ## 7. Likely after MVP (not committed)
 
 **Required before or at launch (decided 2026-10-02):**
