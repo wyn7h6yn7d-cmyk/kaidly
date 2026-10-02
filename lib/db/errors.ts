@@ -35,6 +35,7 @@ const RAISED: Record<string, ErrorCode> = {
   documents_are_kept: "documents_are_kept",
   organisation_has_history: "organisation_has_history",
   organisation_deactivated: "organisation_deactivated",
+  upload_rate_limited: "upload_rate_limited",
   confirmation_mismatch: "confirmation_mismatch",
 };
 

@@ -9,6 +9,10 @@ test("RPC error codes map to their own messages", () => {
   assert.equal(dbErrorCode({ code: "P0001", message: "site_archived" }), "site_archived");
 });
 
+test("upload abuse limits get their own message", () => {
+  assert.equal(dbErrorCode({ code: "P0001", message: "upload_rate_limited" }), "upload_rate_limited");
+});
+
 test("SQLSTATEs map to generic codes", () => {
   assert.equal(dbErrorCode({ code: "42501", message: "new row violates row-level security policy" }), "forbidden");
   assert.equal(dbErrorCode({ code: "23514", message: "check" }), "invalid_input");
