@@ -10,7 +10,7 @@ type Search = Promise<{ lk?: string }>;
 
 function target(entry: AdminAuditEntry) {
   const userId = entry.target_type === "user" ? entry.target_id : (entry.summary.user_id as string | undefined);
-  const companyId = entry.summary.company_id as string | undefined;
+  const companyId = entry.target_type === "company" ? entry.target_id : (entry.summary.company_id as string | undefined);
   return (
     <span className="flex flex-col">
       {userId && (
@@ -22,6 +22,12 @@ function target(entry: AdminAuditEntry) {
         <Link href={`/admin/companies/${companyId}`} className="text-k-green underline underline-offset-4">
           {ADMIN.nav.companies}: {companyId.slice(0, 8)}
         </Link>
+      )}
+      {"after" in entry.summary && (
+        <span className="text-k-muted">
+          {ADMIN.access.statuses[String((entry.summary.before as { status?: string } | null)?.status)] ?? "—"} →{" "}
+          {ADMIN.access.statuses[String((entry.summary.after as { status?: string } | null)?.status)] ?? "—"}
+        </span>
       )}
       {"from" in entry.summary && (
         <span className="text-k-muted">

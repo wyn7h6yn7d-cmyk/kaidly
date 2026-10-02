@@ -6,7 +6,8 @@ import { headers } from "next/headers";
 import type { AdminErrorKey } from "@/lib/admin/strings";
 import { isRole } from "@/lib/auth/roles";
 import { getSupabaseEnv } from "@/lib/env";
-import { adminUser, requirePlatformAdmin } from "@/lib/data/admin";
+import { adminCompany, adminUser, requirePlatformAdmin } from "@/lib/data/admin";
+import { localInputToIso } from "@/lib/time";
 import { createClient } from "@/lib/supabase/server";
 import { uuid } from "@/lib/validation/common";
 
@@ -114,4 +115,95 @@ export async function adminSendPasswordReset(_prev: AdminActionState, formData: 
   });
   if (sendError) return { error: "unknown" };
   return { ok: true };
+}
+
+const DAY = 86_400_000;
+
+/** "Aktiveeri täiskasutus": 1/3/6/12 months, indefinite, or a custom end date (Tallinn end of day). */
+export async function adminActivateAccess(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const org = uuid.safeParse(text(formData, "companyId"));
+  const period = text(formData, "period");
+  if (!org.success) return { error: "unknown" };
+  let until: string | null = null;
+  if (["1", "3", "6", "12"].includes(period)) {
+    const d = new Date();
+    d.setMonth(d.getMonth() + Number(period));
+    until = d.toISOString();
+  } else if (period === "custom") {
+    const day = text(formData, "until");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { error: "invalid_date" };
+    until = endOfTallinnDay(day);
+  } else if (period !== "indefinite") {
+    return { error: "unknown" };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_full_access", {
+    p_org: org.data,
+    p_until: until as string,
+    p_invoice_reference: text(formData, "invoiceReference").slice(0, 200),
+    p_notes: text(formData, "notes").slice(0, 2000),
+  });
+  if (error) return { error: error.code === "22023" ? "invalid_date" : errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+/** "Pikenda prooviperioodi": +7 / +14 / +30 days from the current end (or now), or a date. */
+export async function adminExtendTrial(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const org = uuid.safeParse(text(formData, "companyId"));
+  const extend = text(formData, "extend");
+  if (!org.success) return { error: "unknown" };
+  let until: string;
+  if (["7", "14", "30"].includes(extend)) {
+    const current = Date.parse(text(formData, "currentEnd"));
+    const base = Number.isFinite(current) ? Math.max(current, Date.now()) : Date.now();
+    until = new Date(base + Number(extend) * DAY).toISOString();
+  } else if (extend === "custom") {
+    const day = text(formData, "until");
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { error: "invalid_date" };
+    until = endOfTallinnDay(day);
+  } else {
+    return { error: "unknown" };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_extend_trial", { p_org: org.data, p_trial_ends_at: until });
+  if (error) return { error: error.code === "22023" ? "invalid_date" : errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+export async function adminExpireAccess(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const org = uuid.safeParse(text(formData, "companyId"));
+  if (!org.success) return { error: "unknown" };
+  const detail = await adminCompany(org.data);
+  if (text(formData, "confirmation") !== detail.company.name) return { error: "confirmation" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_expire_access", { p_org: org.data });
+  if (error) return { error: errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+export async function adminSetAccessReference(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const org = uuid.safeParse(text(formData, "companyId"));
+  if (!org.success) return { error: "unknown" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_access_reference", {
+    p_org: org.data,
+    p_invoice_reference: text(formData, "invoiceReference").slice(0, 200),
+    p_notes: text(formData, "notes").slice(0, 2000),
+  });
+  if (error) return { error: errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+/** 23:59:59 in Tallinn on the given day, as an ISO timestamp. */
+function endOfTallinnDay(day: string) {
+  const iso = localInputToIso(`${day}T23:59`);
+  return iso ? new Date(Date.parse(iso) + 59_000).toISOString() : `${day}T21:59:59Z`;
 }

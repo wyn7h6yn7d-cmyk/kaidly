@@ -147,11 +147,11 @@ export const adminUsers = (search: string | undefined, page: number) =>
     p_offset: page * PAGE_SIZE,
   });
 export const adminUser = (id: string) => call<AdminUserDetail>("admin_user", { p_user: id });
-export const adminCompanies = (search: string | undefined, page: number) =>
+export const adminCompanies = (search: string | undefined, page: number, size = PAGE_SIZE) =>
   call<{ total: number; rows: AdminCompanyRow[] }>("admin_companies", {
     p_search: search ?? null,
-    p_limit: PAGE_SIZE,
-    p_offset: page * PAGE_SIZE,
+    p_limit: size,
+    p_offset: page * size,
   });
 export const adminCompany = (id: string) => call<AdminCompanyDetail>("admin_company", { p_org: id });
 export const adminDeadlines = (f: AdminDeadlineFilters) =>
@@ -171,4 +171,31 @@ export const adminAudit = (page: number) =>
 export const adminCompanyOptions = async () =>
   (await call<{ total: number; rows: AdminCompanyRow[] }>("admin_companies", { p_search: null, p_limit: 200, p_offset: 0 })).rows.map(
     (c) => ({ id: c.id, name: c.name, deactivated: c.deactivated_at !== null }),
+  );
+
+export type AdminAccessStatus = "trial" | "active" | "expired" | "deactivated";
+export type AdminCompanyAccess = {
+  status: AdminAccessStatus;
+  ends_at: string | null;
+  expired_since: string | null;
+  expired_90: boolean;
+  trial_started_at: string;
+  trial_ends_at: string;
+  full_access_from: string | null;
+  full_access_until: string | null;
+  expired_manually_at: string | null;
+  activated_by: string | null;
+  invoice_reference: string | null;
+  admin_notes: string | null;
+};
+export type AdminAccessOverview = Record<"trials" | "trials_ending_7d" | "expired_trials" | "active" | "expired" | "expired_90", number>;
+export const ACCESS_FILTERS = ["trial", "active", "expired", "deactivated", "ending_soon", "expired_90"] as const;
+export type AccessFilter = (typeof ACCESS_FILTERS)[number];
+
+export const adminCompanyAccess = (id: string) => call<AdminCompanyAccess>("admin_company_access", { p_org: id });
+export const adminAccessOverview = () => call<AdminAccessOverview>("admin_access_overview");
+export const adminCompanyAccessList = (filter?: AccessFilter) =>
+  call<Record<string, { status: AdminAccessStatus; ends_at: string | null; expired_since: string | null }>>(
+    "admin_company_access_list",
+    { p_filter: filter ?? null },
   );

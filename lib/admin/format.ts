@@ -31,6 +31,12 @@ export function fmtBytes(bytes: number) {
   return `${new Intl.NumberFormat("et-EE", { maximumFractionDigits: 1 }).format(value)} ${units[unit]}`;
 }
 
+/** Whole Tallinn calendar days from today to an instant (negative = in the past). */
+export function daysFromToday(iso: string) {
+  const day = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(d);
+  return Math.round((Date.parse(`${day(new Date(iso))}T00:00:00Z`) - Date.parse(`${day(new Date())}T00:00:00Z`)) / 86_400_000);
+}
+
 /** Same wording as the rest of KAIDLY (lib/schedule.ts countdownText), in Estonian. */
 export function fmtDays(days: number | null) {
   if (days === null) return "";

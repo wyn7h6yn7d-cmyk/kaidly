@@ -4,11 +4,12 @@ import { AdminTitle, Stat } from "@/components/admin/ui";
 import { LoadingBlock } from "@/components/app/states";
 import { fmtBytes, fmtNumber } from "@/lib/admin/format";
 import { ADMIN } from "@/lib/admin/strings";
-import { adminOverview } from "@/lib/data/admin";
+import { adminAccessOverview, adminOverview } from "@/lib/data/admin";
 
 async function Overview() {
-  const o = await adminOverview();
+  const [o, access] = await Promise.all([adminOverview(), adminAccessOverview()]);
   const s = ADMIN.overview;
+  const a = ADMIN.access.overview;
   return (
     <>
       <dl className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,13rem),1fr))] gap-x-6 gap-y-5">
@@ -30,6 +31,15 @@ async function Overview() {
         />
         <Stat label={s.documents} value={fmtNumber(o.documents)} />
         <Stat label={s.storage} value={fmtBytes(o.storage_bytes)} />
+      </dl>
+      <h2 className="mb-3 mt-10 text-lg font-bold">{ADMIN.access.title}</h2>
+      <dl className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,13rem),1fr))] gap-x-6 gap-y-5">
+        <Stat label={a.trials} value={fmtNumber(access.trials)} />
+        <Stat label={a.ending} value={fmtNumber(access.trials_ending_7d)} tone={access.trials_ending_7d ? "warn" : undefined} />
+        <Stat label={a.expiredTrials} value={fmtNumber(access.expired_trials)} />
+        <Stat label={a.active} value={fmtNumber(access.active)} />
+        <Stat label={a.expired} value={fmtNumber(access.expired)} />
+        <Stat label={a.expired90} value={fmtNumber(access.expired_90)} tone={access.expired_90 ? "warn" : undefined} />
       </dl>
       <p className="mt-6 text-sm text-k-muted">
         {s.activeOnly}{" "}

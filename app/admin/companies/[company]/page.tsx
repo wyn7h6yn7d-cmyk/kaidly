@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { AccessForms } from "@/components/admin/access-forms";
+import { ConfirmAction } from "@/components/admin/confirm-action";
 import { RoleChange } from "@/components/admin/role-change";
+import { adminExpireAccess } from "@/lib/actions/admin";
 import { AdminTitle, Badge, Rows, Section, TableFrame, td, th } from "@/components/admin/ui";
 import { LoadingBlock } from "@/components/app/states";
 import { fmtBytes, fmtDate, fmtDateTime, fmtNumber } from "@/lib/admin/format";
 import { ADMIN } from "@/lib/admin/strings";
-import { adminCompany } from "@/lib/data/admin";
+import { adminCompany, adminCompanyAccess } from "@/lib/data/admin";
 import { uuid } from "@/lib/validation/common";
 
 type Params = Promise<{ company: string }>;
@@ -14,8 +17,10 @@ type Params = Promise<{ company: string }>;
 async function CompanyDetail({ params }: { params: Params }) {
   const { company: id } = await params;
   if (!uuid.safeParse(id).success) notFound();
-  const { company, members, counts, recent } = await adminCompany(id);
+  const [{ company, members, counts, recent }, access] = await Promise.all([adminCompany(id), adminCompanyAccess(id)]);
   const s = ADMIN.company;
+  const a = ADMIN.access;
+  const tone = access.status === "expired" ? "warn" : access.status === "deactivated" ? "neutral" : "ok";
   return (
     <>
       <AdminTitle title={company.name} intro={s.contentNote}>
@@ -39,6 +44,49 @@ async function CompanyDetail({ params }: { params: Params }) {
             [s.created, fmtDate(company.created_at)],
           ]}
         />
+      </Section>
+
+      <Section id="access" title={a.title}>
+        {access.expired_90 && (
+          <div className="mb-4 max-w-3xl border-l-4 border-k-warn bg-k-paper-2 p-4">
+            <p className="font-bold">{a.expired90}</p>
+            <p className="mt-1 text-sm">{a.expired90Body}</p>
+          </div>
+        )}
+        <Rows
+          rows={[
+            [a.status, <Badge key="s" tone={tone}>{a.statuses[access.status]}</Badge>],
+            [a.trialStart, fmtDateTime(access.trial_started_at)],
+            [a.trialEnd, fmtDateTime(access.trial_ends_at)],
+            [a.fullFrom, fmtDateTime(access.full_access_from)],
+            [a.until, access.full_access_from && !access.full_access_until ? a.indefinite : fmtDateTime(access.full_access_until)],
+            [a.activatedBy, access.activated_by ?? "—"],
+            [a.invoice, access.invoice_reference ?? "—"],
+            [a.notes, access.admin_notes ?? "—"],
+          ]}
+        />
+        <div className="mt-6">
+          <AccessForms
+            companyId={company.id}
+            trialEndsAt={access.trial_ends_at}
+            status={access.status}
+            invoiceReference={access.invoice_reference}
+            notes={access.admin_notes}
+          />
+        </div>
+        {(access.status === "trial" || access.status === "active") && (
+          <div className="mt-6">
+            <ConfirmAction
+              action={adminExpireAccess}
+              fields={{ companyId: company.id }}
+              label={a.expire}
+              title={`${a.expire}: ${company.name}`}
+              body={a.expireBody}
+              confirmWord={company.name}
+              variant="destructive"
+            />
+          </div>
+        )}
       </Section>
 
       <Section id="counts" title={s.counts}>
