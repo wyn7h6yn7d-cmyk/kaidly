@@ -510,6 +510,67 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          channel: string
+          created_at: string
+          due_on: string
+          id: string
+          organisation_id: string
+          read_at: string | null
+          scheduled_activity_id: string
+          threshold_days: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          due_on: string
+          id?: string
+          organisation_id: string
+          read_at?: string | null
+          scheduled_activity_id: string
+          threshold_days: number
+          type?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          due_on?: string
+          id?: string
+          organisation_id?: string
+          read_at?: string | null
+          scheduled_activity_id?: string
+          threshold_days?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_scheduled_activity_id_organisation_id_fkey"
+            columns: ["scheduled_activity_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_activities"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organisation_invitations: {
         Row: {
           accepted_at: string | null
@@ -744,6 +805,7 @@ export type Database = {
           next_due_on: string | null
           organisation_id: string
           priority: Database["public"]["Enums"]["activity_priority"]
+          reminder_days: number[]
           responsible_person_name: string | null
           site_id: string
           title: string
@@ -763,6 +825,7 @@ export type Database = {
           next_due_on?: string | null
           organisation_id: string
           priority?: Database["public"]["Enums"]["activity_priority"]
+          reminder_days?: number[]
           responsible_person_name?: string | null
           site_id: string
           title: string
@@ -782,6 +845,7 @@ export type Database = {
           next_due_on?: string | null
           organisation_id?: string
           priority?: Database["public"]["Enums"]["activity_priority"]
+          reminder_days?: number[]
           responsible_person_name?: string | null
           site_id?: string
           title?: string
@@ -1073,6 +1137,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["document_status"]
       }
       invitation_preview: { Args: { p_token: string }; Returns: Json }
+      my_notifications: {
+        Args: { p_limit?: number; p_offset?: number; p_unread_only?: boolean }
+        Returns: Json
+      }
       reactivate_organisation: {
         Args: { p_organisation_id: string }
         Returns: undefined

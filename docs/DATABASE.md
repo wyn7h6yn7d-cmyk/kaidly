@@ -285,6 +285,64 @@ and refused ones not; inactive admins refused. Mutation-tested (inactive flag ig
 owner treated as admin, audit removed, bootstrap granted to users). pgTAP
 `125_company_settings` (11) covers the company-settings role matrix (mutation-tested).
 
+## 5c. Deadline reminders and notifications (migration `activity_reminders`)
+
+**Thresholds** live on the activity: `scheduled_activities.reminder_days smallint[]`
+(default `{14}`; 0–365 each, at most 8; 0 = on the due date). Owners and admins set them
+(the existing admin update policy plus a column grant); operators and viewers can't. The
+schedule (`next_due_on`, anchored recurrence §8) and the reminder schedule are separate.
+
+**Countdown** is never stored. The app derives it from `next_due_on` and the Tallinn
+business date (`lib/schedule.ts` `countdown`/`countdownText`).
+
+**`public.notifications`** — one row per user and reminder: `user_id`, `organisation_id`,
+`type` (`activity_reminder`), `channel` (`in_app`; `email`/`push` are future values),
+`scheduled_activity_id` (composite FK with the organisation), `due_on` (the occurrence),
+`threshold_days`, `created_at`, `read_at`. No copied customer content: titles, site and
+installation names are joined at read time. **Identity / idempotency:** unique
+`(user_id, scheduled_activity_id, due_on, threshold_days, channel)` and
+`insert … on conflict do nothing`, so any number of runs creates each reminder once.
+
+**RLS:** users read and update only their own rows, and only while still a member
+(`user_id = auth.uid() and organisation_id in org_ids('viewer')`); only `read_at` is
+writable; no insert or delete for users; platform admins see nothing here.
+`public.my_notifications(unread_only, limit, offset)` is a **security invoker** reader
+that joins the activity, site, installation and organisation under the caller's RLS.
+
+**Generation** — `private.generate_activity_reminders(today default business_date(),
+activity default all)` (definer, not callable by API roles):
+- active activities (`archived_at is null`, `next_due_on` set) of **active** organisations;
+- for each occurrence the **tightest threshold already reached** (`min(t) where
+  next_due_on - today <= t`): a late or missed run catches up with one reminder instead of
+  firing 30, 14 and 7 together; due-today and overdue occurrences without a reminder get one;
+- recipients: current members with role **owner, admin or operator** whose Auth account is
+  not banned. Viewers are not notified. `responsible_person_name` is free text and not a
+  KAIDLY account, so it is **never** matched to a user (limitation; a linked responsible
+  member would be a later schema change).
+- Runs **daily at 03:15 UTC** (05:15/06:15 Tallinn) via **pg_cron** job
+  `kaidly-activity-reminders`, and immediately from trigger `scheduled_activity_reminders`
+  when an activity is created, rescheduled, completed, archived or its thresholds change.
+
+**Recurrence:** `complete_scheduled_activity` advances `next_due_on` by the anchored rule;
+the trigger then marks unread reminders of the previous occurrence read (they remain as
+history) and evaluates the new occurrence. Nothing is copied forward.
+
+**Scheduler choice:** pg_cron over Vercel Cron — it runs inside the database next to the
+data, needs no public endpoint, shared secret or service-role key, and keeps the tenant
+rules in one reviewed SQL function. Retries: a failed day is caught up by the next run
+(tightest-reached rule); repeated runs are no-ops (unique identity).
+
+**Business date:** `private.business_date(at)` = date in Europe/Tallinn (same as
+`todayInTallinn()` in the app). There is no per-organisation time zone yet; all of KAIDLY
+assumes Estonia. Midnight boundaries are tested (21:00 UTC summer / 22:00 UTC winter).
+
+pgTAP `140_activity_reminders` (45): every threshold (30/14/7/1/0), no duplicates on
+re-runs, tightest-reached rule, overdue, recurrence (history kept, next occurrence),
+removed members, disabled accounts, deactivated organisations, viewers, cross-tenant
+read/update, no insert/delete/other columns, generator not callable, operator/viewer
+can't change thresholds, range check, cron job, Tallinn midnight. Mutation-tested (role
+filter, deactivated filter, ban filter, identity constraint, read policy, trigger).
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -314,6 +372,7 @@ owner treated as admin, audit removed, bootstrap granted to users). pgTAP
 | `delete_organisation`, `deactivate_organisation`, `reactivate_organisation` | Ow | §5a |
 | `finalize_document(document)` | the uploader, Op+ | §10: `ready` if the object exists at the registered path with the registered size and type, else `failed` |
 | `am_platform_admin()`, `admin_*` | platform admins (others: `not_found`) | §5b |
+| `my_notifications(unread_only, limit, offset)` | signed in (security invoker: own rows under RLS) | §5c |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
 can't be probed. The baseline test pins this exact list.
@@ -423,7 +482,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 492 tests in 15 files, using the shared fixture
+`npm run test:db` runs pgTAP: 537 tests in 16 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -444,6 +503,7 @@ a user in both) and `helpers/sites.psql`.
 | `120_organisation_lifecycle` | 31 | §5a |
 | `125_company_settings` | 11 | owners and admins edit company details, operators/viewers read only, slug and lifecycle columns not writable, email format, other tenant, deactivated company |
 | `130_platform_admin` | 57 | §5b |
+| `140_activity_reminders` | 45 | §5c |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

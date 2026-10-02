@@ -74,6 +74,7 @@ select results_eq(
        ('delete_organisation(uuid,text)'),
        ('finalize_document(uuid)'),
        ('invitation_preview(text)'),
+       ('my_notifications(boolean,integer,integer)'),
        ('private.co_member_ids()'),
        ('private.org_ids(org_role)'),
        ('reactivate_organisation(uuid)'),
@@ -144,7 +145,7 @@ select results_eq(
         and c.relname <> '__default_privileges_probe' -- created earlier in this file
       order by c.relname::text collate "C" $$,
   $$ values ('activity_history'), ('deficiencies'), ('documents'), ('electrical_installations'), ('log_entries'),
-            ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
+            ('notifications'), ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
             ('scheduled_activities'), ('sites') $$,
   'public tables are exactly the reviewed set'
 );
@@ -181,6 +182,7 @@ select results_eq(
        ('private.deficiency_before_insert()'),
        ('private.document_before_insert()'),
        ('private.ensure_site_active()'),
+       ('private.generate_activity_reminders(date,uuid)'),
        ('private.handle_new_user()'),
        ('private.has_org_role(uuid,org_role)'),
        ('private.is_owner(uuid)'),
@@ -192,6 +194,7 @@ select results_eq(
        ('private.protect_last_owner()'),
        ('private.record_history()'),
        ('private.require_platform_admin()'),
+       ('private.scheduled_activity_reminders()'),
        ('private.sync_profile_email()'),
        ('reactivate_organisation(uuid)'),
        ('resolve_deficiency(uuid,text,log_entry_type,timestamp with time zone,text)'),
