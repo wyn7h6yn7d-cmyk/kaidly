@@ -104,9 +104,18 @@ migration (pgTAP: every auth user has a profile).
 
 ### organisations
 `name` 1–200, `slug` (unique; slugified name + 6 random characters; never changed),
-`registry_code` ≤ 30, `created_by`, `deactivated_at`, `deactivated_by` (organisation
-lifecycle, §5a). Slugs are **stable, non-sequential URL identifiers** —
-not a security mechanism; access is enforced by RLS. Created only by `create_organisation()`.
+`registry_code` ≤ 30, `contact_email` (≤ 254, checked format), `contact_phone` ≤ 40,
+`address` ≤ 300, `notes` ≤ 2000 (migration `company_settings`), `created_by`,
+`deactivated_at`, `deactivated_by` (organisation lifecycle, §5a). Slugs are **stable,
+non-sequential URL identifiers** — not a security mechanism; access is enforced by RLS.
+Created only by `create_organisation()`.
+
+**Company name = mutable display data; slug = stable technical route identifier.** Renaming
+never regenerates the slug (`slug` has no update grant; pgTAP `000`, `020`, `125`), so links,
+bookmarks and shared URLs keep working. Owners **and admins** edit name, registry code and
+the contact fields (policy `admins update organisation settings`, column grants only for
+those six columns); operators and viewers read them; lifecycle columns are only changed by
+the owner RPCs (§5a).
 
 ### organisation_members
 `id`, `organisation_id`, `user_id` (unique pair), `role`, `invited_by`.
@@ -191,7 +200,7 @@ V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
 
 | | read | create | change | delete |
 |---|---|---|---|---|
-| organisation | V+ | anyone signed in (`create_organisation`) | Ow: name, registry code; Ow deactivates/reactivates (`deactivate_organisation`, `reactivate_organisation`) | Ow, only without operational history (`delete_organisation`) |
+| organisation | V+ | anyone signed in (`create_organisation`) | A+: name, registry code, contact email/phone, address, notes (never the slug); Ow deactivates/reactivates (`deactivate_organisation`, `reactivate_organisation`) | Ow, only without operational history (`delete_organisation`) |
 | members | V+ | via invitation | A+ non-owner rows; Ow owner rows; column `role` only | A+ non-owners, Ow owners, anyone themselves; last owner protected |
 | invitations | A+ (no `token_hash`) | A+ (`create_invitation`; owner role only by Ow) | revoke: A+ (owner invites: Ow) | — |
 | history | A+ | triggers only | never | never |
@@ -231,6 +240,51 @@ path, write blocking for entries/completions/sites/organisation edits, reads kep
 joining, isolation, reactivation, user accounts survive — mutation-tested (history check,
 deactivation filter, owner check, name check, documents clause).
 
+## 5b. Platform administration (migration `platform_admin`)
+
+KAIDLY's own operator (the SaaS owner) is **not** an organisation role. Organisation roles
+never grant it, and it never makes the admin a member of a customer company: tenant RLS is
+unchanged, so through the normal app a platform admin sees only their own companies.
+
+| Object | Purpose |
+|---|---|
+| `private.platform_admins` (`user_id` → `auth.users.id`, `granted_at`, `granted_by`, `active`, `notes`) | who administers the platform — by **user id, never by email**. In `private` (not exposed by the Data API); no grants to `anon`/`authenticated`. |
+| `private.admin_audit_log` (`admin_user_id`, `action`, `target_type`, `target_id`, `summary` jsonb, `created_at`) | every admin mutation; summaries hold ids and role names only (no emails, passwords, tokens or customer content — pgTAP checks). |
+| `private.is_platform_admin()` | the only authorisation check (`active` row for `auth.uid()`). |
+| `private.require_platform_admin()` | raises `not_found` (`P0002`) for anyone else — so the admin functions are indistinguishable from missing ones. |
+| `private.bootstrap_platform_admin(email)` | **database owner only** (no execute for API roles): resolves exactly one **confirmed** `auth.users` row by case-insensitive email, refuses none or several, stores its id and logs `platform_admin_granted`. Run once per environment from the CLI (below). |
+| `public.am_platform_admin()` | "am *I* an admin?" for the UI (only ever about the caller). |
+| `public.admin_overview/users/user/companies/company/deadlines/system/audit_entries` | reads: counts, account metadata (email, name, confirmed, last sign-in, disabled), memberships, usage counts, change *kinds* (table, action, time — never `old_data`/`new_data`), company metadata and counts, deadlines, migration/storage totals. **No document contents, log descriptions or storage paths.** |
+| `public.admin_set_member_role`, `admin_remove_member` | membership changes; the last-owner trigger still applies. |
+| `public.admin_set_user_disabled(user, bool)` | Supabase Auth's own ban (`auth.users.banned_until` = now + 100 years, like Auth's ban API / null; sign-in then shows `account_disabled`); disabling also deletes the user's `auth.sessions`. An admin can't disable themselves. |
+| `public.admin_revoke_sessions(user)` | deletes the user's `auth.sessions` (refresh tokens). |
+| `public.admin_password_reset_target(user)` | logs the request and returns the user's own confirmed email; the app then calls the public `resetPasswordForEmail`. Nobody sees or sets a password. |
+
+**No service-role key** is needed or used: elevated work is done by these reviewed definer
+functions, which run as the database owner (which may update `auth.users.banned_until` and
+delete `auth.sessions`). Revoked sessions lose their refresh token immediately; an access
+token already issued stays valid until it expires (Auth `jwt_expiry`, 1 h by default),
+because the app verifies JWTs locally — documented in the UI copy.
+
+**Deadlines** (`admin_deadlines`): activities with `next_due_on` ≤ today + 14 that are not
+archived, and **open** `high`/`critical` deficiencies; deactivated companies only when asked
+(`p_include_deactivated`); filters company, site, kind, severity, overdue/soon, period. Only
+dates customers entered — no invented legal deadlines.
+
+**Bootstrap (per environment, by the database owner):**
+`npx supabase db query --linked "select private.bootstrap_platform_admin('<email>')"`. It
+stops with an error if the account is missing, unconfirmed or ambiguous.
+
+pgTAP `130_platform_admin` (57): API roles can't reach the tables or the bootstrap; owners
+get `not_found` from every admin function; bootstrap refuses unknown/unconfirmed emails and
+is case-insensitive; reads match real counts and carry no credential fields or log content;
+the admin sees nothing through normal RLS; every filter of the deadline view; archived,
+far-future, resolved and medium items excluded; mutations work, the last-owner rule holds,
+self-disable refused, Auth ban and session rows changed; every successful mutation audited
+and refused ones not; inactive admins refused. Mutation-tested (inactive flag ignored, org
+owner treated as admin, audit removed, bootstrap granted to users). pgTAP
+`125_company_settings` (11) covers the company-settings role matrix (mutation-tested).
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -259,6 +313,7 @@ deactivation filter, owner check, name check, documents clause).
 | `resolve_deficiency(deficiency, resolution, entry_type, occurred_at, performed_by)` | Op+ | §9 |
 | `delete_organisation`, `deactivate_organisation`, `reactivate_organisation` | Ow | §5a |
 | `finalize_document(document)` | the uploader, Op+ | §10: `ready` if the object exists at the registered path with the registered size and type, else `failed` |
+| `am_platform_admin()`, `admin_*` | platform admins (others: `not_found`) | §5b |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
 can't be probed. The baseline test pins this exact list.
@@ -368,7 +423,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 424 tests in 13 files, using the shared fixture
+`npm run test:db` runs pgTAP: 492 tests in 15 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -387,6 +442,8 @@ a user in both) and `helpers/sites.psql`.
 | `100_cross_tenant_oracles` | 9 | naming another tenant's archived/resolved/correction records gives the generic FK error, non-members get the plain RLS error, Storage refuses another tenant's existing path like an unknown one and lists nothing |
 | `110_language_and_history` | 14 | own language only (even viewers), only et/en/ru, no other profile column opened, anon refused; change history readable by owners/admins of the same organisation only — not operators, viewers, outsiders, a two-organisation non-admin or anon — and never containing token hashes |
 | `120_organisation_lifecycle` | 31 | §5a |
+| `125_company_settings` | 11 | owners and admins edit company details, operators/viewers read only, slug and lifecycle columns not writable, email format, other tenant, deactivated company |
+| `130_platform_admin` | 57 | §5b |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.
