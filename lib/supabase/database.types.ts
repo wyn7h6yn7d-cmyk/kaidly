@@ -1157,6 +1157,10 @@ export type Database = {
         Args: { p_document_id: string }
         Returns: Database["public"]["Enums"]["document_status"]
       }
+      import_company_data: {
+        Args: { p_kind: string; p_org: string; p_rows: Json; p_token: string }
+        Returns: Json
+      }
       invitation_preview: { Args: { p_token: string }; Returns: Json }
       my_notifications: {
         Args: { p_limit?: number; p_offset?: number; p_unread_only?: boolean }

@@ -38,6 +38,21 @@ const RAISED: Record<string, ErrorCode> = {
   upload_rate_limited: "upload_rate_limited",
   session_required: "session_required",
   confirmation_mismatch: "confirmation_mismatch",
+  company_read_only: "company_read_only",
+  import_name_required: "import_name_required",
+  import_site_missing: "import_site_missing",
+  import_site_ambiguous: "import_site_ambiguous",
+  import_site_exists: "import_site_exists",
+  import_value_too_long: "import_value_too_long",
+  import_formula_value: "import_formula_value",
+  import_duplicate_row: "import_duplicate_row",
+  import_duplicate_identifier: "import_duplicate_identifier",
+  import_identifier_exists: "import_identifier_exists",
+  import_type_invalid: "import_type_invalid",
+  import_date_invalid: "import_date_invalid",
+  import_kind_invalid: "import_kind_invalid",
+  import_empty: "import_empty",
+  import_too_many_rows: "import_too_many_rows",
 };
 
 export function dbErrorCode(error: unknown): ErrorCode {

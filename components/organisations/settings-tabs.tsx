@@ -3,14 +3,14 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 
-/** Settings sections; the change history is shown to owners and admins only (RLS enforces the same). */
+/** Settings sections; change history and data import are shown to owners and admins only (the database enforces the same). */
 export async function SettingsTabs({
   orgSlug,
   active,
   showHistory,
 }: {
   orgSlug: string;
-  active: "organisation" | "members" | "history";
+  active: "organisation" | "members" | "history" | "import";
   showHistory: boolean;
 }) {
   const t = await getT();
@@ -18,7 +18,10 @@ export async function SettingsTabs({
     { key: "organisation", href: `/o/${orgSlug}/seaded`, label: t.app.settings.tabs.organisation },
     { key: "members", href: `/o/${orgSlug}/seaded/liikmed`, label: t.app.settings.tabs.members },
     ...(showHistory
-      ? [{ key: "history", href: `/o/${orgSlug}/seaded/ajalugu`, label: t.app.settings.tabs.history } as const]
+      ? ([
+          { key: "history", href: `/o/${orgSlug}/seaded/ajalugu`, label: t.app.settings.tabs.history },
+          { key: "import", href: `/o/${orgSlug}/seaded/import`, label: t.app.dataImport.menu },
+        ] as const)
       : []),
   ];
   return (
