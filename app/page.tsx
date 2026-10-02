@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Caveat } from "next/font/google";
 import Link from "next/link";
 import { ArrowDown, ArrowRight } from "lucide-react";
+import { HeroBackdrop } from "@/components/marketing/hero-backdrop";
 import { HeroVisual } from "@/components/marketing/hero-visual";
 import { LogPreview } from "@/components/marketing/log-preview";
 import { PhonePreview } from "@/components/marketing/phone-preview";
@@ -34,7 +35,8 @@ export default async function Home() {
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="k-grain">
+        <section className="k-grain relative isolate overflow-hidden">
+          <HeroBackdrop />
           <div className="k-container grid grid-cols-1 items-center gap-12 py-12 sm:py-16 lg:grid-cols-12 lg:gap-14 lg:py-28 2xl:py-32">
             <div className="min-w-0 lg:col-span-8 xl:col-span-7">
               <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-k-muted [overflow-wrap:anywhere] lg:text-sm">
