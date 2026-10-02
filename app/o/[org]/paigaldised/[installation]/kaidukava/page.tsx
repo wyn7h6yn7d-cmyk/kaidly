@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { Pager, parsePage } from "@/components/log/log-list";
-import { EmptyState } from "@/components/app/states";
+
 import { ActivityList } from "@/components/schedule/activity-list";
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
@@ -40,19 +41,13 @@ export default async function InstallationSchedulePage({
         const copy = t.app.schedule;
 
         return activities.items.length === 0 && page === 1 ? (
-          <EmptyState
-            title={copy.empty}
-            body={canAdd ? copy.emptyAdmin : copy.emptyMember}
-            action={
-              canAdd ? (
-                <Button asChild>
-                  <Link href={addHref}>
-                    <Plus aria-hidden="true" />
-                    {copy.add}
-                  </Link>
-                </Button>
-              ) : undefined
-            }
+          <GuidedEmptyState
+            title={t.app.emptyStates.schedule.title}
+            body={t.app.emptyStates.schedule.body}
+            sequence={{ kind: "flow", items: t.app.emptyStates.schedule.flow }}
+            sequenceLabel={t.app.emptyStates.howItWorks}
+            action={canAdd ? { href: addHref, label: t.app.emptyStates.schedule.cta } : undefined}
+            note={t.app.emptyStates.schedule.member}
           />
         ) : (
           <>

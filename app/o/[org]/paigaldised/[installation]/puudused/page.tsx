@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Plus } from "lucide-react";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
-import { EmptyState } from "@/components/app/states";
+
 import { DeficiencyList } from "@/components/deficiencies/deficiency-list";
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
@@ -39,18 +40,13 @@ export default async function InstallationDeficienciesPage({
         return (
           <>
             {active.length === 0 ? (
-              <EmptyState
-                title={resolved.length === 0 ? copy.empty : copy.emptyActive}
-                action={
-                  canAdd ? (
-                    <Button asChild>
-                      <Link href={addHref}>
-                        <Plus aria-hidden="true" />
-                        {copy.add}
-                      </Link>
-                    </Button>
-                  ) : undefined
-                }
+              <GuidedEmptyState
+                title={t.app.emptyStates.deficiencies.title}
+                body={t.app.emptyStates.deficiencies.body}
+                sequence={{ kind: "flow", items: t.app.emptyStates.deficiencies.flow }}
+                sequenceLabel={t.app.emptyStates.howItWorks}
+                action={canAdd ? { href: addHref, label: t.app.emptyStates.deficiencies.cta } : undefined}
+                note={t.app.emptyStates.deficiencies.member}
               />
             ) : (
               <>

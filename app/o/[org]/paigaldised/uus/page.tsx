@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { InstallationForm } from "@/components/sites/installation-form";
-import { Button } from "@/components/ui/button";
+
 import { listActiveSiteOptions } from "@/lib/data/sites";
 import { getT } from "@/lib/i18n/server";
 
@@ -38,13 +38,14 @@ export default async function NewInstallationPage({
           <>
             <PageHeader eyebrow={org.name} title={t.app.installations.new} back={back} />
             {sites.length === 0 ? (
-              <EmptyState
-                title={t.app.installations.noActiveSites}
-                action={
-                  <Button asChild>
-                    <Link href={`/o/${org.slug}/objektid/uus`}>{t.app.sites.add}</Link>
-                  </Button>
-                }
+              <GuidedEmptyState
+                title={t.app.emptyStates.installations.title}
+                body={t.app.emptyStates.installations.body}
+                examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.installations.examples }}
+                prerequisite={{
+                  text: t.app.emptyStates.installations.noSite,
+                  action: { href: `/o/${org.slug}/objektid/uus`, label: t.app.emptyStates.installations.noSiteCta },
+                }}
               />
             ) : (
               <InstallationForm

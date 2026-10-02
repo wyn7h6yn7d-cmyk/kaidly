@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { ConfirmForm } from "@/components/forms/confirm-form";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { hideGuide } from "@/lib/actions/onboarding";
+import type { OnboardingStep } from "@/lib/onboarding";
 import { getT } from "@/lib/i18n/server";
+import { cn } from "@/lib/utils";
 
 /** A titled list on the dashboard: first rows, the total, and a link to the full list. */
 export async function AttentionSection({
@@ -82,28 +85,41 @@ export function AttentionRow({
   );
 }
 
-export type OnboardingStep = {
-  key: string;
-  title: string;
-  body: string;
-  done: boolean;
-  cta?: { href: string; label: string };
-};
-
-/** First-use checklist: what is done, and one clear next action. No tours. */
-export async function Onboarding({ steps }: { steps: OnboardingStep[] }) {
+/**
+ * Getting-started checklist: one compact vertical list, real progress, one action per
+ * open step (or the reason it can't be done yet). No tours, no modals.
+ */
+export async function OnboardingChecklist({
+  orgSlug,
+  steps,
+  hideable = false,
+  headingLevel = 2,
+}: {
+  orgSlug: string;
+  steps: OnboardingStep[];
+  hideable?: boolean;
+  headingLevel?: 2 | 3;
+}) {
   const t = await getT();
   const copy = t.app.onboarding;
+  const done = steps.filter((step) => step.done).length;
   const next = steps.findIndex((step) => !step.done);
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
-    <section aria-labelledby="onboarding" className="mb-10 border border-k-line bg-k-surface px-4 py-5 sm:px-6">
-      <h2 id="onboarding" className="text-xl font-bold">
-        {copy.title}
-      </h2>
-      <p className="mt-1 text-k-muted">{copy.intro}</p>
+    <section aria-labelledby="onboarding" className="border border-k-line bg-k-surface px-4 py-5 sm:px-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <Heading id="onboarding" className="text-xl font-bold">
+          {copy.title}
+        </Heading>
+        <p className="text-sm font-semibold tabular-nums text-k-muted">{copy.progress(done, steps.length)}</p>
+      </div>
+      <p className="mt-1 text-k-muted">{done === steps.length ? copy.complete : copy.intro}</p>
       <ol className="mt-5 grid grid-cols-1 gap-4">
         {steps.map((step, index) => {
+          const text = copy.steps[step.key];
           const current = index === next;
+          const reason =
+            step.blockedBy === "site" ? copy.needsSite : step.blockedBy === "installation" ? copy.needsInstallation : step.blockedBy === "role" ? copy.needsRole : null;
           return (
             <li key={step.key} className="flex gap-4" aria-current={current ? "step" : undefined}>
               <span
@@ -115,16 +131,17 @@ export async function Onboarding({ steps }: { steps: OnboardingStep[] }) {
               >
                 {step.done ? <Check className="size-4" /> : index + 1}
               </span>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className={cn("font-semibold", !step.done && !current && "text-k-muted")}>
                   <span className="sr-only">{copy.stepLabel(index + 1)}: </span>
-                  {step.title}
+                  {text.title}
                   {step.done && <span className="ml-2 text-sm font-medium text-k-green">{copy.done}</span>}
                 </p>
-                {!step.done && <p className="text-sm text-k-muted">{step.body}</p>}
-                {current && step.cta && (
-                  <Button asChild size="lg" className="mt-3">
-                    <Link href={step.cta.href}>{step.cta.label}</Link>
+                {!step.done && <p className="text-sm text-k-muted">{text.body}</p>}
+                {!step.done && reason && <p className="mt-1 text-sm">{reason}</p>}
+                {step.href && (
+                  <Button asChild size={current ? "lg" : "sm"} variant={current ? "default" : "outline"} className="mt-2">
+                    <Link href={step.href}>{"cta" in text ? text.cta : text.title}</Link>
                   </Button>
                 )}
               </div>
@@ -132,6 +149,12 @@ export async function Onboarding({ steps }: { steps: OnboardingStep[] }) {
           );
         })}
       </ol>
+      <p className="mt-5 text-sm text-k-muted">{copy.optionalNote}</p>
+      {hideable && (
+        <div className="mt-3">
+          <ConfirmForm action={hideGuide} fields={{ orgSlug }} label={copy.hide} variant="ghost" />
+        </div>
+      )}
     </section>
   );
 }

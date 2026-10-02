@@ -1,6 +1,7 @@
 import {
   Building2,
   CalendarCheck,
+  CircleHelp,
   FileText,
   LayoutDashboard,
   NotebookPen,
@@ -29,4 +30,5 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: "deficiencies", icon: TriangleAlert, segment: "puudused", mobile: true },
   { key: "documents", icon: FileText, segment: "dokumendid", mobile: false },
   { key: "settings", icon: Settings, segment: "seaded", mobile: false },
+  { key: "help", icon: CircleHelp, segment: "abi", mobile: false },
 ];

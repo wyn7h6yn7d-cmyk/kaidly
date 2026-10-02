@@ -38,7 +38,8 @@ export async function createOrganisation(
     p_registry_code: parsed.data.registryCode,
   });
   if (error || !slug) return failure(dbErrorCode(error));
-  redirect(`/o/${slug}`);
+  // ?uus shows the one-time "Ettevõte on valmis" welcome on the overview.
+  redirect(`/o/${slug}?uus=1`);
 }
 
 export async function updateOrganisation(

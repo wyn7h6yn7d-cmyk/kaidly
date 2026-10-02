@@ -3,7 +3,8 @@ import { ChevronRight, Plus, UserPlus } from "lucide-react";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { EmptyState } from "@/components/app/states";
-import { AttentionRow, AttentionSection, Onboarding, type OnboardingStep } from "@/components/dashboard/sections";
+import { AttentionRow, AttentionSection, OnboardingChecklist } from "@/components/dashboard/sections";
+import { getOnboarding } from "@/lib/data/onboarding";
 import { SeverityMark, StatusBadge } from "@/components/deficiencies/marks";
 import { DueMark } from "@/components/schedule/due-mark";
 import { Button } from "@/components/ui/button";
@@ -17,18 +18,28 @@ import { getT } from "@/lib/i18n/server";
 
 const SITES_SHOWN = 8;
 
-export default async function OverviewPage({ params }: { params: Promise<{ org: string }> }) {
+export default async function OverviewPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string }>;
+  searchParams: Promise<{ uus?: string }>;
+}) {
   const t = await getT();
   return (
     <OrgPage
       params={params}
-      render={async ({ org, role }) => {
-        const [counts, sites, dashboard, installations] = await Promise.all([
+      render={async (ctx) => {
+        const { org, role } = ctx;
+        const [counts, sites, dashboard, installations, onboarding, query] = await Promise.all([
           getOverviewCounts(org.id),
           listSites(org.id),
           getDashboard(org.id),
           listInstallationOptions(org.id),
+          getOnboarding(ctx),
+          searchParams,
         ]);
+        const welcome = query.uus !== undefined && !onboarding.complete;
         const isAdmin = hasRole(role, "admin");
         const canWrite = hasRole(role, "operator");
         const base = `/o/${org.slug}`;
@@ -39,32 +50,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ org: 
           return i ? installationLabel(i) : null;
         };
 
-        const onboarding = t.app.onboarding.steps;
-        const firstSite = sites[0];
-        const steps: OnboardingStep[] = [
-          {
-            key: "site",
-            ...onboarding.site,
-            done: counts.sites > 0,
-            cta: isAdmin ? { href: `${base}/objektid/uus`, label: onboarding.site.cta } : undefined,
-          },
-          {
-            key: "installation",
-            ...onboarding.installation,
-            done: counts.installations > 0,
-            cta:
-              isAdmin && firstSite
-                ? { href: `${base}/paigaldised/uus?objekt=${firstSite.id}`, label: onboarding.installation.cta }
-                : undefined,
-          },
-          {
-            key: "entry",
-            ...onboarding.entry,
-            done: dashboard.hasAnyEntry,
-            cta: canWrite ? { href: `${base}/sissekanne`, label: onboarding.entry.cta } : undefined,
-          },
-        ];
-        const onboardingOpen = steps.some((step) => !step.done);
         const showAttention = counts.installations > 0;
         const attentionCount = dashboard.overdue.total + dashboard.serious.total;
 
@@ -96,13 +81,35 @@ export default async function OverviewPage({ params }: { params: Promise<{ org: 
               }
             />
 
-            {onboardingOpen &&
+            {welcome && (
+              <section aria-labelledby="welcome" className="mb-8 border-l-4 border-k-volt bg-k-surface px-4 py-5 sm:px-6">
+                <h2 id="welcome" className="text-xl font-bold">
+                  {t.app.onboarding.welcomeTitle}
+                </h2>
+                <p className="mt-1 text-k-muted">{t.app.onboarding.welcomeBody}</p>
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                  {isAdmin && (
+                    <Button asChild size="lg">
+                      <Link href={`${base}/objektid/uus`}>{t.app.onboarding.welcomeCta}</Link>
+                    </Button>
+                  )}
+                  <Button asChild size="lg" variant="outline">
+                    <Link href={`${base}/abi`}>{t.app.onboarding.welcomeGuide}</Link>
+                  </Button>
+                </div>
+              </section>
+            )}
+
+            {!onboarding.complete &&
+              !onboarding.hidden &&
               (counts.sites === 0 && !isAdmin ? (
                 <div className="mb-10">
-                  <EmptyState title={t.app.sites.emptyTitle} body={t.app.onboarding.memberWaiting} />
+                  <EmptyState title={t.app.emptyStates.sites.title} body={t.app.onboarding.memberWaiting} />
                 </div>
               ) : (
-                <Onboarding steps={steps} />
+                <div className="mb-10">
+                  <OnboardingChecklist orgSlug={org.slug} steps={onboarding.steps} hideable />
+                </div>
               ))}
 
             {showAttention && (

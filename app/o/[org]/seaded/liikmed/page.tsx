@@ -42,6 +42,7 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
                 </h2>
                 <span className="text-sm text-k-muted">{copy.count(members.length)}</span>
               </div>
+              <p className="mb-4 max-w-3xl text-sm text-k-muted">{t.app.emptyStates.settings.members}</p>
               {!isAdmin && <p className="mb-4 text-sm text-k-muted">{copy.readOnly}</p>}
 
               <ul className="divide-y divide-k-line border border-k-line bg-k-surface">

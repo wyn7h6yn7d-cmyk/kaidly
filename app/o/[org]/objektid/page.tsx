@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
 import { countArchivedSites, listSites } from "@/lib/data/sites";
@@ -59,19 +60,13 @@ export default async function SitesPage({
               archived ? (
                 <p className="text-k-muted">{copy.emptyArchived}</p>
               ) : (
-                <EmptyState
-                  title={copy.emptyTitle}
-                  body={isAdmin ? copy.emptyAdmin : copy.emptyMember}
-                  action={
-                    isAdmin ? (
-                      <Button asChild>
-                        <Link href={`${base}/uus`}>
-                          <Plus aria-hidden="true" />
-                          {copy.add}
-                        </Link>
-                      </Button>
-                    ) : undefined
-                  }
+                <GuidedEmptyState
+                  title={t.app.emptyStates.sites.title}
+                  body={t.app.emptyStates.sites.body}
+                  sequence={{ kind: "steps", items: t.app.emptyStates.sites.steps }}
+                  sequenceLabel={t.app.emptyStates.firstSteps}
+                  action={isAdmin ? { href: `${base}/uus`, label: t.app.emptyStates.sites.cta } : undefined}
+                  note={t.app.emptyStates.sites.member}
                 />
               )
             ) : (

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { FilterPanel } from "@/components/app/filter-panel";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { DeficiencyList } from "@/components/deficiencies/deficiency-list";
 import { Field } from "@/components/forms/field";
 import { Pager, pageHref, parsePage } from "@/components/log/log-list";
@@ -125,7 +126,24 @@ export default async function DeficienciesPage({
               activeCount > 0 ? (
                 <p className="text-k-muted">{copy.noResults}</p>
               ) : (
-                <EmptyState title={copy.emptyActive} />
+                <GuidedEmptyState
+                  title={t.app.emptyStates.deficiencies.title}
+                  body={t.app.emptyStates.deficiencies.body}
+                  sequence={{ kind: "flow", items: t.app.emptyStates.deficiencies.flow }}
+                  sequenceLabel={t.app.emptyStates.howItWorks}
+                  prerequisite={
+                    installations.some((i) => !i.archived)
+                      ? undefined
+                      : {
+                          text: t.app.emptyStates.deficiencies.noInstallation,
+                          action: hasRole(role, "admin")
+                            ? { href: `/o/${org.slug}/paigaldised/uus`, label: t.app.emptyStates.deficiencies.noInstallationCta }
+                            : undefined,
+                        }
+                  }
+                  action={canAdd ? { href: `${base}/uus`, label: t.app.emptyStates.deficiencies.cta } : undefined}
+                  note={t.app.emptyStates.deficiencies.member}
+                />
               )
             ) : (
               <>

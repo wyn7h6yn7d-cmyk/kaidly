@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { ChevronRight, Pencil, Plus } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
 import { DocumentList } from "@/components/documents/document-list";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { ConfirmForm } from "@/components/forms/confirm-form";
 import { ArchivedBadge, StatusMark } from "@/components/sites/status-mark";
 import { Button } from "@/components/ui/button";
@@ -88,19 +89,16 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
                 {copy.installationsTitle}
               </h2>
               {active.length === 0 ? (
-                <EmptyState
-                  title={copy.noInstallations}
-                  body={canAdd ? copy.noInstallationsAdmin : undefined}
+                <GuidedEmptyState
+                  title={t.app.emptyStates.installations.title}
+                  body={t.app.emptyStates.installations.body}
+                  examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.installations.examples }}
                   action={
-                    canAdd ? (
-                      <Button asChild>
-                        <Link href={`${base}/paigaldised/uus?objekt=${site.id}`}>
-                          <Plus aria-hidden="true" />
-                          {t.app.installations.add}
-                        </Link>
-                      </Button>
-                    ) : undefined
+                    canAdd
+                      ? { href: `${base}/paigaldised/uus?objekt=${site.id}`, label: t.app.emptyStates.installations.cta }
+                      : undefined
                   }
+                  note={t.app.emptyStates.installations.member}
                 />
               ) : (
                 <ul className="divide-y divide-k-line border border-k-line bg-k-surface">

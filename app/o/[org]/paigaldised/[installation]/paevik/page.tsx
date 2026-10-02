@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Plus } from "lucide-react";
+
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
-import { EmptyState } from "@/components/app/states";
+
 import { FormMessage } from "@/components/forms/form-message";
 import { LogList, Pager, parsePage } from "@/components/log/log-list";
-import { Button } from "@/components/ui/button";
+
 import { hasRole } from "@/lib/auth/roles";
 import { listInstallationLog } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
@@ -47,18 +47,12 @@ export default async function InstallationLogPage({
               </div>
             )}
             {log.items.length === 0 && page === 1 ? (
-              <EmptyState
-                title={copy.empty}
-                action={
-                  canWrite ? (
-                    <Button asChild size="lg">
-                      <Link href={`${base}/uus`}>
-                        <Plus aria-hidden="true" />
-                        {copy.addFirst}
-                      </Link>
-                    </Button>
-                  ) : undefined
-                }
+              <GuidedEmptyState
+                title={t.app.emptyStates.log.title}
+                body={t.app.emptyStates.log.body}
+                examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.log.examples }}
+                action={canWrite ? { href: `${base}/uus`, label: t.app.emptyStates.log.cta } : undefined}
+                note={t.app.emptyStates.log.member}
               />
             ) : (
               <>

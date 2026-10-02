@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Upload } from "lucide-react";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
-import { EmptyState } from "@/components/app/states";
+
 import { DocumentList } from "@/components/documents/document-list";
 import { FormMessage } from "@/components/forms/form-message";
 import { Pager, parsePage } from "@/components/log/log-list";
@@ -56,7 +57,17 @@ export default async function InstallationDocumentsPage({
               </div>
             )}
             {documents.items.length === 0 && page === 1 ? (
-              <EmptyState title={copy.empty} body={copy.emptyHint} action={uploadButton} />
+              <GuidedEmptyState
+                title={t.app.emptyStates.documents.title}
+                body={t.app.emptyStates.documents.body}
+                examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.documents.examples }}
+                action={
+                  canUpload
+                    ? { href: `/o/${org.slug}/dokumendid/uus?paigaldis=${installation.id}`, label: t.app.emptyStates.documents.cta }
+                    : undefined
+                }
+                note={t.app.emptyStates.documents.member}
+              />
             ) : (
               <>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

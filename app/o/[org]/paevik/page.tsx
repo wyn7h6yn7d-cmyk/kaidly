@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { FilterPanel } from "@/components/app/filter-panel";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { Field } from "@/components/forms/field";
 import { LogList, Pager, parsePage } from "@/components/log/log-list";
 import { Button } from "@/components/ui/button";
@@ -116,7 +117,23 @@ export default async function OrganisationLogPage({
               activeCount > 0 ? (
                 <p className="text-k-muted">{copy.noResults}</p>
               ) : (
-                <EmptyState title={copy.empty} />
+                <GuidedEmptyState
+                  title={t.app.emptyStates.log.title}
+                  body={t.app.emptyStates.log.body}
+                  examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.log.examples }}
+                  prerequisite={
+                    installations.some((i) => !i.archived)
+                      ? undefined
+                      : {
+                          text: t.app.emptyStates.log.noInstallation,
+                          action: hasRole(role, "admin")
+                            ? { href: `/o/${org.slug}/paigaldised/uus`, label: t.app.emptyStates.log.noInstallationCta }
+                            : undefined,
+                        }
+                  }
+                  action={hasRole(role, "operator") ? { href: `/o/${org.slug}/sissekanne`, label: t.app.emptyStates.log.cta } : undefined}
+                  note={t.app.emptyStates.log.member}
+                />
               )
             ) : (
               <>

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Upload } from "lucide-react";
 import { FilterPanel } from "@/components/app/filter-panel";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { DocumentList } from "@/components/documents/document-list";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
@@ -129,7 +130,13 @@ export default async function DocumentsPage({
               activeCount > 0 || archived ? (
                 <p className="text-k-muted">{copy.noResults}</p>
               ) : (
-                <EmptyState title={copy.empty} body={copy.emptyHint} action={uploadButton} />
+                <GuidedEmptyState
+                  title={t.app.emptyStates.documents.title}
+                  body={t.app.emptyStates.documents.body}
+                  examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.documents.examples }}
+                  action={canUpload ? { href: `${base}/uus`, label: t.app.emptyStates.documents.cta } : undefined}
+                  note={t.app.emptyStates.documents.member}
+                />
               )
             ) : (
               <>

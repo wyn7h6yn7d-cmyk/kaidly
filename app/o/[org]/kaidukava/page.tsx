@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { FilterPanel } from "@/components/app/filter-panel";
+import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { EmptyState } from "@/components/app/states";
+
 import { Field } from "@/components/forms/field";
 import { Pager, pageHref, parsePage } from "@/components/log/log-list";
 import { ActivityList } from "@/components/schedule/activity-list";
@@ -118,19 +119,23 @@ export default async function SchedulePage({
               activeCount > 0 || filters.archived ? (
                 <p className="text-k-muted">{copy.noResults}</p>
               ) : (
-                <EmptyState
-                  title={copy.empty}
-                  body={isAdmin ? copy.emptyAdmin : copy.emptyMember}
-                  action={
-                    isAdmin ? (
-                      <Button asChild>
-                        <Link href={`${base}/uus`}>
-                          <Plus aria-hidden="true" />
-                          {copy.add}
-                        </Link>
-                      </Button>
-                    ) : undefined
+                <GuidedEmptyState
+                  title={t.app.emptyStates.schedule.title}
+                  body={t.app.emptyStates.schedule.body}
+                  sequence={{ kind: "flow", items: t.app.emptyStates.schedule.flow }}
+                  sequenceLabel={t.app.emptyStates.howItWorks}
+                  prerequisite={
+                    installations.some((i) => !i.archived)
+                      ? undefined
+                      : {
+                          text: t.app.emptyStates.schedule.noInstallation,
+                          action: isAdmin
+                            ? { href: `/o/${org.slug}/paigaldised/uus`, label: t.app.emptyStates.schedule.noInstallationCta }
+                            : undefined,
+                        }
                   }
+                  action={isAdmin ? { href: `${base}/uus`, label: t.app.emptyStates.schedule.cta } : undefined}
+                  note={t.app.emptyStates.schedule.member}
                 />
               )
             ) : (
