@@ -162,7 +162,7 @@ export async function OnboardingChecklist({
                 </p>
                 {!step.done && <p className="mt-0.5 text-[15px] text-k-ink/70">{text.body}</p>}
                 {!step.done && reason && (
-                  <p className="mt-2 inline-block rounded-sm bg-k-paper-2 px-2.5 py-1 text-sm text-k-ink/80">{reason}</p>
+                  <p className="mt-2 w-fit max-w-full break-words rounded-sm bg-k-paper-2 px-2.5 py-1 text-sm text-k-ink/80">{reason}</p>
                 )}
                 {step.href && (
                   <Button asChild size={current ? "lg" : "sm"} variant={current ? "default" : "outline"} className="mt-3">

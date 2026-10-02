@@ -7,7 +7,7 @@ async function seed(org: TestOrg, tag: string) {
   const entry = sql(`insert into public.log_entries (organisation_id, site_id, electrical_installation_id, entry_type, description, created_by)
     values ('${org.id}', '${site}', '${installation}', 'measurement', 'Termograafiline ${tag} kontroll', '${org.users.operator.id}') returning id;`);
   const activity = sql(`insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on)
-    values ('${org.id}', '${site}', '${installation}', 'Isolatsioon ${tag}', 'once', current_date + 40) returning id;`);
+    values ('${org.id}', '${site}', '${installation}', 'Isolatsioon ${tag}', 'once', (now() at time zone 'Europe/Tallinn')::date + 40) returning id;`);
   const deficiency = sql(`insert into public.deficiencies (organisation_id, site_id, electrical_installation_id, title, description, severity, created_by)
     values ('${org.id}', '${site}', '${installation}', 'Klemm ${tag}', 'X3 lahti', 'high', '${org.users.operator.id}') returning id;`);
   const document = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes, status, ready_at, uploaded_by)

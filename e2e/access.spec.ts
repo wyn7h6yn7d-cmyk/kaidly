@@ -43,7 +43,7 @@ test.describe("Prooviperiood ja ligipääs", () => {
     sql(`update private.organisation_access set trial_ends_at = now() + interval '2 days' where organisation_id = '${org.id}';`);
     await login(page, org.users.owner, `/o/${org.slug}`);
     await expect(page.getByTestId("access-banner")).toContainText("Prooviperioodi lõpuni 2 päeva");
-    await expect(page.getByTestId("access-banner")).toHaveClass(/border-k-warn/);
+    await expect(page.getByTestId("access-banner")).toHaveClass(/border-l-k-warn/);
   });
 
   test("expired company: everything readable, nothing writable, persistent notice @responsive", async ({ page }) => {

@@ -63,7 +63,7 @@ test.describe("Alustamine", () => {
     // Activity and document done (through SQL to keep the test short): complete.
     const orgId = sql(`select id from public.organisations where name = '${company}'`);
     sql(`insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on, created_by)
-         select i.organisation_id, i.site_id, i.id, 'Ülevaatus', 'once', current_date + 30, '${user.id}'
+         select i.organisation_id, i.site_id, i.id, 'Ülevaatus', 'once', (now() at time zone 'Europe/Tallinn')::date + 30, '${user.id}'
            from public.electrical_installations i where i.organisation_id = '${orgId}';
          insert into public.documents (organisation_id, category, title, original_filename, mime_type, size_bytes, status, ready_at, uploaded_by)
          values ('${orgId}', 'manual', 'Juhend', 'juhend.pdf', 'application/pdf', 10, 'ready', now(), '${user.id}');`);

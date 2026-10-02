@@ -121,9 +121,9 @@ test.describe("KAIDLY Admin", () => {
     const a = await createOrg(`Tähtaegade A ${tag}`);
     const b = await createOrg(`Tähtaegade B ${tag}`);
     for (const [org, title, extra] of [
-      [a, `Üle tähtaja ${tag}`, "current_date - 2, null"],
-      [a, `Arhiveeritud ${tag}`, "current_date - 2, now()"],
-      [b, `Deaktiveeritud ${tag}`, "current_date - 2, null"],
+      [a, `Üle tähtaja ${tag}`, "(now() at time zone 'Europe/Tallinn')::date - 2, null"],
+      [a, `Arhiveeritud ${tag}`, "(now() at time zone 'Europe/Tallinn')::date - 2, now()"],
+      [b, `Deaktiveeritud ${tag}`, "(now() at time zone 'Europe/Tallinn')::date - 2, null"],
     ] as const) {
       sql(`with s as (insert into public.sites (organisation_id, name) values ('${org.id}', 'Objekt') returning id),
                i as (insert into public.electrical_installations (organisation_id, site_id, name, installation_type)

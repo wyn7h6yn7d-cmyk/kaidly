@@ -12,8 +12,8 @@ async function seed(org: TestOrg) {
     insert into public.log_entries (organisation_id, site_id, electrical_installation_id, entry_type, description, created_by)
     values ('${org.id}', '${site}', '${other}', 'maintenance', 'Alajaama hooldus', '${org.users.operator.id}');
     insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on)
-    values ('${org.id}', '${site}', '${installation}', 'Hilinenud mõõtmine', 'once', current_date - 3),
-           ('${org.id}', '${site}', '${installation}', 'Tuleviku kontroll', 'once', current_date + 60);
+    values ('${org.id}', '${site}', '${installation}', 'Hilinenud mõõtmine', 'once', (now() at time zone 'Europe/Tallinn')::date - 3),
+           ('${org.id}', '${site}', '${installation}', 'Tuleviku kontroll', 'once', (now() at time zone 'Europe/Tallinn')::date + 60);
     insert into public.deficiencies (organisation_id, site_id, electrical_installation_id, title, description, severity, created_by)
     values ('${org.id}', '${site}', '${installation}', 'Lahtine klemm', 'X3', 'critical', '${org.users.operator.id}');
     insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, storage_path, mime_type, size_bytes, status, ready_at, uploaded_by, uploaded_by_name)
