@@ -57,7 +57,7 @@ export function ForgotPasswordForm() {
   return (
     <>
       <AuthHeading title={t.auth.forgot.title} description={t.auth.forgot.description} />
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form method="post" onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor={id("email")}>{t.common.email}</Label>
           <Input

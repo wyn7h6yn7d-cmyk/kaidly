@@ -84,3 +84,17 @@ test.describe("Autentimine", () => {
     await expect(page).toHaveURL(/localhost:3100\/o/);
   });
 });
+
+test("credentials never end up in the URL, even if submitted before the page is interactive", async ({ page }) => {
+  await page.route("**/_next/static/**", (route) => route.abort()); // no JavaScript
+  await page.goto("/auth/login");
+  for (const form of await page.locator("form").all()) {
+    await expect(form).toHaveAttribute("method", "post");
+  }
+  await page.locator('input[name="email"]:visible').fill("someone@example.ee");
+  await page.locator('input[name="password"]:visible').fill("secret-password-123");
+  await page.locator('form button[type="submit"]:visible').click();
+  await page.waitForLoadState();
+  expect(page.url()).not.toContain("secret-password-123");
+  expect(page.url()).not.toContain("password");
+});

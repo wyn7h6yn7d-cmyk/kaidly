@@ -113,6 +113,7 @@ export async function createInstallation(org: TestOrg, siteId: string, name: str
 /** Logs in through the real login form and waits until the app has loaded. */
 export async function login(page: Page, user: TestUser, next?: string) {
   await page.goto(`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
+  await page.waitForLoadState("networkidle"); // hydrated: the form submits through JavaScript
   await page.locator('input[name="email"]:visible').fill(user.email);
   await page.locator('input[name="password"]:visible').fill(user.password);
   // Language-independent: the sign-in form's submit button.

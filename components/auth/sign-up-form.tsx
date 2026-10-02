@@ -67,7 +67,7 @@ export function SignUpForm() {
   return (
     <>
       <AuthHeading title={t.auth.signUp.title} description={t.auth.signUp.description} />
-      <form onSubmit={handleSignUp} className="flex flex-col gap-5">
+      <form method="post" onSubmit={handleSignUp} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor={id("full-name")}>{t.common.fullName}</Label>
           <Input

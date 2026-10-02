@@ -55,7 +55,7 @@ export function LoginForm() {
         title={t.auth.login.title}
         description={isInvite ? t.app.invite.loginHint : t.auth.login.description}
       />
-      <form onSubmit={handleLogin} className="flex flex-col gap-5">
+      <form method="post" onSubmit={handleLogin} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor={id("email")}>{t.common.email}</Label>
           <Input

@@ -52,7 +52,7 @@ export function UpdatePasswordForm() {
         title={t.auth.updatePassword.title}
         description={t.auth.updatePassword.description}
       />
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <form method="post" onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor={id("password")}>{t.auth.updatePassword.newPassword}</Label>
           <Input
