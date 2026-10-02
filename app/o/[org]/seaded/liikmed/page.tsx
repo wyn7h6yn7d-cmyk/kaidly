@@ -33,7 +33,7 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
         return (
           <>
             <PageHeader eyebrow={org.name} title={t.app.settings.title} />
-            <SettingsTabs orgSlug={org.slug} active="members" />
+            <SettingsTabs orgSlug={org.slug} active="members" showHistory={hasRole(role, "admin")} />
 
             <section aria-labelledby="members">
               <div className="mb-4 flex items-baseline justify-between gap-4">

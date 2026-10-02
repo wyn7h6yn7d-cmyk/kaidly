@@ -3,6 +3,7 @@ import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { ConfirmForm } from "@/components/forms/confirm-form";
 import { OrganisationSettingsForm } from "@/components/organisations/organisation-settings-form";
+import { hasRole } from "@/lib/auth/roles";
 import { SettingsTabs } from "@/components/organisations/settings-tabs";
 import { leaveOrganisation } from "@/lib/actions/organisations";
 import { getT } from "@/lib/i18n/server";
@@ -30,7 +31,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
       render={({ org, role }) => (
         <>
           <PageHeader eyebrow={org.name} title={t.app.settings.title} />
-          <SettingsTabs orgSlug={org.slug} active="organisation" />
+          <SettingsTabs orgSlug={org.slug} active="organisation" showHistory={hasRole(role, "admin")} />
 
           <section aria-labelledby="org-details">
             <h2 id="org-details" className="mb-4 text-xl font-bold">
