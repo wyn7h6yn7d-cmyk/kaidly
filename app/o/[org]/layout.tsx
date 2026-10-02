@@ -5,6 +5,7 @@ import { ShellSkeleton } from "@/components/app/states";
 import { LocaleSync } from "@/components/app/language-selector";
 import { UserMenu } from "@/components/app/user-menu";
 import { localeSyncNeeded } from "@/lib/i18n/server";
+import { isPlatformAdmin } from "@/lib/data/admin";
 import { listMyOrganisations, requireOrg } from "@/lib/data/organisations";
 
 /**
@@ -20,7 +21,7 @@ async function OrganisationFrame({
   children: React.ReactNode;
 }) {
   const { org: slug } = await params;
-  const [{ org, user }, all] = await Promise.all([requireOrg(slug), listMyOrganisations()]);
+  const [{ org, user }, all, platformAdmin] = await Promise.all([requireOrg(slug), listMyOrganisations(), isPlatformAdmin()]);
   const organisations = all.filter((o) => !o.deactivatedAt); // the switcher offers active ones
   const current = { slug: org.slug, name: org.name };
   const syncNeeded = await localeSyncNeeded(user.preferredLocale);
@@ -30,8 +31,8 @@ async function OrganisationFrame({
       orgSlug={org.slug}
       sidebarSwitcher={<OrgSwitcher current={current} organisations={organisations} tone="light" />}
       topBarSwitcher={<OrgSwitcher current={current} organisations={organisations} tone="dark" />}
-      sidebarFooter={<UserMenu name={user.fullName} email={user.email} tone="light" />}
-      topBarEnd={<UserMenu name={user.fullName} email={user.email} tone="dark" />}
+      sidebarFooter={<UserMenu name={user.fullName} email={user.email} tone="light" platformAdmin={platformAdmin} />}
+      topBarEnd={<UserMenu name={user.fullName} email={user.email} tone="dark" platformAdmin={platformAdmin} />}
     >
       <LocaleSync needed={syncNeeded} />
       {children}

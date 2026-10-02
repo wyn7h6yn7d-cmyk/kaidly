@@ -1,0 +1,117 @@
+"use server";
+
+import { createClient as createStatelessClient } from "@supabase/supabase-js";
+import { refresh } from "next/cache";
+import { headers } from "next/headers";
+import type { AdminErrorKey } from "@/lib/admin/strings";
+import { isRole } from "@/lib/auth/roles";
+import { getSupabaseEnv } from "@/lib/env";
+import { adminUser, requirePlatformAdmin } from "@/lib/data/admin";
+import { createClient } from "@/lib/supabase/server";
+import { uuid } from "@/lib/validation/common";
+
+// Platform-admin mutations. The database functions check is_platform_admin(), enforce the
+// normal rules (e.g. the last owner) and write the admin audit log; these actions add the
+// deliberate typed confirmation for the high-impact ones. Nothing here can read or set a
+// password, see a token or sign in as someone else.
+
+export type AdminActionState = { ok?: boolean; error?: AdminErrorKey };
+
+function errorKey(error: { code?: string; message?: string } | null): AdminErrorKey {
+  if (!error) return "unknown";
+  if (error.code === "P0002") return "not_found";
+  if (error.message === "last_owner") return "last_owner";
+  if (error.code === "42501") return "forbidden";
+  return "unknown";
+}
+
+function text(formData: FormData, name: string) {
+  const value = formData.get(name);
+  return typeof value === "string" ? value.trim() : "";
+}
+
+/** Typed confirmation for destructive actions: the user's email, checked on the server. */
+async function confirmedEmail(userId: string, formData: FormData) {
+  const detail = await adminUser(userId);
+  const typed = text(formData, "confirmation").toLowerCase();
+  return detail.account.email !== null && typed === detail.account.email.toLowerCase() ? detail : null;
+}
+
+export async function adminSetMemberRole(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const membership = uuid.safeParse(text(formData, "membershipId"));
+  const role = text(formData, "role");
+  if (!membership.success || !isRole(role)) return { error: "unknown" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_member_role", { p_membership: membership.data, p_role: role });
+  if (error) return { error: errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+export async function adminRemoveMember(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const membership = uuid.safeParse(text(formData, "membershipId"));
+  const user = uuid.safeParse(text(formData, "userId"));
+  if (!membership.success || !user.success) return { error: "unknown" };
+  const detail = await confirmedEmail(user.data, formData);
+  if (!detail) return { error: "confirmation" };
+  if (!detail.memberships.some((m) => m.membership_id === membership.data)) return { error: "not_found" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_remove_member", { p_membership: membership.data });
+  if (error) return { error: errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+export async function adminSetUserDisabled(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const me = await requirePlatformAdmin();
+  const user = uuid.safeParse(text(formData, "userId"));
+  const disabled = text(formData, "disabled") === "true";
+  if (!user.success) return { error: "unknown" };
+  if (user.data === me.id) return { error: "forbidden" };
+  if (disabled && !(await confirmedEmail(user.data, formData))) return { error: "confirmation" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_set_user_disabled", { p_user: user.data, p_disabled: disabled });
+  if (error) return { error: errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+export async function adminRevokeSessions(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const user = uuid.safeParse(text(formData, "userId"));
+  if (!user.success) return { error: "unknown" };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_revoke_sessions", { p_user: user.data });
+  if (error) return { error: errorKey(error) };
+  refresh();
+  return { ok: true };
+}
+
+/**
+ * Sends Supabase Auth's ordinary password-recovery email to the user's own confirmed
+ * address (the database records the request in the admin log first). The admin never
+ * sees a link, token or password.
+ */
+export async function adminSendPasswordReset(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  await requirePlatformAdmin();
+  const user = uuid.safeParse(text(formData, "userId"));
+  if (!user.success) return { error: "unknown" };
+  const supabase = await createClient();
+  const { data: email, error } = await supabase.rpc("admin_password_reset_target", { p_user: user.data });
+  if (error || !email) return { error: errorKey(error) };
+
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (host?.startsWith("localhost") || host?.startsWith("127.") ? "http" : "https");
+  const { url, publishableKey } = getSupabaseEnv();
+  const mailer = createStatelessClient(url, publishableKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, flowType: "pkce" },
+  });
+  const { error: sendError } = await mailer.auth.resetPasswordForEmail(email, {
+    redirectTo: `${proto}://${host}/auth/confirm?next=/auth/update-password`,
+  });
+  if (sendError) return { error: "unknown" };
+  return { ok: true };
+}

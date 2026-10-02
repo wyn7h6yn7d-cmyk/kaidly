@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Settings2, UserRound } from "lucide-react";
+import { LogOut, Settings2, ShieldCheck, UserRound } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { setLocale } from "@/lib/actions/locale";
+import { ADMIN } from "@/lib/admin/strings";
 import { isLocale, LOCALE_NAMES, LOCALES } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -23,9 +24,12 @@ export function UserMenu({
   name,
   email,
   tone = "dark",
+  platformAdmin = false,
 }: {
   name: string | null;
   email: string | null;
+  /** From the database (am_platform_admin), never from the email address. */
+  platformAdmin?: boolean;
   /** light = on the deep green sidebar */
   tone?: "dark" | "light";
 }) {
@@ -66,6 +70,14 @@ export function UserMenu({
             {t.app.account.title}
           </Link>
         </DropdownMenuItem>
+        {platformAdmin && (
+          <DropdownMenuItem asChild>
+            <Link href="/admin" lang="et">
+              <ShieldCheck aria-hidden="true" />
+              {ADMIN.menuEntry}
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuLabel className="text-xs font-normal text-k-muted">{t.common.language}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
