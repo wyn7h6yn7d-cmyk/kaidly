@@ -5,12 +5,15 @@ import type { Locale } from "../i18n/index.ts";
 // Not legal advice and not final until approved (LEGAL.approved).
 
 export type LegalDoc = { title: string; intro: string; sections: { heading: string; body: string[] }[] };
-type Docs = { privacy: LegalDoc; terms: LegalDoc; pending: string; draft: string; missing: Record<string, string>; updated: string };
+type Docs = { privacy: LegalDoc; terms: LegalDoc; pending: string; draft: Record<"privacy" | "terms", string>; missing: Record<string, string>; updated: string };
 
 export const LEGAL_CONTENT: Record<Locale, Docs> = {
   et: {
     pending: "Teenuse osutaja andmed avaldatakse enne teenuse ametlikku käivitamist.",
-    draft: "Mustand: see dokument ei ole veel kehtiv. Teenuse osutaja andmed ja õiguslik ülevaatus on kinnitamata.",
+    draft: {
+      privacy: "Eelversioon. KAIDLY privaatsustingimused täiendatakse enne teenuse avalikku käivitamist.",
+      terms: "Eelversioon. KAIDLY kasutustingimused täiendatakse enne teenuse avalikku käivitamist.",
+    },
     updated: "Kehtib alates",
     missing: {
       operatorName: "teenuse osutaja ärinimi",
@@ -82,7 +85,10 @@ export const LEGAL_CONTENT: Record<Locale, Docs> = {
   },
   en: {
     pending: "The service operator's details will be published before the service officially launches.",
-    draft: "Draft: this document is not yet in force. The service operator's details and the legal review are not confirmed.",
+    draft: {
+      privacy: "Pre-launch version. The KAIDLY privacy notice will be completed before the service launches publicly.",
+      terms: "Pre-launch version. The KAIDLY terms of use will be completed before the service launches publicly.",
+    },
     updated: "Effective from",
     missing: {
       operatorName: "service operator's legal name",
@@ -151,7 +157,10 @@ export const LEGAL_CONTENT: Record<Locale, Docs> = {
   },
   ru: {
     pending: "Данные поставщика услуги будут опубликованы до официального запуска сервиса.",
-    draft: "Черновик: документ ещё не действует. Данные поставщика услуги и юридическая проверка не подтверждены.",
+    draft: {
+      privacy: "Предварительная версия. Политика конфиденциальности KAIDLY будет дополнена до публичного запуска сервиса.",
+      terms: "Предварительная версия. Условия использования KAIDLY будут дополнены до публичного запуска сервиса.",
+    },
     updated: "Действует с",
     missing: {
       operatorName: "наименование поставщика услуги",

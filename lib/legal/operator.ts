@@ -1,15 +1,18 @@
 /**
- * Facts about the service operator for the privacy notice and terms. These are NOT known
- * to the codebase and must be supplied by the KAIDLY owner — nothing here is invented.
- * While any field is null, or `approved` is false, the legal pages show a clear
- * "draft — not yet in force" notice and mark each missing field (docs/RELEASE_CHECKLIST.md).
+ * Facts about the service operator for the privacy notice and terms.
+ *
+ * Status (owner decision, 2026-10-03): the KAIDLY operating company does not exist yet, so
+ * the operator facts are **TBA** — a PRE-LAUNCH MANUAL item, not a development blocker
+ * (docs/RELEASE_CHECKLIST.md). Nothing here is invented. While any field is null, or
+ * `approved` is false, both pages are pre-launch drafts: a restrained notice, fact-dependent
+ * paragraphs replaced by one "published before launch" sentence, `noindex`, not in the sitemap.
  */
 export const LEGAL = {
-  operatorName: null as string | null, // service operator's legal name
-  registryCode: null as string | null, // Estonian business registry code
-  address: null as string | null, // registered address
-  privacyEmail: null as string | null, // contact for privacy requests
-  effectiveDate: null as string | null, // YYYY-MM-DD the documents take effect
+  operatorName: null as string | null, // TBA — legal entity not founded yet
+  registryCode: null as string | null, // TBA — Estonian business registry code
+  address: null as string | null, // TBA — registered/contact address
+  privacyEmail: null as string | null, // TBA — final privacy contact
+  effectiveDate: null as string | null, // TBA — YYYY-MM-DD the documents take effect
   /** Data-processing region of the PRODUCTION Supabase project, e.g. "EU (Frankfurt)". */
   hostingRegion: "EU (Ireland, eu-west-1)" as string | null, // verified: production project region
   /** Set to true only after the texts have been reviewed and approved. */

@@ -32,16 +32,19 @@ test.describe("Väljalase", () => {
     expect(JSON.stringify(body)).not.toMatch(/supabase|http|key|eyJ|sb_/i);
   });
 
-  test("legal pages are reachable and clearly marked as drafts until the operator facts are confirmed", async ({ page }) => {
+  test("legal pages are reachable, clearly pre-launch drafts, and not indexed", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("contentinfo").getByRole("link", { name: "Privaatsus" }).click();
     await expect(page.getByRole("heading", { name: "Privaatsus", level: 1 })).toBeVisible();
-    await expect(page.getByRole("note")).toContainText("Mustand");
+    await expect(page.getByRole("note")).toHaveText("Eelversioon. KAIDLY privaatsustingimused täiendatakse enne teenuse avalikku käivitamist.");
     await expect(page.getByText("Teenuse osutaja andmed avaldatakse enne teenuse ametlikku käivitamist.").first()).toBeVisible();
     await expect(page.getByRole("main").getByText(/\[|TODO|null/)).toHaveCount(0);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await page.goto("/kasutustingimused");
     await expect(page.getByRole("heading", { name: "Kasutustingimused", level: 1 })).toBeVisible();
+    await expect(page.getByRole("note")).toHaveText("Eelversioon. KAIDLY kasutustingimused täiendatakse enne teenuse avalikku käivitamist.");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByText(/TBA/)).toHaveCount(0);
     await expect(page.getByText(/14-päevane prooviperiood/)).toBeVisible();
   });
 

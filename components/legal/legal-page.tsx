@@ -25,7 +25,7 @@ export async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
         <article className="max-w-3xl">
           {!legalReady() && (
             <p role="note" className="mb-8 border-l-4 border-k-warn bg-k-surface px-4 py-3 font-semibold">
-              {content.draft}
+              {content.draft[doc]}
             </p>
           )}
           <h1 className="font-display text-display-2 font-extrabold">{d.title}</h1>
