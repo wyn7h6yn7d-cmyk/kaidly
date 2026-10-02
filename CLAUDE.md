@@ -62,6 +62,8 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   policy through `private.org_ids()`; ids from the database, never from the form.
 - The operating log is append-only (corrections are new rows); deficiencies are never
   deleted; history is written by triggers only. Don't add update/delete paths.
+- Organisations with operational history are never deleted (only deactivated); a deactivated
+  organisation is read-only through `private.org_ids()` — keep new write paths going through it.
 - After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
 - Files: one private bucket; object paths come from the database; browsers upload only to

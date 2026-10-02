@@ -238,6 +238,25 @@ Marketing-only tokens: `font-hand` (Caveat, latin-ext + cyrillic, loaded on the 
 only), `.k-grain`, `.k-grid`. Components: `components/marketing/`. Copy: `t.landing`
 (including the preview example data, so previews translate).
 
+## 5c. Onboarding and empty states (2026-10-02)
+
+- **Alustamise juhend** — one compact vertical checklist (not cards), six steps from real
+  data (ettevõte loodud → objekt → elektripaigaldis → sissekanne → käidukava tegevus →
+  dokument); the current step gets the primary button, blocked steps say why. Shown on the
+  overview until complete or hidden ("Peida juhend"); always in **Abi** with the six core
+  terms. Deficiencies are optional and never part of completion.
+- **Welcome** once after creating an organisation: "Ettevõte on valmis." with "Lisa esimene
+  objekt" and "Vaata alustamise juhendit". No tours, no tooltips.
+- **Guided empty states** for Objektid, elektripaigaldised, Käidupäevik, Käidukava, Puudused
+  and Dokumendid: what the area is for, examples or its sequence (Avatud → Töös →
+  Lahendatud; Lisa tegevus → KAIDLY jälgib tähtaega → …), the missing prerequisite with a
+  link to it, one action — or who does it for people who can't. Two columns on desktop,
+  stacked on phones.
+- **Danger zone** (Seaded → Ettevõte, owners): separated by a red rule; deletion page shows
+  what exists, explains why permanent deletion isn't available when there is history, and
+  needs the exact organisation name before the destructive button enables.
+- **Terminology:** the Estonian UI now says *ettevõte* (was *organisatsioon*) everywhere.
+
 ## 5b. Change history and language
 
 - **Muudatuste ajalugu** (Settings, owners/admins): rows of time + person, then one plain

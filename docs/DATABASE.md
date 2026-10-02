@@ -104,7 +104,8 @@ migration (pgTAP: every auth user has a profile).
 
 ### organisations
 `name` 1–200, `slug` (unique; slugified name + 6 random characters; never changed),
-`registry_code` ≤ 30, `created_by`. Slugs are **stable, non-sequential URL identifiers** —
+`registry_code` ≤ 30, `created_by`, `deactivated_at`, `deactivated_by` (organisation
+lifecycle, §5a). Slugs are **stable, non-sequential URL identifiers** —
 not a security mechanism; access is enforced by RLS. Created only by `create_organisation()`.
 
 ### organisation_members
@@ -190,7 +191,7 @@ V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
 
 | | read | create | change | delete |
 |---|---|---|---|---|
-| organisation | V+ | anyone signed in (`create_organisation`) | Ow: name, registry code | — |
+| organisation | V+ | anyone signed in (`create_organisation`) | Ow: name, registry code; Ow deactivates/reactivates (`deactivate_organisation`, `reactivate_organisation`) | Ow, only without operational history (`delete_organisation`) |
 | members | V+ | via invitation | A+ non-owner rows; Ow owner rows; column `role` only | A+ non-owners, Ow owners, anyone themselves; last owner protected |
 | invitations | A+ (no `token_hash`) | A+ (`create_invitation`; owner role only by Ow) | revoke: A+ (owner invites: Ow) | — |
 | history | A+ | triggers only | never | never |
@@ -204,6 +205,31 @@ V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
 Differences from the original Phase 0 plan, by later briefs: operators may correct any log
 entry (not only their own), nobody deletes deficiencies, and the next due date is anchored
 (not "completion date + interval").
+
+## 5a. Organisation lifecycle (migration `organisation_lifecycle`)
+
+Retention and privacy-erasure rules are not decided, so an organisation with **operational
+history** — any operating-log entry (incl. activity completions), deficiency or document —
+is never physically deleted.
+
+| RPC | Who | Behaviour |
+|---|---|---|
+| `delete_organisation(org, typed name)` | owner (`private.is_owner`) | Name must match exactly (`confirmation_mismatch`). Refused with `organisation_has_history` if any log entry, deficiency or document exists. Otherwise one transaction removes plan activities, invitations, memberships and the organisation (sites, installations and change history cascade); a transaction-local marker lets `protect_last_owner` and `record_history` stand aside for that organisation only. User accounts and profiles are untouched. |
+| `deactivate_organisation(org, typed name)` | owner | Sets `deactivated_at`/`deactivated_by`. Nothing is deleted. |
+| `reactivate_organisation(org)` | owner | Clears deactivation. |
+
+**Deactivated = read-only, enforced centrally:** `private.org_ids(min_role)` no longer returns a
+deactivated organisation for any role above `viewer`, so every write policy and every RPC
+role check (`has_org_role`) refuses it; members can still read the preserved data. The
+`organisation_member_before_insert` trigger stops anyone joining (`organisation_deactivated`).
+There is no direct delete privilege on `organisations`, and `deactivated_at` is not
+client-writable. Non-owners and other tenants get `not_found`. The app shows a deactivated
+organisation as one notice (owners can restore it) and lists it apart on `/o`.
+
+pgTAP `120_organisation_lifecycle` (31): roles, typed name, each kind of history, no direct
+path, write blocking for entries/completions/sites/organisation edits, reads kept, no
+joining, isolation, reactivation, user accounts survive — mutation-tested (history check,
+deactivation filter, owner check, name check, documents clause).
 
 ## 6. Operating log — append-only and corrections
 
@@ -231,6 +257,7 @@ entry (not only their own), nobody deletes deficiencies, and the next due date i
 | `accept_invitation(token)` | invitee | row lock; revoked → used → expired → confirmed email → email match → not a member; inserts the membership with the stored role |
 | `complete_scheduled_activity(activity, due_on, entry_type, occurred_at, description, result, performed_by)` | Op+ | §8 |
 | `resolve_deficiency(deficiency, resolution, entry_type, occurred_at, performed_by)` | Op+ | §9 |
+| `delete_organisation`, `deactivate_organisation`, `reactivate_organisation` | Ow | §5a |
 | `finalize_document(document)` | the uploader, Op+ | §10: `ready` if the object exists at the registered path with the registered size and type, else `failed` |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
@@ -341,7 +368,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 393 tests in 12 files, using the shared fixture
+`npm run test:db` runs pgTAP: 424 tests in 13 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -359,6 +386,7 @@ a user in both) and `helpers/sites.psql`.
 | `090_dashboard` | 12 | `site_attention` counts, isolation per role, member of two organisations, outsider and anon, archived sites, `security_invoker` |
 | `100_cross_tenant_oracles` | 9 | naming another tenant's archived/resolved/correction records gives the generic FK error, non-members get the plain RLS error, Storage refuses another tenant's existing path like an unknown one and lists nothing |
 | `110_language_and_history` | 14 | own language only (even viewers), only et/en/ru, no other profile column opened, anon refused; change history readable by owners/admins of the same organisation only — not operators, viewers, outsiders, a two-organisation non-admin or anon — and never containing token hashes |
+| `120_organisation_lifecycle` | 31 | §5a |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

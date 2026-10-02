@@ -166,6 +166,9 @@ code identifiers are English.
 | `…/[installation]/puudused` | active first; latest 50 resolved with the total and a link to the full list | viewer |
 | `/o/[org]/seaded`, `/seaded/liikmed` | settings (owner edits), members and invitations | viewer (admin manages) |
 | `/o/[org]/seaded/ajalugu` (`?ala=`, `lk`) | change history, read-only | admin |
+| `/o/[org]/seaded/kustuta` | delete (no history) or deactivate (history) the organisation, typed-name confirmation | owner |
+| `/o/[org]/abi` | getting-started guide with real progress, six core terms | viewer |
+| `/o/[org]?uus` | one-time "Ettevõte on valmis" welcome after creating an organisation | viewer |
 | `/o/[org]/dokumendid` (+ `?arhiiv=1`) | ready documents; filters `objekt`, `paigaldis`, `liik`, `alates`, `kuni`; `lk` page | viewer |
 | `/o/[org]/dokumendid/uus?paigaldis=` / `?objekt=` | upload a general document (operators: installations only) | operator |
 | `/o/[org]/dokumendid/[document]` | details, open/download; admins rename, recategorise, archive/restore general documents | viewer |
@@ -271,6 +274,16 @@ per-request because of the session). *Performance debt:* per-locale cached shell
   non-member opening an organisation). Expected; production is unaffected.
 - **Tests must ignore hidden pages:** E2E locators use visible fields or accessible names
   (lists carry `aria-label`s), never "first match in the DOM".
+
+## 6a2. Onboarding (derived, not stored)
+
+`lib/onboarding.ts` turns five counts (sites, installations, log entries, plan activities,
+ready documents) and the user's role into six steps: done, the link to do it, or why it
+can't be done yet (missing site/installation, or role). `lib/data/onboarding.ts` reads the
+counts with head queries. Nothing about progress is stored; the only state is a per-browser
+cookie that hides the checklist on the overview (`kaidly_guide_hidden_<org>`), undone from
+Abi. Empty modules use `GuidedEmptyState` (purpose, examples or sequence, prerequisite, one
+action, or who does it).
 
 ## 6b. Languages (ET / EN / RU)
 

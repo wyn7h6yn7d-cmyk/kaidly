@@ -80,6 +80,12 @@ organisation is one tap.
 11. **Languages** — Estonian (default), English and Russian. Visitors choose in the header
     (remembered in a cookie); signed-in users' choice is saved to their profile and follows
     them to other devices. URLs never change with the language.
+12. **Getting started** — a six-step checklist derived from real data, guided empty
+    states in every module, and Abi with the core terms.
+13. **Organisation lifecycle** — owners can permanently delete an organisation without
+    operational history; one with history can only be deactivated (read-only, data kept,
+    restorable) until retention and privacy-erasure rules are decided. User accounts are
+    never deleted with an organisation.
 
 ### Out of MVP (explicitly)
 
@@ -163,7 +169,7 @@ Estonian term rules:
 
 | Concept | UI term (et) | Not | Notes |
 |---|---|---|---|
-| Tenant | Organisatsioon | firma, ettevõte | |
+| Tenant | Ettevõte (EN organisation, RU организация) | organisatsioon, firma | Changed 2026-10-02 to the owner's wording. |
 | Physical location | Objekt | asukoht, hoone | Plural *objektid*. |
 | Installation | Elektripaigaldis / paigaldis | seade, vara | *Paigaldis* in lists and buttons. |
 | Installation identifier | Tähis | kood, ID | e.g. *PJK-1*; unique per site. |

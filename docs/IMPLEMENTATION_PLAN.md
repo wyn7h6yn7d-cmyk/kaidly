@@ -88,6 +88,9 @@ All decided 2026-10-01 unless noted.
 | D38 | Drafts (2026-10-02) | Unsaved entry/deficiency text kept in sessionStorage per tab, not localStorage (shared devices); no offline queue yet |
 | D39 | Change history (2026-10-02) | Read-only page for owners/admins over `activity_history`, allowlisted fields only, no new schema |
 | D40 | Layout system (2026-10-02) | One public container, one app container (aligned to the navigation), fluid gutters, fluid type scale; enforced by `e2e/layout.spec.ts` |
+| D42 | Onboarding (2026-10-02) | Checklist derived from real data (no progress table); only a per-browser "hidden" cookie; deficiencies optional |
+| D43 | Organisation deletion (2026-10-02) | Owners only, typed-name confirmation in the database. Hard delete only without operational history (log entries, deficiencies, documents); otherwise deactivation (read-only via `org_ids`, restorable). User accounts are separate |
+| D44 | Estonian term for the tenant (2026-10-02) | "Ettevõte" (owner's wording) replaces "organisatsioon" throughout the Estonian UI |
 | D41 | Visual regression (2026-10-02) | Structural layout assertions plus screenshots attached for review; no pixel baselines (brittle across machines/fonts) |
 | D35 | Upload quotas (2026-10-02) | Storage quotas and upload rate limits are a **production launch blocker**; no package/storage limits invented yet |
 | D36 | Pricing (2026-10-02) | A **public pricing page** (Hinnad / Pricing) is required eventually: simple, high value, aggressively affordable vs. electrical/compliance software, aimed at small contractors and independent käidukorraldajad; normal plans publicly priced (no "contact sales"). Prices, plan, storage and feature limits are **not decided** — they follow separate Estonia/EU competitor research. No billing, Stripe or subscription logic until then |
@@ -96,6 +99,7 @@ All decided 2026-10-01 unless noted.
 ## Production launch blockers
 
 - **Storage quotas and upload rate limits (D35).** Today any member can upload without limit.
+- **Organisation erasure:** deactivated organisations with history are kept indefinitely until retention rules exist; permanent deletion of such organisations needs the privacy-erasure workflow.
 - **Privacy-erasure workflow** for legitimate personal-data deletion (D32), designed with legal input.
 - **Russian terminology review** by a native electrical professional before the RU UI is public (all of `lib/i18n/ru.ts`; key terms in PRODUCT.md §8).
 - Production Supabase project, migrations pushed, auth email templates, security headers, backups (Phase 10).
