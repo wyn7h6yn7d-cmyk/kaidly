@@ -75,6 +75,7 @@ export default async function HistoryPage({
     <OrgPage
       params={params}
       minRole="admin"
+      readable
       render={async ({ org }) => {
         const [t, query] = await Promise.all([getT(), searchParams]);
         const area = parseHistoryArea(query.ala);

@@ -3,6 +3,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { OrgSwitcher } from "@/components/app/org-switcher";
 import { ShellSkeleton } from "@/components/app/states";
 import { LocaleSync } from "@/components/app/language-selector";
+import { AccessBanner } from "@/components/access/access-banner";
 import { UserMenu } from "@/components/app/user-menu";
 import { localeSyncNeeded } from "@/lib/i18n/server";
 import { isPlatformAdmin } from "@/lib/data/admin";
@@ -21,7 +22,8 @@ async function OrganisationFrame({
   children: React.ReactNode;
 }) {
   const { org: slug } = await params;
-  const [{ org, user }, all, platformAdmin] = await Promise.all([requireOrg(slug), listMyOrganisations(), isPlatformAdmin()]);
+  const [ctx, all, platformAdmin] = await Promise.all([requireOrg(slug), listMyOrganisations(), isPlatformAdmin()]);
+  const { org, user } = ctx;
   const organisations = all.filter((o) => !o.deactivatedAt); // the switcher offers active ones
   const current = { slug: org.slug, name: org.name };
   const syncNeeded = await localeSyncNeeded(user.preferredLocale);
@@ -36,6 +38,7 @@ async function OrganisationFrame({
       topBarEnd={<UserMenu name={user.fullName} email={user.email} tone="dark" platformAdmin={platformAdmin} />}
     >
       <LocaleSync needed={syncNeeded} />
+      <AccessBanner ctx={ctx} />
       {children}
     </AppShell>
   );

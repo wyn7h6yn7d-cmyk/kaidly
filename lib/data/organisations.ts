@@ -18,10 +18,28 @@ export type Organisation = {
   deactivatedAt: string | null;
 };
 
+/** Commercial access of the company (trial / active / expired), derived in the database. */
+export type OrgAccess = {
+  status: "trial" | "active" | "expired" | "deactivated";
+  writable: boolean;
+  /** End of the trial or of full access; null = indefinite full access. */
+  endsAt: string | null;
+  expiredSince: string | null;
+  /** Was full access ever granted (so an expiry is not a trial ending)? */
+  hadFullAccess: boolean;
+};
+
 export type OrgContext = {
   user: CurrentUser;
   org: Organisation;
+  /**
+   * The role to act with: the membership role, or "viewer" while the company is read-only
+   * (trial or full access ended). Pages and actions decide what to offer from this.
+   */
   role: Role;
+  /** The actual membership role (for reading admin-only pages and owner lifecycle actions). */
+  memberRole: Role;
+  access: OrgAccess;
 };
 
 export type MyOrganisation = Pick<Organisation, "id" | "name" | "slug" | "deactivatedAt"> & { role: Role };
@@ -67,13 +85,27 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
   if (error) throw error;
   if (!org) return null;
 
-  const { data: membership, error: memberError } = await supabase
-    .from("organisation_members")
-    .select("role")
-    .eq("organisation_id", org.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: membership, error: memberError }, { data: accessData, error: accessError }] = await Promise.all([
+    supabase.from("organisation_members").select("role").eq("organisation_id", org.id).eq("user_id", user.id).maybeSingle(),
+    supabase.rpc("organisation_access", { p_org: org.id }),
+  ]);
   if (memberError) throw memberError;
+  if (accessError) throw accessError;
+  const raw = accessData as {
+    status: OrgAccess["status"];
+    writable: boolean;
+    ends_at: string | null;
+    expired_since: string | null;
+    indefinite: boolean;
+    had_full_access: boolean;
+  };
+  const access: OrgAccess = {
+    status: raw.status,
+    writable: raw.writable,
+    endsAt: raw.indefinite ? null : raw.ends_at,
+    expiredSince: raw.expired_since,
+    hadFullAccess: raw.had_full_access,
+  };
   if (!membership || !isRole(membership.role)) return null;
 
   return {
@@ -89,7 +121,9 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
       notes: org.notes,
       deactivatedAt: org.deactivated_at,
     },
-    role: membership.role,
+    role: access.writable || org.deactivated_at ? membership.role : "viewer",
+    memberRole: membership.role,
+    access,
   };
 });
 

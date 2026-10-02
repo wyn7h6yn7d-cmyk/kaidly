@@ -122,3 +122,18 @@ export async function DeactivatedState({ ctx }: { ctx: OrgContext }) {
     </section>
   );
 }
+
+/** A write page in a company whose trial or full access has ended. */
+export async function ReadOnlyState({ ctx }: { ctx: OrgContext }) {
+  const t = await getT();
+  return (
+    <section className="max-w-xl border border-k-line bg-k-surface p-6">
+      <Lock className="mb-3 size-5 text-k-muted" aria-hidden="true" />
+      <h1 className="text-2xl font-extrabold">{t.access.readOnlyTitle}</h1>
+      <p className="mt-2 text-k-muted">{t.access.readOnlyBody}</p>
+      <Button asChild variant="outline" className="mt-6">
+        <Link href={`/o/${ctx.org.slug}`}>{t.app.forbidden.backToOverview}</Link>
+      </Button>
+    </section>
+  );
+}

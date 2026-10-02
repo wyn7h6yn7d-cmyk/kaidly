@@ -22,7 +22,7 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
   return (
     <OrgPage
       params={params}
-      render={async ({ org, role, user }) => {
+      render={async ({ org, role, memberRole, user }) => {
         const isAdmin = hasRole(role, "admin");
         const [members, invitations] = await Promise.all([
           listMembers(org.id),
@@ -33,7 +33,7 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
         return (
           <>
             <PageHeader eyebrow={org.name} title={t.app.settings.title} />
-            <SettingsTabs orgSlug={org.slug} active="members" showHistory={hasRole(role, "admin")} />
+            <SettingsTabs orgSlug={org.slug} active="members" showHistory={hasRole(memberRole, "admin")} />
 
             <section aria-labelledby="members">
               <div className="mb-4 flex items-baseline justify-between gap-4">

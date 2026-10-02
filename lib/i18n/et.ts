@@ -39,6 +39,19 @@ export const et = {
     toastLabel: "Uus meeldetuletus",
     close: "Sulge",
   },
+  access: {
+    trial: (days: number) =>
+      days <= 0 ? "Prooviperiood lõpeb täna" : days === 1 ? "Prooviperioodi lõpuni 1 päev" : `Prooviperioodi lõpuni ${days} päeva`,
+    trialUntil: (date: string) => `KAIDLY täiskasutus on aktiivne kuni ${date}.`,
+    expiredTrial: "Prooviperiood on lõppenud",
+    expiredAccess: "KAIDLY ligipääs on lõppenud",
+    expiredBody: "Ettevõtte andmed on alles ja saad neid vaadata, kuid uusi sissekandeid teha ei saa.",
+    continue: "Soovin jätkata",
+    contactHint: "Täiskasutuse jätkamiseks võta ühendust KAIDLYga.",
+    readOnlyTitle: "Ettevõte on ainult vaatamiseks",
+    readOnlyBody: "KAIDLY prooviperiood või täiskasutus on lõppenud. Andmeid saab vaadata, kuid mitte muuta.",
+    mailSubject: (company: string) => `KAIDLY täiskasutus: ${company}`,
+  },
   common: {
     language: "Keel",
     loading: "Laen…",
@@ -205,6 +218,7 @@ export const et = {
   },
   /** Safe, application-controlled messages. Keys are the only thing that travels in URLs. */
   errors: {
+    company_read_only: "Ettevõte on ainult vaatamiseks: prooviperiood või täiskasutus on lõppenud.",
     reminders_invalid: "Kontrolli meeldetuletusi: päevade arv peab olema 0–365.",
     account_disabled: "See konto on peatatud. Võta ühendust KAIDLY toega.",
     current_password_wrong: "Praegune parool ei ole õige.",

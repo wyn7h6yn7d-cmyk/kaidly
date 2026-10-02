@@ -15,6 +15,10 @@ export async function actionContext(
 ): Promise<{ ok: false; error: ActionState<never> } | { ok: true; ctx: OrgContext }> {
   const ctx = await getOrgContext(field(formData, "orgSlug"));
   if (!ctx) return { ok: false, error: failure("not_found") };
+  // Trial or full access ended: the company is read-only (the database refuses too).
+  if (!ctx.access.writable && minRole !== "viewer" && hasRole(ctx.memberRole, minRole)) {
+    return { ok: false, error: failure("company_read_only") };
+  }
   if (!hasRole(ctx.role, minRole)) return { ok: false, error: failure("forbidden") };
   return { ok: true, ctx };
 }

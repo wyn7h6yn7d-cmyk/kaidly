@@ -56,6 +56,19 @@ export const ru: Messages = {
     toastLabel: "Новое напоминание",
     close: "Закрыть",
   },
+  access: {
+    trial: (days: number) =>
+      days <= 0 ? "Пробный период заканчивается сегодня" : `До конца пробного периода ${count(days, "день", "дня", "дней")}`,
+    trialUntil: (date: string) => `Полный доступ к KAIDLY активен до ${date}.`,
+    expiredTrial: "Пробный период закончился",
+    expiredAccess: "Доступ к KAIDLY закончился",
+    expiredBody: "Данные организации сохранены, их можно просматривать, но новые записи добавлять нельзя.",
+    continue: "Хочу продолжить",
+    contactHint: "Чтобы продолжить с полным доступом, свяжитесь с KAIDLY.",
+    readOnlyTitle: "Организация доступна только для просмотра",
+    readOnlyBody: "Пробный период или полный доступ KAIDLY закончился. Данные можно просматривать, но не изменять.",
+    mailSubject: (company: string) => `Полный доступ KAIDLY: ${company}`,
+  },
   common: {
     language: "Язык",
     loading: "Загрузка…",
@@ -219,6 +232,7 @@ export const ru: Messages = {
     },
   },
   errors: {
+    company_read_only: "Организация доступна только для просмотра: пробный период или полный доступ закончился.",
     reminders_invalid: "Проверьте напоминания: число дней должно быть от 0 до 365.",
     account_disabled: "Эта учётная запись приостановлена. Обратитесь в поддержку KAIDLY.",
     current_password_wrong: "Текущий пароль неверен.",

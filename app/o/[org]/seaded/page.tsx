@@ -30,10 +30,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
   return (
     <OrgPage
       params={params}
-      render={({ org, role }) => (
+      render={({ org, role, memberRole }) => (
         <>
           <PageHeader eyebrow={org.name} title={t.app.settings.title} />
-          <SettingsTabs orgSlug={org.slug} active="organisation" showHistory={hasRole(role, "admin")} />
+          <SettingsTabs orgSlug={org.slug} active="organisation" showHistory={hasRole(memberRole, "admin")} />
 
           <section aria-labelledby="org-details">
             <h2 id="org-details" className="text-xl font-bold">
@@ -76,7 +76,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
               size="default"
             />
           </section>
-          {role === "owner" && (
+          {memberRole === "owner" && (
             <section aria-labelledby="danger" className="mt-12 max-w-2xl border-t-2 border-k-danger pt-8">
               <h2 id="danger" className="text-xl font-bold">
                 {t.app.lifecycle.dangerTitle}

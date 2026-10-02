@@ -43,6 +43,19 @@ export const en: Messages = {
     toastLabel: "New reminder",
     close: "Close",
   },
+  access: {
+    trial: (days: number) =>
+      days <= 0 ? "The trial ends today" : days === 1 ? "1 day left in the trial" : `${days} days left in the trial`,
+    trialUntil: (date: string) => `Full KAIDLY access is active until ${date}.`,
+    expiredTrial: "The trial has ended",
+    expiredAccess: "KAIDLY access has ended",
+    expiredBody: "Your organisation's data is kept and you can view it, but you can't add new entries.",
+    continue: "I want to continue",
+    contactHint: "Contact KAIDLY to continue with full access.",
+    readOnlyTitle: "The organisation is read-only",
+    readOnlyBody: "The KAIDLY trial or full access has ended. You can view the data but not change it.",
+    mailSubject: (company: string) => `KAIDLY full access: ${company}`,
+  },
   common: {
     language: "Language",
     loading: "Loading…",
@@ -206,6 +219,7 @@ export const en: Messages = {
     },
   },
   errors: {
+    company_read_only: "The organisation is read-only: the trial or full access has ended.",
     reminders_invalid: "Check the reminders: the number of days must be 0–365.",
     account_disabled: "This account has been suspended. Contact KAIDLY support.",
     current_password_wrong: "The current password is not correct.",

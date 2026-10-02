@@ -21,6 +21,7 @@ export default async function DeleteOrganisationPage({ params }: { params: Promi
     <OrgPage
       params={params}
       minRole="owner"
+      readable
       render={async ({ org }) => {
         const [t, facts] = await Promise.all([getT(), getLifecycleFacts(org.id)]);
         const l = t.app.lifecycle;
