@@ -16,8 +16,9 @@ Status legend: **GREEN** done and verified · **MANUAL REQUIRED** needs the owne
 | Domain | `https://kaidly.ee` (canonical); `www.kaidly.ee` → 308 → `kaidly.ee` |
 | Release | v1.0.0 — tag only after the production smoke test on kaidly.ee |
 
-**Gate:** `main` merge and Production deploy wait for the two BLOCKING items (admin account,
-backup decision) and the owner's explicit acceptance of the EXCEPTIONS below.
+**Gate (2026-10-03):** one BLOCKING item left — the production **backup decision** — plus the
+owner's explicit acceptance (or resolution) of the EXCEPTIONS below. Then: merge `main`,
+deploy, smoke test on kaidly.ee, tag v1.0.0.
 
 ## APPLICATION
 | Status | Item |
@@ -46,7 +47,7 @@ backup decision) and the owner's explicit acceptance of the EXCEPTIONS below.
 | GREEN | Flows covered by E2E: sign-up/confirm, login, logout, forgot/reset, password change, email change, invitation, direct URL, disabled account, session revocation, ET/EN/RU |
 | GREEN | Revoked sessions / disabled accounts: no company reads or writes from the next request on; cannot create or join companies either. What remains until the access token expires (≤ `jwt_expiry`, default 1 h): the signed-in frame and the user's own profile row |
 | MANUAL REQUIRED | Paste `supabase/templates/{confirmation,recovery,email_change}.html` into Production → Authentication → Emails → Templates (validated by unit tests; installation not verifiable from here) |
-| **BLOCKING** | Production account **kennethalto95@gmail.com** does not exist yet (checked: 0 users). Create it (Authentication → Users → Add user → Create new user, Auto Confirm), then I bootstrap it as the only platform admin |
+| GREEN | Production account kennethalto95@gmail.com exists and is confirmed — the only production user, exactly one match (verified 2026-10-03) |
 
 ## EMAIL
 | Status | Item |
@@ -102,7 +103,8 @@ backup decision) and the owner's explicit acceptance of the EXCEPTIONS below.
 | Status | Item |
 |---|---|
 | GREEN | Database-backed (`private.platform_admins` by user id); company roles never grant it |
-| **BLOCKING** | Bootstrap kennethalto95@gmail.com in production (needs the account above), verify audit row and `/admin` |
+| GREEN | Bootstrapped 2026-10-03 via `private.bootstrap_platform_admin` (exact user id; 1 active platform admin; audit `platform_admin_granted` targeting that id, `{"via": "bootstrap"}`; no company memberships). Database check as that user: `am_platform_admin` true, admin overview/system/access/audit readable, normal RLS shows no companies |
+| NOT STARTED | `/admin` in the browser on kaidly.ee and a non-admin denied — part of the production smoke test |
 
 ## SMOKE TEST (production, kaidly.ee, company "KAIDLY Launch Test") — NOT STARTED
 Public pages, language switch, metadata/canonical, favicon, privacy/terms · login, logout,
