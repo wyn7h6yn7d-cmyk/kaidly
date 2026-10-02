@@ -13,7 +13,7 @@ export async function SystemDiagram() {
 
   return (
     <div role="img" aria-label={s.diagramLabel} className="grid grid-cols-1">
-      <div className="grid w-full max-w-md grid-cols-1 lg:max-w-xl">
+      <div className="grid w-full max-w-md grid-cols-1 lg:max-w-2xl xl:max-w-3xl">
         <Node index="A" node={n.organisation} />
         <Wire />
         <Node index="B" node={n.site} />
@@ -29,9 +29,9 @@ export async function SystemDiagram() {
             className="min-w-0 md:border-t-2 md:border-k-ink md:pr-4 md:pt-0 md:first:border-l-0 md:last:pr-0 lg:pr-6"
           >
             <div aria-hidden="true" className="hidden h-8 w-0.5 bg-k-ink md:ml-10 md:block lg:ml-12 lg:h-12" />
-            <div className="border border-k-ink/70 bg-k-surface px-5 py-4 lg:px-7 lg:py-6">
+            <div className="border border-k-ink/70 bg-k-surface px-5 py-4 lg:px-7 lg:py-7 xl:py-8">
               <p className="font-mono text-sm text-k-green">0{i + 1}</p>
-              <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.04em] [overflow-wrap:anywhere] lg:text-xl xl:text-2xl">
+              <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.04em] [overflow-wrap:anywhere] lg:text-xl xl:text-[1.75rem]">
                 {module.label}
               </p>
               <p className="mt-1 text-[15px] text-k-muted lg:text-base xl:text-lg">{module.detail}</p>
@@ -48,13 +48,13 @@ function Node({ index, node, strong }: { index: string; node: { label: string; d
     <div
       className={
         strong
-          ? "border-2 border-k-ink bg-k-surface px-5 py-4 sm:px-6 lg:px-8 lg:py-6"
-          : "border border-k-ink/70 bg-k-surface px-5 py-4 sm:px-6 lg:px-8 lg:py-6"
+          ? "border-2 border-k-ink bg-k-surface px-5 py-4 sm:px-6 lg:px-8 lg:py-7"
+          : "border border-k-ink/70 bg-k-surface px-5 py-4 sm:px-6 lg:px-8 lg:py-7"
       }
     >
       <p className="font-mono text-sm text-k-muted">{index}</p>
-      <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.05em] [overflow-wrap:anywhere] sm:text-xl lg:text-2xl">{node.label}</p>
-      <p className="mt-1 text-[15px] text-k-muted lg:text-lg">{node.detail}</p>
+      <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.05em] [overflow-wrap:anywhere] sm:text-xl lg:text-2xl xl:text-[1.75rem]">{node.label}</p>
+      <p className="mt-1 text-[15px] text-k-muted lg:text-lg xl:text-xl">{node.detail}</p>
     </div>
   );
 }

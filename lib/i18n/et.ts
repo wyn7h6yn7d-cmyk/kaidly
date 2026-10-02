@@ -67,7 +67,7 @@ export const et = {
     more: "Rohkem",
   },
   landing: {
-    metaTitle: "KAIDLY — Elektripaigaldise käit. Lihtsalt.",
+    metaTitle: "KAIDLY | Elektripaigaldise käit lihtsalt",
     nav: {
       label: "Põhimenüü",
       howItWorks: "Kuidas töötab",
@@ -77,7 +77,7 @@ export const et = {
       eyebrow: "Digitaalne käidupäevik elektripaigaldistele",
       lineOne: "Elektripaigaldise käit.",
       lineTwo: "Lihtsalt.",
-      lead: "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas — inimestele, kes hoiavad elektripaigaldised töös.",
+      lead: "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas, inimestele, kes hoiavad elektripaigaldised töös.",
       primary: "Loo konto",
       secondary: "Vaata, kuidas töötab",
       note: "kõik kirjas, mitte kellegi peas",
@@ -88,7 +88,7 @@ export const et = {
     },
     excel: {
       title: "Excel ei ole käiduraamat.",
-      body: "Käidupäevik, käidukava, puudused ja dokumendid ühe objekti all — ilma failide, e-kirjade ja paberite tagaajamiseta.",
+      body: "Käidupäevik, käidukava, puudused ja dokumendid ühe objekti all, ilma failide, e-kirjade ja paberite tagaajamiseta.",
       points: [
         "Iga sissekanne on kirjas koos nime ja ajaga.",
         "Parandus lisatakse, algne kanne jääb alles.",
@@ -118,7 +118,7 @@ export const et = {
       items: [
         {
           q: "Mis eelmisel hooldusel tehti?",
-          a: "Käidupäevikus on iga töö kirjas — kes, millal, mida tegi ja mis oli tulemus. Parandused jäävad nähtavaks, midagi ei kustu.",
+          a: "Käidupäevikus on iga töö kirjas: kes, millal, mida tegi ja mis oli tulemus. Parandused jäävad nähtavaks, midagi ei kustu.",
           where: "Käidupäevik",
         },
         {
@@ -161,7 +161,7 @@ export const et = {
       steps: [
         { title: "Ava paigaldis", body: "Viimati kasutatud paigaldised on kohe ees." },
         { title: "Lisa sissekanne", body: "Liik ühe puudutusega, paar lauset, foto kaamerast." },
-        { title: "Salvesta", body: "Nimi ja aeg lähevad kirja ise. Muuta ei saa — ainult parandada." },
+        { title: "Salvesta", body: "Nimi ja aeg lähevad kirja ise. Muuta ei saa, ainult parandada." },
       ],
       previewLabel: "KAIDLY telefonivaade: uus sissekanne",
     },

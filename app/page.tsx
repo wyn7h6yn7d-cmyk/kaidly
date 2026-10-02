@@ -100,18 +100,17 @@ export default async function Home() {
                 <p className="mt-6 max-w-md text-lead text-k-muted">{l.questions.intro}</p>
               </div>
             </div>
-            <ol className="border-t-2 border-k-ink lg:col-span-7">
+            <ol className="border-t border-k-line lg:col-span-7">
               {l.questions.items.map((item, i) => (
-                <li key={item.q} className="grid grid-cols-1 gap-4 border-b border-k-line py-10 sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-6 lg:py-12">
-                  <span aria-hidden="true" className="font-mono text-base text-k-muted sm:pt-2">
+                <li key={item.q} className="grid grid-cols-1 gap-3 border-b border-k-line py-10 sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-6 lg:py-14">
+                  <span aria-hidden="true" className="font-mono text-base text-k-green sm:pt-3">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 md:gap-10 xl:gap-14">
-                    <p className="hyphens-auto break-words font-display text-display-3 font-bold">„{item.q}“</p>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold uppercase tracking-[0.1em] text-k-green lg:text-[15px]">{item.where}</p>
-                      <p className="mt-2 text-[17px] leading-relaxed text-k-ink/85 lg:text-lg">{item.a}</p>
-                    </div>
+                  {/* Question first, the answer under it: reads as a conversation, not a table. */}
+                  <div className="min-w-0">
+                    <p className="hyphens-auto break-words font-display text-display-3 font-bold lg:text-[2.75rem] lg:leading-[1.1]">„{item.q}“</p>
+                    <p className="mt-5 text-sm font-bold uppercase tracking-[0.1em] text-k-green lg:text-[15px]">{item.where}</p>
+                    <p className="mt-2 max-w-2xl text-lg leading-relaxed text-k-ink/85 lg:text-xl">{item.a}</p>
                   </div>
                 </li>
               ))}
@@ -131,7 +130,7 @@ export default async function Home() {
               <p className="max-w-xl text-lead text-k-muted lg:col-span-5 lg:self-end">{l.system.body}</p>
             </div>
             <div className="mt-12 border border-k-ink/70 bg-k-paper sm:mt-16">
-              <div className="p-5 sm:p-10 lg:p-14">
+              <div className="p-5 sm:p-8 lg:p-10">
                 <SystemDiagram />
               </div>
               <p className="border-t border-k-ink/70 px-5 py-3 font-mono text-[13px] uppercase tracking-[0.12em] text-k-muted sm:px-10 lg:px-14">

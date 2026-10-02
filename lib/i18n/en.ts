@@ -71,7 +71,7 @@ export const en: Messages = {
     more: "More",
   },
   landing: {
-    metaTitle: "KAIDLY — Electrical installation operation. Simply.",
+    metaTitle: "KAIDLY | Electrical installation operation, simply",
     nav: {
       label: "Main menu",
       howItWorks: "How it works",
@@ -80,7 +80,7 @@ export const en: Messages = {
       eyebrow: "Digital operating log for electrical installations",
       lineOne: "Electrical installation operation.",
       lineTwo: "Simply.",
-      lead: "Operating log, operating plan, deficiencies and documents in one place — for the people who keep electrical installations running.",
+      lead: "Operating log, operating plan, deficiencies and documents in one place, for the people who keep electrical installations running.",
       primary: "Create account",
       secondary: "See how it works",
       note: "all on record, not in someone's head",
@@ -91,7 +91,7 @@ export const en: Messages = {
     },
     excel: {
       title: "Excel is not an operating log.",
-      body: "Operating log, operating plan, deficiencies and documents under one site — no more chasing files, emails and paper.",
+      body: "Operating log, operating plan, deficiencies and documents under one site, with no more chasing files, emails and paper.",
       points: [
         "Every entry is recorded with a name and a time.",
         "A correction is added; the original entry stays.",
@@ -121,7 +121,7 @@ export const en: Messages = {
       items: [
         {
           q: "What was done at the last maintenance?",
-          a: "Every job is in the operating log — who did what, when, and with what result. Corrections stay visible; nothing disappears.",
+          a: "Every job is in the operating log: who did what, when, and with what result. Corrections stay visible; nothing disappears.",
           where: "Operating log",
         },
         {
@@ -164,7 +164,7 @@ export const en: Messages = {
       steps: [
         { title: "Open the installation", body: "Your recently used installations come first." },
         { title: "Add an entry", body: "Type with one tap, a few sentences, a photo from the camera." },
-        { title: "Save", body: "Name and time are recorded automatically. Entries can't be edited — only corrected." },
+        { title: "Save", body: "Name and time are recorded automatically. Entries can't be edited, only corrected." },
       ],
       previewLabel: "KAIDLY on a phone: new entry",
     },

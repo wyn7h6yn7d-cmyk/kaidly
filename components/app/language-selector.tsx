@@ -49,7 +49,7 @@ export function LanguageSelector({
             onClick={() => choose(locale)}
             className={cn(
               "flex h-11 min-w-11 items-center justify-center rounded-sm px-2 text-sm font-semibold uppercase tracking-wide",
-              large && "lg:text-[15px]",
+              large && "lg:text-base",
               tone === "light" ? "focus-on-dark" : "",
               active
                 ? tone === "light"

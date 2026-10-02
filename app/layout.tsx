@@ -15,10 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(defaultUrl),
     title: {
-      default: `${t.brand.name} — ${t.brand.tagline}`,
-      template: `%s · ${t.brand.name}`,
+      default: t.landing.metaTitle,
+      template: `%s | ${t.brand.name}`,
     },
     description: t.meta.description,
+    openGraph: { title: t.landing.metaTitle, description: t.meta.description, siteName: t.brand.name },
   };
 }
 
