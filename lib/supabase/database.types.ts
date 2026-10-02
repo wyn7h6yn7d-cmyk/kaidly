@@ -640,6 +640,8 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          deactivated_at: string | null
+          deactivated_by: string | null
           id: string
           name: string
           registry_code: string | null
@@ -649,6 +651,8 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
           id?: string
           name: string
           registry_code?: string | null
@@ -658,6 +662,8 @@ export type Database = {
         Update: {
           created_at?: string
           created_by?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
           id?: string
           name?: string
           registry_code?: string | null
@@ -668,6 +674,13 @@ export type Database = {
           {
             foreignKeyName: "organisations_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organisations_deactivated_by_fkey"
+            columns: ["deactivated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -988,11 +1001,23 @@ export type Database = {
         Args: { p_name: string; p_registry_code?: string }
         Returns: string
       }
+      deactivate_organisation: {
+        Args: { p_confirm_name: string; p_organisation_id: string }
+        Returns: undefined
+      }
+      delete_organisation: {
+        Args: { p_confirm_name: string; p_organisation_id: string }
+        Returns: undefined
+      }
       finalize_document: {
         Args: { p_document_id: string }
         Returns: Database["public"]["Enums"]["document_status"]
       }
       invitation_preview: { Args: { p_token: string }; Returns: Json }
+      reactivate_organisation: {
+        Args: { p_organisation_id: string }
+        Returns: undefined
+      }
       resolve_deficiency: {
         Args: {
           p_deficiency_id: string

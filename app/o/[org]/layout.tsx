@@ -20,7 +20,8 @@ async function OrganisationFrame({
   children: React.ReactNode;
 }) {
   const { org: slug } = await params;
-  const [{ org, user }, organisations] = await Promise.all([requireOrg(slug), listMyOrganisations()]);
+  const [{ org, user }, all] = await Promise.all([requireOrg(slug), listMyOrganisations()]);
+  const organisations = all.filter((o) => !o.deactivatedAt); // the switcher offers active ones
   const current = { slug: org.slug, name: org.name };
   const syncNeeded = await localeSyncNeeded(user.preferredLocale);
 

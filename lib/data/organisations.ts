@@ -10,6 +10,8 @@ export type Organisation = {
   name: string;
   slug: string;
   registryCode: string | null;
+  /** Set when an owner deactivated the organisation: read-only, kept for its history. */
+  deactivatedAt: string | null;
 };
 
 export type OrgContext = {
@@ -18,7 +20,7 @@ export type OrgContext = {
   role: Role;
 };
 
-export type MyOrganisation = Pick<Organisation, "id" | "name" | "slug"> & { role: Role };
+export type MyOrganisation = Pick<Organisation, "id" | "name" | "slug" | "deactivatedAt"> & { role: Role };
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -28,7 +30,7 @@ export const listMyOrganisations = cache(async (): Promise<MyOrganisation[]> => 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("organisation_members")
-    .select("role, organisations!inner(id, name, slug)")
+    .select("role, organisations!inner(id, name, slug, deactivated_at)")
     .eq("user_id", user.id);
   if (error) throw error;
 
@@ -37,6 +39,7 @@ export const listMyOrganisations = cache(async (): Promise<MyOrganisation[]> => 
       id: row.organisations.id,
       name: row.organisations.name,
       slug: row.organisations.slug,
+      deactivatedAt: row.organisations.deactivated_at,
       role: row.role,
     }))
     .sort((a, b) => a.name.localeCompare(b.name, "et"));
@@ -54,7 +57,7 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
 
   const { data: org, error } = await supabase
     .from("organisations")
-    .select("id, name, slug, registry_code")
+    .select("id, name, slug, registry_code, deactivated_at")
     .eq("slug", slug)
     .maybeSingle();
   if (error) throw error;
@@ -71,7 +74,7 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
 
   return {
     user,
-    org: { id: org.id, name: org.name, slug: org.slug, registryCode: org.registry_code },
+    org: { id: org.id, name: org.name, slug: org.slug, registryCode: org.registry_code, deactivatedAt: org.deactivated_at },
     role: membership.role,
   };
 });
@@ -177,4 +180,26 @@ export async function previewInvitation(token: string): Promise<InvitationPrevie
   }
   if (status === "expired" || status === "used" || status === "revoked") return { status };
   return { status: "invalid" };
+}
+
+/** What deleting the organisation would affect — shown before the owner decides. */
+export async function getLifecycleFacts(organisationId: string) {
+  const supabase = await createClient();
+  const count = (table: "log_entries" | "deficiencies" | "documents" | "organisation_members") =>
+    supabase.from(table).select("id", { count: "exact", head: true }).eq("organisation_id", organisationId);
+  const [entries, deficiencies, documents, members] = await Promise.all([
+    count("log_entries"),
+    count("deficiencies"),
+    count("documents"),
+    count("organisation_members"),
+  ]);
+  for (const r of [entries, deficiencies, documents, members]) if (r.error) throw r.error;
+  const facts = {
+    entries: entries.count ?? 0,
+    deficiencies: deficiencies.count ?? 0,
+    documents: documents.count ?? 0,
+    members: members.count ?? 0,
+  };
+  // Mirrors the database rule in delete_organisation(); the database decides.
+  return { ...facts, hasHistory: facts.entries + facts.deficiencies + facts.documents > 0 };
 }

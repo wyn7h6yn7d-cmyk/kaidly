@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { hasRole, type Role } from "@/lib/auth/roles";
 import { requireOrg, type OrgContext } from "@/lib/data/organisations";
-import { ForbiddenState, LoadingBlock } from "./states";
+import { DeactivatedState, ForbiddenState, LoadingBlock } from "./states";
 
 type Params = Promise<{ org: string }>;
 
@@ -16,6 +16,9 @@ async function Resolve({
 }) {
   const { org } = await params;
   const ctx = await requireOrg(org); // not a member / unknown → not-found page
+  // A deactivated organisation is out of normal use: one notice instead of every page
+  // (the database refuses its writes anyway).
+  if (ctx.org.deactivatedAt) return <DeactivatedState ctx={ctx} />;
   if (minRole && !hasRole(ctx.role, minRole)) return <ForbiddenState orgSlug={ctx.org.slug} />;
   return render(ctx);
 }

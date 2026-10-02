@@ -33,6 +33,9 @@ const RAISED: Record<string, ErrorCode> = {
   log_entry_attachment_closed: "log_entry_attachment_closed",
   document_immutable: "document_immutable",
   documents_are_kept: "documents_are_kept",
+  organisation_has_history: "organisation_has_history",
+  organisation_deactivated: "organisation_deactivated",
+  confirmation_mismatch: "confirmation_mismatch",
 };
 
 export function dbErrorCode(error: unknown): ErrorCode {

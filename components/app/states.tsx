@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
+import { ConfirmForm } from "@/components/forms/confirm-form";
 import { Button } from "@/components/ui/button";
+import { reactivateOrganisation } from "@/lib/actions/organisation-lifecycle";
+import type { OrgContext } from "@/lib/data/organisations";
 import { getT } from "@/lib/i18n/server";
 
 
@@ -83,5 +86,39 @@ export function ShellSkeleton() {
         <div className="fixed inset-x-0 bottom-0 h-16 border-t border-k-line bg-k-surface lg:hidden" />
       </div>
     </div>
+  );
+}
+
+/** Every page of a deactivated organisation: what happened, data kept, owners can restore. */
+export async function DeactivatedState({ ctx }: { ctx: OrgContext }) {
+  const t = await getT();
+  const l = t.app.lifecycle;
+  return (
+    <section className="max-w-xl border border-k-line bg-k-surface p-6">
+      <Lock className="mb-3 size-5 text-k-muted" aria-hidden="true" />
+      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-k-muted">{ctx.org.name}</p>
+      <h1 className="mt-1 text-2xl font-extrabold">{l.deactivatedTitle}</h1>
+      <p className="mt-2 text-k-muted">{l.deactivatedBody}</p>
+      {ctx.org.deactivatedAt && <p className="mt-1 text-sm text-k-muted">{l.deactivatedOn(t.fmt.date(ctx.org.deactivatedAt))}</p>}
+      <div className="mt-6 grid gap-3">
+        {ctx.role === "owner" ? (
+          <>
+            <p className="text-sm">{l.ownerCanRestore}</p>
+            <ConfirmForm
+              action={reactivateOrganisation}
+              fields={{ organisationId: ctx.org.id, orgSlug: ctx.org.slug }}
+              label={l.reactivate}
+              variant="default"
+              size="default"
+            />
+          </>
+        ) : (
+          <p className="text-sm">{l.askOwner}</p>
+        )}
+        <Button asChild variant="outline" className="justify-self-start">
+          <Link href="/o?vali=1">{t.app.notFound.toOrganisations}</Link>
+        </Button>
+      </div>
+    </section>
   );
 }

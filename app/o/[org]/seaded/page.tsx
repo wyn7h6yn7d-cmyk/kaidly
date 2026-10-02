@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { ConfirmForm } from "@/components/forms/confirm-form";
+import { Button } from "@/components/ui/button";
 import { OrganisationSettingsForm } from "@/components/organisations/organisation-settings-form";
 import { hasRole } from "@/lib/auth/roles";
 import { SettingsTabs } from "@/components/organisations/settings-tabs";
@@ -34,9 +36,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
           <SettingsTabs orgSlug={org.slug} active="organisation" showHistory={hasRole(role, "admin")} />
 
           <section aria-labelledby="org-details">
-            <h2 id="org-details" className="mb-4 text-xl font-bold">
+            <h2 id="org-details" className="text-xl font-bold">
               {t.app.settings.organisationTitle}
             </h2>
+            <p className="mb-4 mt-1 max-w-2xl text-sm text-k-muted">{t.app.emptyStates.settings.organisation}</p>
             {role === "owner" ? (
               <OrganisationSettingsForm organisation={org} />
             ) : (
@@ -71,6 +74,17 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
               size="default"
             />
           </section>
+          {role === "owner" && (
+            <section aria-labelledby="danger" className="mt-12 max-w-2xl border-t-2 border-k-danger pt-8">
+              <h2 id="danger" className="text-xl font-bold">
+                {t.app.lifecycle.dangerTitle}
+              </h2>
+              <p className="mb-4 mt-1 text-k-muted">{t.app.lifecycle.dangerBody}</p>
+              <Button asChild variant="outline" className="border-k-danger text-k-danger hover:bg-k-danger/5">
+                <Link href={`/o/${org.slug}/seaded/kustuta`}>{t.app.lifecycle.dangerLink}</Link>
+              </Button>
+            </section>
+          )}
         </>
       )}
     />
