@@ -178,6 +178,23 @@ wording reviews.
   - *Responsive:* every new page checked at 375/768/1440 (no horizontal scroll); the installation header no longer duplicates "Lisa sissekanne" on the entry form.
 - **Fixed during Phases 4–6:** a stale completion form showed "no access" instead of "already done"; two corrections in one transaction had no defined order (now `clock_timestamp()`); dropdown and field values lost after validation errors (Phase 3 fix, now covered by E2E).
 
+## Path to public launch (owner decision 2026-10-03)
+
+1. **Technically and functionally complete** — core product done (feature freeze holds; no
+   scope added for its own sake).
+2. **Extensive testing** — QA across roles, devices and languages; production-like tests.
+3. **Fix bugs and UX issues** — field usability, mobile, real-world workflows, resilience,
+   performance; data import/migration where real onboarding needs it.
+4. **Controlled beta / dogfooding** — limited, known users; feedback loop.
+5. **Company/legal setup** — operating company founded; operator facts (TBA today).
+6. **Legal pages finalized** — privacy and terms completed and reviewed.
+7. **Backup and email decisions** — production backup plan; custom SMTP; contact mailbox.
+8. **Launch audit** — RELEASE_CHECKLIST.md green; production smoke test on kaidly.ee.
+9. **Public launch** — merge `main`, deploy, tag v1.0.0.
+
+Legal-entity details are a PRE-LAUNCH MANUAL item, not an engineering blocker: engineering,
+QA and Preview work continue without them.
+
 ## POST-v1 / FUTURE (documented only — not part of v1.0)
 
 No dates. Priority: **v1.1** = first follow-up once real customers use v1; **later** = when

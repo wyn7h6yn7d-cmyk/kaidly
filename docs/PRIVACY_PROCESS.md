@@ -1,6 +1,7 @@
 # KAIDLY — Privacy requests (manual process for launch)
 
-Retention periods and automated erasure are **not decided** (legal/product decision, see
+The operating company is not founded yet (operator details TBA, owner decision 2026-10-03);
+the privacy contact below is provisional. Retention periods and automated erasure are **not decided** (legal/product decision, see
 IMPLEMENTATION_PLAN.md). Until then every request is handled manually by the platform
 admin. Nothing is deleted automatically and no statutory period is assumed.
 

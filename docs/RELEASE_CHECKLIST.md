@@ -16,9 +16,23 @@ Status legend: **GREEN** done and verified · **MANUAL REQUIRED** needs the owne
 | Domain | `https://kaidly.ee` (canonical); `www.kaidly.ee` → 308 → `kaidly.ee` |
 | Release | v1.0.0 — tag only after the production smoke test on kaidly.ee |
 
-**Gate (2026-10-03):** one BLOCKING item left — the production **backup decision** — plus the
-owner's explicit acceptance (or resolution) of the EXCEPTIONS below. Then: merge `main`,
-deploy, smoke test on kaidly.ee, tag v1.0.0.
+## Summary (owner decision 2026-10-03)
+
+KAIDLY is to be made **technically and functionally complete first**, then tested extensively,
+dogfooded in a controlled beta, and only then launched publicly. "Technically complete" is
+**not** a public launch. Missing legal-entity facts, SMTP, the contact mailbox and backups
+do **not** block engineering, QA, Preview or production-like testing; they block the
+**public commercial launch with real customers**.
+
+| Category | Items |
+|---|---|
+| **TECHNICALLY COMPLETE** | Core product (all modules), security hardening, production database built from zero (21 migrations), environment guard, CSP/headers, noindex/canonical, health, error handling, platform admin (bootstrapped in production 2026-10-03) |
+| **TESTING** | Ongoing: extensive QA, bug/UX fixes, field/mobile usability, controlled beta/dogfooding, production-like smoke tests |
+| **PRE-LAUNCH MANUAL** | Legal operator details — **TBA** (company not founded yet): legal name, registry code, address, privacy contact, effective date; then final privacy/terms text and review · Custom SMTP + verified sender (postponed) · Working mailbox behind `KAIDLY_CONTACT_EMAIL` · Production backup plan · Paste email templates into the dashboard · (optional) uptime monitor |
+| **LAUNCH BLOCKER** (public launch only) | Legal operator facts + finalized, reviewed privacy/terms · Production backups resolved — or the risk explicitly accepted by the owner at launch time · Transactional email (SMTP) working for real users — or self-service sign-up deliberately limited · Production smoke test on kaidly.ee passed |
+
+`main` is not merged and v1.0.0 is not tagged until the launch blockers are resolved;
+development and QA continue on the feature branch / Preview.
 
 ## APPLICATION
 | Status | Item |
@@ -46,14 +60,14 @@ deploy, smoke test on kaidly.ee, tag v1.0.0.
 | GREEN | App redirect allowlist and open-redirect tests |
 | GREEN | Flows covered by E2E: sign-up/confirm, login, logout, forgot/reset, password change, email change, invitation, direct URL, disabled account, session revocation, ET/EN/RU |
 | GREEN | Revoked sessions / disabled accounts: no company reads or writes from the next request on; cannot create or join companies either. What remains until the access token expires (≤ `jwt_expiry`, default 1 h): the signed-in frame and the user's own profile row |
-| MANUAL REQUIRED | Paste `supabase/templates/{confirmation,recovery,email_change}.html` into Production → Authentication → Emails → Templates (validated by unit tests; installation not verifiable from here) |
+| PRE-LAUNCH MANUAL | Paste `supabase/templates/{confirmation,recovery,email_change}.html` into Production → Authentication → Emails → Templates (validated by unit tests; installation not verifiable from here) |
 | GREEN | Production account kennethalto95@gmail.com exists and is confirmed — the only production user, exactly one match (verified 2026-10-03) |
 
 ## EMAIL
 | Status | Item |
 |---|---|
-| EXCEPTION | **Custom SMTP intentionally postponed.** Production uses Supabase's built-in sender, which only delivers to the project's team-member addresses and is rate-limited to a few emails per hour. Concretely: **sign-up confirmation** emails to customers will not arrive (customers can't confirm accounts — sign-up is effectively unavailable unless users are created/confirmed by an admin), **password reset** and **email change** emails to customers won't arrive. Invitations are unaffected (KAIDLY invitations are copyable links, no email). Fix: SMTP + verified sender (DEPLOYMENT.md §5) |
-| MANUAL REQUIRED | Mailbox behind `KAIDLY_CONTACT_EMAIL` (`info@kaidly.ee`) — the app only builds the mailto link; whether mail arrives is operational |
+| PRE-LAUNCH MANUAL | **Custom SMTP intentionally postponed** (real-user readiness item, not a development blocker). Production uses Supabase's built-in sender, which only delivers to the project's team-member addresses and is rate-limited to a few emails per hour. Concretely: **sign-up confirmation** emails to customers will not arrive (customers can't confirm accounts — sign-up is effectively unavailable unless users are created/confirmed by an admin), **password reset** and **email change** emails to customers won't arrive. Invitations are unaffected (KAIDLY invitations are copyable links, no email). Fix: SMTP + verified sender (DEPLOYMENT.md §5) |
+| PRE-LAUNCH MANUAL | Mailbox behind `KAIDLY_CONTACT_EMAIL` (`info@kaidly.ee`) — not assumed to work; the app only builds a validated mailto link (safe fallback text without a usable address) |
 
 ## STORAGE
 | Status | Item |
@@ -74,7 +88,7 @@ deploy, smoke test on kaidly.ee, tag v1.0.0.
 |---|---|
 | GREEN | Manual privacy-request process (PRIVACY_PROCESS.md); no automatic deletion |
 | GREEN | Cookies: essential only; no tracking → no banner needed |
-| MANUAL REQUIRED | Legal facts in `lib/legal/operator.ts`: **operator legal name, registry code, legal/contact address, privacy contact email, effective date** (data region already filled: EU, Ireland). Then legal review and `approved: true`. Until then both pages show a draft notice, replace fact-dependent paragraphs with "published before launch", are `noindex` and out of the sitemap |
+| PRE-LAUNCH MANUAL | Legal operator facts are **TBA** — the operating company does not exist yet (owner decision 2026-10-03): legal name TBA, registry code TBA, legal/business address TBA, final privacy contact TBA, effective date TBA (data region known: EU, Ireland). Not a development blocker; a public-launch blocker. Until supplied and reviewed, `/privaatsus` and `/kasutustingimused` are pre-launch drafts: restrained notice ("… täiendatakse enne teenuse avalikku käivitamist"), fact-dependent paragraphs say "published before launch", `noindex`, excluded from the sitemap, no invented facts and no "TBA" text on the pages |
 | EXCEPTION | Retention periods / automated erasure — open legal decision, not invented |
 
 ## DOMAIN / VERCEL
@@ -96,7 +110,7 @@ deploy, smoke test on kaidly.ee, tag v1.0.0.
 ## BACKUP/RECOVERY
 | Status | Item |
 |---|---|
-| **BLOCKING** | Production has **no restorable backups** (verified: backups list empty, PITR off). Decide: upgrade to a plan with daily backups (Pro), or explicitly accept launching without backups |
+| PRE-LAUNCH MANUAL → LAUNCH BLOCKER | Production has **no restorable backups** (verified: backups list empty, PITR off). Does not block coding or testing; must be resolved (plan with daily backups) before real customer data is entrusted to production, unless the owner explicitly accepts the risk at launch time |
 | EXCEPTION | Storage files are not in database backups; no file backup job yet |
 
 ## PLATFORM ADMIN

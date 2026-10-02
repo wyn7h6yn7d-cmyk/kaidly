@@ -114,6 +114,13 @@ SMTP in Dashboard → Authentication → SMTP Settings (production project):
 
 KAIDLY itself sends no email; invitations are copyable links.
 
+## 5a. Pre-launch drafts
+
+Until the operating company exists (operator facts TBA, owner decision 2026-10-03) the legal
+pages are pre-launch drafts (noindex, out of the sitemap; `lib/legal/operator.ts`). Without
+custom SMTP, customer-facing auth emails are not delivered (RELEASE_CHECKLIST.md) — fine for
+internal/beta testing with team-member addresses, not for open sign-up.
+
 ## 6. Health and logs
 
 - `GET /api/health` → `{ app, auth, storage, version }` with 200/503; no keys or URLs. Use it
