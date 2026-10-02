@@ -50,7 +50,7 @@ export const et = {
     contactHint: "Täiskasutuse jätkamiseks võta ühendust KAIDLYga.",
     readOnlyTitle: "Ettevõte on ainult vaatamiseks",
     readOnlyBody: "KAIDLY prooviperiood või täiskasutus on lõppenud. Andmeid saab vaadata, kuid mitte muuta.",
-    mailSubject: (company: string) => `KAIDLY täiskasutus: ${company}`,
+    mailSubject: (company: string) => `KAIDLY täiskasutuse jätkamine (${company})`,
   },
   common: {
     language: "Keel",
@@ -979,6 +979,8 @@ export const et = {
       needsSite: "Enne seda loo objekt.",
       needsInstallation: "Enne seda lisa elektripaigaldis.",
       needsRole: "Seda sammu teeb ettevõtte omanik või administraator.",
+      needsTrial: "Prooviperiood on lõppenud. Täiskasutuse taastamiseks võta KAIDLYga ühendust.",
+      needsAccess: "KAIDLY täiskasutus on lõppenud. Selle taastamiseks võta KAIDLYga ühendust.",
       steps: {
         organisation: { title: "Ettevõte loodud", body: "Ettevõte on KAIDLYs olemas." },
         site: {

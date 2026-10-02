@@ -1,18 +1,10 @@
 import { Clock, Lock } from "lucide-react";
+import { contactMailto } from "@/lib/access";
 import type { OrgContext } from "@/lib/data/organisations";
 import { getT } from "@/lib/i18n/server";
 import { daysBetween } from "@/lib/schedule";
 import { todayInTallinn } from "@/lib/time";
 import { cn } from "@/lib/utils";
-
-/**
- * Optional contact address for "Soovin jätkata" (server-side setting, not a secret).
- * Without it the banner says to contact KAIDLY, with no link.
- */
-function contactEmail(): string | null {
-  const value = process.env.KAIDLY_CONTACT_EMAIL?.trim();
-  return value && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value) ? value : null;
-}
 
 /** Whole Tallinn calendar days until the access end (expiry itself is the exact timestamp). */
 export function daysLeft(endsAt: string) {
@@ -21,9 +13,9 @@ export function daysLeft(endsAt: string) {
 
 export async function ContinueLink({ ctx, className }: { ctx: OrgContext; className?: string }) {
   const t = await getT();
-  const email = contactEmail();
-  if (!email) return <p className={cn("text-sm", className)}>{t.access.contactHint}</p>;
-  const href = `mailto:${email}?subject=${encodeURIComponent(t.access.mailSubject(ctx.org.name))}`;
+  // Server setting (not a secret); without it the banner only says to contact KAIDLY.
+  const href = contactMailto(process.env.KAIDLY_CONTACT_EMAIL, t.access.mailSubject(ctx.org.name));
+  if (!href) return <p className={cn("text-sm", className)}>{t.access.contactHint}</p>;
   return (
     <a href={href} className={cn("inline-flex min-h-11 items-center font-semibold text-k-green underline underline-offset-4", className)}>
       {t.access.continue}

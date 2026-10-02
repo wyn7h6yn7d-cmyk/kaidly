@@ -21,13 +21,19 @@ cp .env.example .env.local     # then fill in the DEVELOPMENT project's values
 npm run dev                    # http://localhost:3000
 ```
 
-`.env.local` needs exactly two values from the hosted **development** Supabase project
+`.env.local` needs exactly two required values from the hosted **development** Supabase project
 (Project Settings → API / API Keys):
 
 | Variable | Value |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<project-ref>.supabase.co` — no path |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | the publishable key (`sb_publishable_…`) |
+
+Optional (server-side only, not a secret; set it in Vercel for Preview/Production too):
+
+| Variable | Value |
+|---|---|
+| `KAIDLY_CONTACT_EMAIL` | address for the "Soovin jätkata" link when a company's trial or full access has ended (subject "KAIDLY täiskasutuse jätkamine (…)"). Without it the notice only says to contact KAIDLY, with no link. Never put a personal address in source code. |
 
 Never add the `service_role` / secret key. If configuration is missing or invalid, the app
 refuses to run and says what's wrong (it does not fall back to skipping authentication).

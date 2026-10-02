@@ -37,7 +37,8 @@ export async function getOnboarding(ctx: OrgContext) {
   };
   const steps = onboardingSteps(counts, {
     orgSlug: ctx.org.slug,
-    role: ctx.role,
+    role: ctx.memberRole,
+    readOnly: ctx.access.writable ? null : ctx.access.hadFullAccess ? "access" : "trial",
     firstSiteId: firstSite.data?.id ?? null,
     firstInstallationId: firstInstallation.data?.id ?? null,
   });

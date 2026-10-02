@@ -58,7 +58,7 @@ export default async function OverviewPage({
             <PageHeader
               eyebrow={t.app.nav.overview}
               title={org.name}
-              description={`${t.app.organisations.yourRole}: ${t.roles[role]}`}
+              description={`${t.app.organisations.yourRole}: ${t.roles[ctx.memberRole]}`}
               actions={
                 <>
                   {canWrite && counts.installations > 0 && (
@@ -102,7 +102,9 @@ export default async function OverviewPage({
 
             {!onboarding.complete &&
               !onboarding.hidden &&
-              (counts.sites === 0 && !isAdmin ? (
+              // The membership role decides who waits for an administrator; an expired company's
+              // admin sees the guide, which then names the ended trial as the blocker.
+              (counts.sites === 0 && !hasRole(ctx.memberRole, "admin") ? (
                 <div className="mb-10">
                   <EmptyState title={t.app.emptyStates.sites.title} body={t.app.onboarding.memberWaiting} />
                 </div>

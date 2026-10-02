@@ -54,7 +54,7 @@ export const en: Messages = {
     contactHint: "Contact KAIDLY to continue with full access.",
     readOnlyTitle: "The organisation is read-only",
     readOnlyBody: "The KAIDLY trial or full access has ended. You can view the data but not change it.",
-    mailSubject: (company: string) => `KAIDLY full access: ${company}`,
+    mailSubject: (company: string) => `Continuing full KAIDLY access (${company})`,
   },
   common: {
     language: "Language",
@@ -917,6 +917,8 @@ export const en: Messages = {
       needsSite: "Create a site first.",
       needsInstallation: "Add an electrical installation first.",
       needsRole: "This step is done by the organisation's owner or an administrator.",
+      needsTrial: "The trial has ended. Contact KAIDLY to restore full access.",
+      needsAccess: "Full KAIDLY access has ended. Contact KAIDLY to restore it.",
       steps: {
         organisation: { title: "Organisation created", body: "The organisation exists in KAIDLY." },
         site: {

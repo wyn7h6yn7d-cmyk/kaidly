@@ -288,6 +288,10 @@ cookie that hides the checklist on the overview (`kaidly_guide_hidden_<org>`), u
 Abi. Empty modules use `GuidedEmptyState` (purpose, examples or sequence, prerequisite, one
 action, or who does it).
 
+A blocked checklist step names the real reason: the member's role first, then the
+company's ended trial or full access (`trial_ended` / `access_ended`, "Prooviperiood on
+lõppenud…"), then a missing earlier step.
+
 ## 6b. Languages (ET / EN / RU)
 
 - **Dictionaries:** `lib/i18n/et.ts` is the source; `en.ts` and `ru.ts` are typed as

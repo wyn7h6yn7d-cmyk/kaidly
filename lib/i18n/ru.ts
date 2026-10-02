@@ -67,7 +67,7 @@ export const ru: Messages = {
     contactHint: "Чтобы продолжить с полным доступом, свяжитесь с KAIDLY.",
     readOnlyTitle: "Организация доступна только для просмотра",
     readOnlyBody: "Пробный период или полный доступ KAIDLY закончился. Данные можно просматривать, но не изменять.",
-    mailSubject: (company: string) => `Полный доступ KAIDLY: ${company}`,
+    mailSubject: (company: string) => `Продление полного доступа KAIDLY (${company})`,
   },
   common: {
     language: "Язык",
@@ -932,6 +932,8 @@ export const ru: Messages = {
       needsSite: "Сначала создайте объект.",
       needsInstallation: "Сначала добавьте электроустановку.",
       needsRole: "Этот шаг выполняет владелец или администратор организации.",
+      needsTrial: "Пробный период закончился. Чтобы восстановить полный доступ, свяжитесь с KAIDLY.",
+      needsAccess: "Полный доступ KAIDLY закончился. Чтобы восстановить его, свяжитесь с KAIDLY.",
       steps: {
         organisation: { title: "Организация создана", body: "Организация есть в KAIDLY." },
         site: {

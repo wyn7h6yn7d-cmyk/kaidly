@@ -16,8 +16,11 @@ export type OnboardingStep = {
   done: boolean;
   /** Where to do it, if this user can do it now. */
   href: string | null;
-  /** Why it can't be done yet: a missing earlier step, or a role that doesn't allow it. */
-  blockedBy: "site" | "installation" | "role" | null;
+  /**
+   * Why it can't be done yet: the member's role (genuinely not allowed for them), the
+   * company's ended trial / full access (read-only), or a missing earlier step.
+   */
+  blockedBy: "site" | "installation" | "role" | "trial_ended" | "access_ended" | null;
 };
 
 type Role = "owner" | "admin" | "operator" | "viewer";
@@ -25,7 +28,15 @@ const RANK: Record<Role, number> = { viewer: 1, operator: 2, admin: 3, owner: 4 
 
 export function onboardingSteps(
   counts: OnboardingCounts,
-  context: { orgSlug: string; role: Role; firstSiteId: string | null; firstInstallationId: string | null },
+  context: {
+    orgSlug: string;
+    /** The membership role (not the read-only effective role). */
+    role: Role;
+    firstSiteId: string | null;
+    firstInstallationId: string | null;
+    /** Set while the company is read-only: which access ended. */
+    readOnly?: "trial" | "access" | null;
+  },
 ): OnboardingStep[] {
   const base = `/o/${context.orgSlug}`;
   const can = (min: Role) => RANK[context.role] >= RANK[min];
@@ -44,7 +55,17 @@ export function onboardingSteps(
             ? "site"
             : "installation"
           : null;
-    const blockedBy = done ? null : (missing ?? (can(min) ? null : "role"));
+    // Role first (a viewer stays a viewer whatever the access), then the company's access,
+    // then a missing earlier step.
+    const blockedBy = done
+      ? null
+      : !can(min)
+        ? "role"
+        : context.readOnly
+          ? context.readOnly === "trial"
+            ? "trial_ended"
+            : "access_ended"
+          : missing;
     return { key, done, href: done || blockedBy ? null : href, blockedBy };
   };
 

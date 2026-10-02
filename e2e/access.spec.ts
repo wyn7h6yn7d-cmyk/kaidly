@@ -157,6 +157,19 @@ test.describe("Prooviperiood ja ligipääs", () => {
     await expect(rows.filter({ hasText: "Ligipääs lõpetati" })).toHaveCount(1);
   });
 
+  test("expired: the getting-started guide blames the ended trial, and no broken contact link", async ({ page }) => {
+    const org = await createOrg();
+    expire(org);
+    await login(page, org.users.admin, `/o/${org.slug}`);
+    const guide = page.getByRole("region", { name: "Alustamise juhend" });
+    await expect(guide.getByText("Prooviperiood on lõppenud. Täiskasutuse taastamiseks võta KAIDLYga ühendust.").first()).toBeVisible();
+    await expect(guide.getByText("Seda sammu teeb ettevõtte omanik või administraator.")).toHaveCount(0);
+    // KAIDLY_CONTACT_EMAIL is not set for the test server: plain message, no mailto link.
+    const banner = page.getByTestId("access-banner");
+    await expect(banner).toContainText("Täiskasutuse jätkamiseks võta ühendust KAIDLYga.");
+    await expect(banner.locator('a[href^="mailto:"]')).toHaveCount(0);
+  });
+
   test("access notices in English and Russian", async ({ page, context }) => {
     const org = await createOrg();
     expire(org);

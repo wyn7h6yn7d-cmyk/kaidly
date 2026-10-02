@@ -10,6 +10,7 @@ import {
   login,
   sql,
   test,
+  uniqueId,
 } from "./support/fixtures";
 
 async function setLanguage(context: BrowserContext, locale: "en" | "ru") {
@@ -20,8 +21,9 @@ test.describe("Alustamine", () => {
   test("a new organisation is welcomed and guided step by step with real progress @responsive", async ({ page }) => {
     test.setTimeout(120_000);
     const user = await createUser("Uus Omanik");
+    const company = `Alustaja ${uniqueId("a")} OÜ`; // unique: looked up by name below
     await login(page, user, "/o/uus");
-    await field(page, "name").fill("Alustaja OÜ");
+    await field(page, "name").fill(company);
     await page.getByRole("button", { name: "Loo ettevõte" }).click();
 
     await expect(page.getByRole("heading", { name: "Ettevõte on valmis." })).toBeVisible();
@@ -59,7 +61,7 @@ test.describe("Alustamine", () => {
     await expect(guide.getByRole("link", { name: "Lisa dokument" })).toBeVisible();
 
     // Activity and document done (through SQL to keep the test short): complete.
-    const orgId = sql(`select id from public.organisations where name = 'Alustaja OÜ'`);
+    const orgId = sql(`select id from public.organisations where name = '${company}'`);
     sql(`insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on, created_by)
          select i.organisation_id, i.site_id, i.id, 'Ülevaatus', 'once', current_date + 30, '${user.id}'
            from public.electrical_installations i where i.organisation_id = '${orgId}';

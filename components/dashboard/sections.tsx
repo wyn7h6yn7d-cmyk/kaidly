@@ -118,8 +118,15 @@ export async function OnboardingChecklist({
         {steps.map((step, index) => {
           const text = copy.steps[step.key];
           const current = index === next;
-          const reason =
-            step.blockedBy === "site" ? copy.needsSite : step.blockedBy === "installation" ? copy.needsInstallation : step.blockedBy === "role" ? copy.needsRole : null;
+          const reason = step.blockedBy
+            ? {
+                site: copy.needsSite,
+                installation: copy.needsInstallation,
+                role: copy.needsRole,
+                trial_ended: copy.needsTrial,
+                access_ended: copy.needsAccess,
+              }[step.blockedBy]
+            : null;
           return (
             <li key={step.key} className="flex gap-4" aria-current={current ? "step" : undefined}>
               <span
