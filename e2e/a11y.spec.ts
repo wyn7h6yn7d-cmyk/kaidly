@@ -88,6 +88,10 @@ test("account, company settings and the KAIDLY Admin console pass axe and fit th
        values ('${org.id}', '${site}', '${installation}', 'Hooldus', 'once', (now() at time zone 'Europe/Tallinn')::date + 5);`);
   for (const path of [
     "/teavitused",
+    "/otsing?q=Peakilp",
+    `/o/${org.slug}/aruanded`,
+    `/o/${org.slug}/aruanded/log`,
+    `/o/${org.slug}/aruanded/installation?paigaldis=${installation}`,
     `/o/${org.slug}/kaidukava`,
     "/konto",
     `/o/${org.slug}/seaded`,
