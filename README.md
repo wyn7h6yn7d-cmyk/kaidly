@@ -77,6 +77,24 @@ flow, signed in as the demo users — run after each reset:
 npm run db:seed-files
 ```
 
+### QA fixtures (local only)
+
+Realistic fictional QA companies for manual testing and dogfooding (password for every QA
+account: `kaidly-qa-parool`; accounts listed at the top of `supabase/qa/qa_fixtures.sql`):
+
+```bash
+npm run db:reset && npm run qa:fixtures            # QA Elektritööd OÜ (trial), QA Tööstuspark OÜ (active),
+                                                    # QA Haldus OÜ (expired), QA Suletud OÜ (deactivated)
+npm run qa:fixtures -- --perf                       # + QA Jõudlus: 30 sites, 150 installations, 2000 log
+                                                    #   entries, 500 activities, 300 deficiencies, 500 documents
+npm run db:reset                                    # remove / reset (rebuilds the local database)
+```
+
+`scripts/qa-fixtures.mjs` writes only inside the local database container and aborts if the
+production project ref appears anywhere in the environment or the CLI link, or if the
+target isn't localhost (`scripts/qa-guard.mjs`, unit-tested). Document rows are metadata
+only (no files). There is deliberately no hosted variant.
+
 Storage consistency (stale pending uploads, orphaned objects; read-only):
 
 ```bash

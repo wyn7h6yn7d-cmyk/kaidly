@@ -334,8 +334,21 @@ lõppenud…"), then a missing earlier step.
 - `useSessionDraft` keeps unsaved field values in `sessionStorage` (this tab only; cleared
   when the form goes out, restored if saving fails, discardable). Not an offline mode —
   full offline entry with sync remains future scope.
+- `clearSessionDrafts()` removes all drafts of the tab on explicit sign-out (shared devices).
 - Auth forms use `method="post"` so a submit before hydration can never put credentials in
   the URL.
+
+## 6c2. CSV import (`/o/<org>/seaded/import`)
+
+`lib/import/csv.ts` (pure, unit-tested) decodes strict UTF-8, parses RFC 4180 CSV with
+`,` or `;` (detected from the header), enforces 1 MB / 1000 rows / 30 columns and validates
+rows exactly as the database will (minus checks against existing records). The client wizard
+(`components/import/import-wizard.tsx`) shows the preview with per-row reasons; the import
+button exists only when every row is valid and the company is writable. The Server Action
+(`lib/actions/import.ts`) validates again and calls `import_company_data` (DATABASE.md §5g),
+which is authoritative, atomic and idempotent per token. Templates:
+`public/templates/kaidly-objektid.csv`, `kaidly-elektripaigaldised.csv` (UTF-8 with BOM,
+English column keys explained in the UI).
 
 ## 6d. Platform administration (`/admin`)
 

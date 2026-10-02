@@ -30,6 +30,7 @@ Each phase ends with a deployable app and every check passing: `npm run lint`,
 | Deadline countdowns and reminders (2026-10-02) | Shared countdown, per-activity reminder thresholds, idempotent reminder generation (pg_cron daily + on change), in-app notification centre, bell, toast | DATABASE.md §5c, ARCHITECTURE.md §6e |
 | Trial and manual access (2026-10-02) | 14-day company trial, read-only expiry enforced in `org_ids()`, platform-admin activation/extension/expiry with audit, access banner, admin filters | DATABASE.md §5d, ARCHITECTURE.md §6f |
 | Search and reports (2026-10-02) | Global search (RLS-invoker RPC, trigram indexes), report centre with six reports, preview, PDF (pdfmake) and CSV exports | DATABASE.md §5e, ARCHITECTURE.md §6g |
+| V1 completion (2026-10-03) | CSV import of sites and installations (atomic, idempotent, role/access-checked), installation quick actions, next due date after completion, help topics, notification empty state, drafts cleared on sign-out, local QA fixture tooling with production guard | DATABASE.md §5g, ARCHITECTURE.md §6c2, V1_COMPLETION_REPORT.md |
 | Release candidate (2026-10-02) | Upload abuse limits, immediate session revocation, security headers, noindex/canonical, health + structured error logs, error pages, legal page structure, account deletion request, deployment/backup/privacy runbooks, release checklist | DATABASE.md §5f, ARCHITECTURE.md §6h, DEPLOYMENT.md, RELEASE_CHECKLIST.md |
 | Tests | 631 pgTAP, 84 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
 | Reviews | Responsive (375/768/1440), accessibility (axe + keyboard), security regression (+ review gates), code quality; Phase 7–8: storage security, cross-tenant oracles, pagination | this file, "Review log" |
@@ -207,7 +208,7 @@ demand or a decision exists.
 | N | Final retention / privacy-erasure policy (automation after legal review) | GDPR-grade erasure without manual work | legal/domain review | v1.1 |
 | O/P | Native Russian and Estonian electrical-professional terminology reviews | trustworthy wording | reviewers | v1.1 |
 | A | Email reminders (reminder channel `email`, weekly digest, per-user preferences) | reminders without opening the app | SMTP; `notifications.channel` is ready | v1.1 |
-| D | Excel/CSV import (sites, installations, existing history where safe; guided mapping, validation, never fabricated history) | faster onboarding of existing customers | product decisions on history | v1.1 |
+| D | Import beyond v1 (scheduled activities, column mapping for arbitrary spreadsheets, existing history with a provenance model — never fabricated history). v1 already imports sites and installations from CSV (DATABASE.md §5g) | faster onboarding of existing customers | product decisions on history | v1.1 |
 | I | Linked responsible KAIDLY user (alongside free text) | targeted reminders | schema change | v1.1 |
 | F | Saved report presets | repeat reports quickly | — | later |
 | E | Scheduled / emailed reports | monthly reporting without effort | SMTP, saved presets | later |
@@ -221,6 +222,9 @@ demand or a decision exists.
 | S | Optional analytics — only after a privacy decision, never added silently | product insight | privacy review, consent | later |
 | T | Mobile/PWA/offline workflow | sites without signal | proven field demand | later |
 | U | API / integrations | customer systems | validated core usage | later |
-| V | Data import/export portability (full company export) | lock-in avoidance, GDPR portability | — | later |
+| V | Full company export package (one archive: company, sites, installations, log, plan, deficiencies, document register; v1 has per-report CSV/PDF) | lock-in avoidance, GDPR portability | — | v1.1 |
+| X | Instant navigation: Suspense boundaries / `instant` exports for authenticated routes (Next 16 dev reports "runtime data during prerendering" — advisory, every page is correct and dynamic) | faster perceived navigation | — | later |
+| Y | Unsaved-change warning (beforeunload) on long forms; today tab drafts cover log entries and deficiencies | fewer lost edits | — | later |
+| Z | Not-found pages inside the app answer HTTP 200 (streamed after the shell); `noindex` anyway | correct status codes for monitoring | Next.js streaming | later |
 | W | Customer support access (explicit, time-bounded, audited; never silent impersonation) | faster support | design + audit | later |
 

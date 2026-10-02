@@ -392,6 +392,13 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
   töötab" anchor now lands on the structure section (site → installation → log/plan → reminders).
 - **Scroll to top:** round 48 px button bottom-right on long public pages, after about one
   viewport, lifted above the footer, smooth unless reduced motion, focus returns to the header.
+- **Installation quick actions (V1):** a small "Lisa sellele paigaldisele" row of outline
+  buttons (deficiency, plan activity for admins, document) under the status line; the
+  primary "Lisa sissekanne" stays in the header. Only for roles and companies that can write.
+- **Import wizard (V1):** three numbered steps on one page (type as bordered radio tiles,
+  file input, preview table in a scrollable bordered box with sticky header); invalid rows
+  tinted with the reason in plain words; the import button only appears when every row is
+  valid. Success is a left-bordered status block, like other confirmations.
 
 ## 9. Layout system (2026-10-02)
 

@@ -88,6 +88,11 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   unique identity (user, activity, due occurrence, threshold, channel); never insert them
   from the app, never store URLs in them, and keep them user-scoped (platform admins don't
   read them).
+- Bulk data enters only through `import_company_data` (sites, installations; owner/admin of a
+  writable company; all rows or none; idempotent per token). Never import operating history
+  (log, deficiency resolutions, documents) without a designed provenance model.
+- QA fixtures (`npm run qa:fixtures`) are local-only with a production-ref guard; never add a
+  hosted variant.
 - After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
 - Files: one private bucket; object paths come from the database; browsers upload only to

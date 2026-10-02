@@ -204,7 +204,7 @@ V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
 | members | V+ | via invitation | A+ non-owner rows; Ow owner rows; column `role` only | A+ non-owners, Ow owners, anyone themselves; last owner protected |
 | invitations | A+ (no `token_hash`) | A+ (`create_invitation`; owner role only by Ow) | revoke: A+ (owner invites: Ow) | — |
 | history | A+ | triggers only | never | never |
-| sites, installations | V+ | A+ | A+ incl. archive | — (archive) |
+| sites, installations | V+ | A+ (also via CSV import, `import_company_data`) | A+ incl. archive | — (archive) |
 | log entries | V+ | Op+ | **never** — Op+ adds corrections | **never** |
 | scheduled activities | V+ | A+ | A+ incl. archive; Op+ completes via `complete_scheduled_activity` | — (archive) |
 | deficiencies | V+ | Op+ | Op+ fields and open ⇄ in progress; Op+ resolves via `resolve_deficiency`; resolved = final | **never** |
@@ -442,6 +442,43 @@ pgTAP `170_release_hardening` (20): hourly, daily-bytes, company and configurabl
 deleting pending uploads doesn't reset counters; per-user isolation; limits not readable by
 users; live vs revoked session; banned account; cleanup job. Mutation-tested.
 
+## 5g. CSV import (migration `company_import`)
+
+`public.import_company_data(org, kind, rows jsonb, token uuid)` — SECURITY DEFINER,
+`search_path = ''`. Imports **sites** or **electrical installations** that the browser parsed
+and the user reviewed (`/o/<org>/seaded/import`). Operating history (log entries, deficiency
+resolutions, documents) is deliberately not importable: it needs its own provenance model.
+
+- **Authorisation:** `org in private.org_ids('admin')` — the same rule as the RLS insert
+  policies of `sites` and `electrical_installations` (membership, live session, not
+  deactivated, trial/active). An owner/admin of an expired or deactivated company gets
+  `company_read_only`; everyone else `not_found`. Operators and viewers cannot import
+  (they can't create sites or installations either).
+- **All or nothing:** every row is validated again and inserted in one statement; the first
+  invalid row raises a code (`import_name_required`, `import_site_missing`,
+  `import_site_ambiguous`, `import_site_exists`, `import_duplicate_row`,
+  `import_duplicate_identifier`, `import_identifier_exists`, `import_type_invalid`,
+  `import_date_invalid`, `import_value_too_long`, `import_formula_value`) with the 1-based row
+  number in DETAIL, and nothing is kept.
+- **Matching:** installations name their site by exact (case-insensitive) name among the
+  company's active sites — never by id, so foreign ids can't be forged. A site name that
+  already exists is refused; identifiers follow the existing per-site uniqueness. No fuzzy
+  duplicate detection.
+- **Idempotent:** one random `token` per attempt; `private.import_batches` is unique on
+  `(organisation_id, client_token)`, so a double submit or a retry after a lost response
+  returns the first result (`repeated: true`) and creates nothing.
+- **Provenance:** `private.import_batches` (kind, row count, created ids, user, time; no file
+  contents) — not readable through the API; for support only. Imported rows are ordinary
+  rows (no "imported" label), `created_by` = the importing user, history written by the usual
+  triggers.
+- **Limits** (technical safety, not a quota): 1000 rows per import; values as the column
+  checks; values starting with `=` or `@` are refused (spreadsheet formulas). The browser
+  also refuses files over 1 MB, invalid UTF-8 and malformed CSV before anything is sent.
+
+pgTAP `180_company_import` (34): role matrix incl. multi-company and anon, tenant isolation,
+site matching, every validation code, row number, rollback, idempotency, batch privacy,
+expired and deactivated companies. Mutation-tested (weakening the role check fails 6).
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -474,6 +511,7 @@ users; live vs revoked session; banned account; cleanup job. Mutation-tested.
 | `my_notifications(unread_only, limit, offset)` | signed in (security invoker: own rows under RLS) | §5c |
 | `organisation_access(org)` | members (viewer+) | §5d |
 | `search_kaidly(query, entry_types, per_group)` | signed in (security invoker: caller's RLS) | §5e |
+| `import_company_data(org, kind, rows, token)` | A+ of a writable company | §5g |
 | `admin_set_full_access`, `admin_extend_trial`, `admin_expire_access`, `admin_set_access_reference`, `admin_company_access`, `admin_access_overview`, `admin_company_access_list` | platform admins | §5d |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
