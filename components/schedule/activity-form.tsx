@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createActivity, updateActivity } from "@/lib/actions/schedule";
 import type { Activity } from "@/lib/data/schedule";
 import { cn } from "@/lib/utils";
-import { FREQUENCIES, INTERVAL_UNITS, PRIORITIES } from "@/lib/validation/schedule";
+import { DEFAULT_REMINDER_DAYS, FREQUENCIES, INTERVAL_UNITS, PRIORITIES, REMINDER_PRESETS } from "@/lib/validation/schedule";
 import { useT } from "@/lib/i18n/client";
 
 type InstallationChoice = { id: string; label: string };
@@ -42,6 +42,8 @@ export function ActivityForm({
   const copy = t.app.schedule;
   const submittedFrequency = value("frequencyType", activity?.frequencyType ?? "recurring");
   const [frequency, setFrequency] = useState(submittedFrequency);
+  const reminderDays = activity?.reminderDays ?? DEFAULT_REMINDER_DAYS;
+  const customDays = reminderDays.find((d) => !(REMINDER_PRESETS as readonly number[]).includes(d))?.toString() ?? "";
 
   return (
     <form action={action} className="flex max-w-2xl flex-col gap-5">
@@ -182,6 +184,50 @@ export function ActivityForm({
           </Select>
         </Field>
       </div>
+
+      <fieldset aria-describedby={`${id("reminders")}-hint`}>
+        <legend className="text-sm font-semibold">{copy.reminders.legend}</legend>
+        <p id={`${id("reminders")}-hint`} className="mb-2 mt-1 text-sm text-k-muted">
+          {copy.reminders.hint}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {REMINDER_PRESETS.map((days) => (
+            <label key={days}>
+              <input
+                type="checkbox"
+                name="reminderDays"
+                value={days}
+                defaultChecked={reminderDays.includes(days)}
+                className="peer sr-only"
+              />
+              <span
+                className={cn(
+                  "flex h-11 cursor-pointer items-center rounded-sm border border-k-grey/60 bg-k-surface px-4 text-[15px] font-semibold",
+                  "peer-checked:border-k-green peer-checked:bg-k-green peer-checked:text-white",
+                  "peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2",
+                )}
+              >
+                {copy.reminders.option(days)}
+              </span>
+            </label>
+          ))}
+        </div>
+        <div className="mt-3 max-w-xs">
+          <Field id={id("reminderCustom")} label={copy.reminders.custom} hint={copy.reminders.customHint} optional>
+            <Input
+              id={id("reminderCustom")}
+              name="reminderCustom"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={365}
+              defaultValue={value("reminderCustom", customDays)}
+              aria-describedby={`${id("reminderCustom")}-hint`}
+              aria-invalid={state.fields?.reminderCustom}
+            />
+          </Field>
+        </div>
+      </fieldset>
 
       <Field id={id("responsiblePersonName")} label={f.responsible} optional>
         <Input

@@ -29,6 +29,33 @@ export const ru: Messages = {
     description:
       "KAIDLY — цифровой оперативный журнал для электроустановок: журнал, план эксплуатации, дефекты и документы в одном месте.",
   },
+  countdown: {
+    left: (days: number) => `${plural(days, "Остался", "Осталось", "Осталось")} ${count(days, "день", "дня", "дней")}`,
+    today: "Срок сегодня",
+    overdue: (days: number) => `Просрочено на ${count(days, "день", "дня", "дней")}`,
+  },
+  notifications: {
+    title: "Уведомления",
+    intro: "Напоминания о сроках плана эксплуатации. Их получают владельцы, администраторы и операторы организации.",
+    bell: (unread: number) => (unread === 0 ? "Уведомления" : `Уведомления, непрочитанных: ${unread}`),
+    tabs: { unread: "Непрочитанные", all: "Все" },
+    unreadCount: (n: number) => `Непрочитанных: ${n}`,
+    markRead: "Отметить прочитанным",
+    markAllRead: "Отметить все прочитанными",
+    view: "Открыть работу",
+    unread: "Не прочитано",
+    due: (date: string) => `Срок ${date}`,
+    reminder: (days: number) =>
+      days === 0 ? "Напоминание в день срока" : `Напоминание за ${count(days, "день", "дня", "дней")}`,
+    historical: "Прежний срок — работа с тех пор выполнена или перенесена.",
+    archived: "Работа в архиве.",
+    empty: "Уведомлений нет.",
+    emptyUnread: "Непрочитанных уведомлений нет.",
+    newer: "Новее",
+    older: "Старее",
+    toastLabel: "Новое напоминание",
+    close: "Закрыть",
+  },
   common: {
     language: "Язык",
     loading: "Загрузка…",
@@ -192,6 +219,7 @@ export const ru: Messages = {
     },
   },
   errors: {
+    reminders_invalid: "Проверьте напоминания: число дней должно быть от 0 до 365.",
     account_disabled: "Эта учётная запись приостановлена. Обратитесь в поддержку KAIDLY.",
     current_password_wrong: "Текущий пароль неверен.",
     password_mismatch: "Пароли не совпадают. Введите новый пароль одинаково в оба поля.",
@@ -601,6 +629,23 @@ export const ru: Messages = {
       submitCreate: "Добавить мероприятие",
       saving: "Сохранение…",
       filters: { state: "Статус", priority: "Приоритет" },
+      reminders: {
+        legend: "Напоминания",
+        hint: "Когда KAIDLY напоминает владельцам, администраторам и операторам о сроке. Сам срок не меняется.",
+        option: (days: number) => `за ${count(days, "день", "дня", "дней")}`,
+        custom: "Другое (дней до срока)",
+        customHint: "0–365; 0 — в день срока.",
+        none: "Напоминаний нет",
+        label: "Напоминания",
+        summary: (days: number[]) => {
+          const numbers = days.filter((d) => d > 0);
+          const onDay = days.includes(0) ? "в день срока" : "";
+          const list = numbers.length
+            ? `за ${numbers.length > 1 ? `${numbers.slice(0, -1).join(", ")} и ` : ""}${count(numbers[numbers.length - 1], "день", "дня", "дней")} до срока`
+            : "";
+          return [list, onDay].filter(Boolean).join(" и ");
+        },
+      },
     },
     deficiencies: {
       title: "Дефекты",

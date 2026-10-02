@@ -25,6 +25,8 @@ function activityInput(formData: FormData) {
     nextDueOn: field(formData, "nextDueOn"),
     responsiblePersonName: field(formData, "responsiblePersonName"),
     priority: field(formData, "priority"),
+    reminderDays: formData.getAll("reminderDays").filter((v): v is string => typeof v === "string"),
+    reminderCustom: field(formData, "reminderCustom"),
   });
 }
 
@@ -33,7 +35,7 @@ export async function createActivity(_prev: ActionState, formData: FormData): Pr
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = activityInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { interval: "interval_invalid" });
+  if (!parsed.success) return invalidInput(parsed.error, { interval: "interval_invalid", reminders: "reminders_invalid" });
   const input = parsed.data;
 
   // The site is the installation's own; the installation must be in this organisation.
@@ -55,6 +57,7 @@ export async function createActivity(_prev: ActionState, formData: FormData): Pr
       next_due_on: input.nextDueOn,
       responsible_person_name: input.responsiblePersonName ?? null,
       priority: input.priority,
+      reminder_days: input.reminderDays,
     })
     .select("id")
     .single();
@@ -69,7 +72,7 @@ export async function updateActivity(_prev: ActionState, formData: FormData): Pr
   const activityId = field(formData, "activityId");
   if (!isUuid(activityId)) return failure("not_found");
   const parsed = activityInput(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { interval: "interval_invalid" });
+  if (!parsed.success) return invalidInput(parsed.error, { interval: "interval_invalid", reminders: "reminders_invalid" });
   const input = parsed.data;
 
   const supabase = await createClient();
@@ -85,6 +88,7 @@ export async function updateActivity(_prev: ActionState, formData: FormData): Pr
       next_due_on: input.nextDueOn,
       responsible_person_name: input.responsiblePersonName ?? null,
       priority: input.priority,
+      reminder_days: input.reminderDays,
     })
     .eq("organisation_id", ctx.org.id)
     .eq("id", activityId)

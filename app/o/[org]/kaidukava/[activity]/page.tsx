@@ -108,6 +108,10 @@ export default async function ActivityPage({
                 { label: f.frequency, value: frequencyLabel(activity, t) },
                 { label: f.nextDueOn, value: activity.nextDueOn ? t.fmt.date(activity.nextDueOn) : copy.states.done },
                 { label: f.priority, value: copy.priorities[activity.priority] },
+                {
+                  label: copy.reminders.label,
+                  value: activity.reminderDays.length ? copy.reminders.summary(activity.reminderDays) : copy.reminders.none,
+                },
                 { label: f.responsible, value: activity.responsiblePersonName },
                 {
                   label: f.lastCompleted,

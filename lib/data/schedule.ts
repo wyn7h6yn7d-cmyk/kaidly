@@ -18,12 +18,13 @@ export type Activity = {
   nextDueOn: string | null;
   responsiblePersonName: string | null;
   priority: Priority;
+  reminderDays: number[];
   archivedAt: string | null;
   lastCompletedAt: string | null;
 };
 
 const COLUMNS =
-  "id, site_id, electrical_installation_id, title, description, frequency_type, interval_value, interval_unit, anchor_on, next_due_on, responsible_person_name, priority, archived_at";
+  "id, site_id, electrical_installation_id, title, description, frequency_type, interval_value, interval_unit, anchor_on, next_due_on, responsible_person_name, priority, reminder_days, archived_at";
 
 type Row = {
   id: string;
@@ -38,6 +39,7 @@ type Row = {
   next_due_on: string | null;
   responsible_person_name: string | null;
   priority: Priority;
+  reminder_days: number[];
   archived_at: string | null;
 };
 
@@ -55,6 +57,7 @@ function toActivity(row: Row, lastCompletedAt: string | null): Activity {
     nextDueOn: row.next_due_on,
     responsiblePersonName: row.responsible_person_name,
     priority: row.priority,
+    reminderDays: row.reminder_days,
     archivedAt: row.archived_at,
     lastCompletedAt,
   };

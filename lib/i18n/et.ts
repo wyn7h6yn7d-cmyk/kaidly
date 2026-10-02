@@ -12,6 +12,33 @@ export const et = {
     description:
       "KAIDLY on digitaalne käidupäevik elektripaigaldistele: käidupäevik, käidukava, puudused ja dokumendid ühes kohas.",
   },
+  countdown: {
+    left: (days: number) => (days === 1 ? "1 päev jäänud" : `${days} päeva jäänud`),
+    today: "Tähtaeg täna",
+    overdue: (days: number) => (days === 1 ? "1 päev üle tähtaja" : `${days} päeva üle tähtaja`),
+  },
+  notifications: {
+    title: "Teavitused",
+    intro: "Käidukava tähtaegade meeldetuletused. Neid saavad ettevõtte omanikud, administraatorid ja käitajad.",
+    bell: (unread: number) => (unread === 0 ? "Teavitused" : unread === 1 ? "Teavitused, 1 lugemata" : `Teavitused, ${unread} lugemata`),
+    tabs: { unread: "Lugemata", all: "Kõik" },
+    unreadCount: (n: number) => (n === 1 ? "1 lugemata" : `${n} lugemata`),
+    markRead: "Märgi loetuks",
+    markAllRead: "Märgi kõik loetuks",
+    view: "Vaata tegevust",
+    unread: "Lugemata",
+    due: (date: string) => `Tähtaeg ${date}`,
+    reminder: (days: number) =>
+      days === 0 ? "Meeldetuletus tähtaja päeval" : days === 1 ? "Meeldetuletus 1 päev ette" : `Meeldetuletus ${days} päeva ette`,
+    historical: "Varasem kordus — tegevus on vahepeal tehtud või ümber planeeritud.",
+    archived: "Tegevus on arhiveeritud.",
+    empty: "Teavitusi pole.",
+    emptyUnread: "Lugemata teavitusi pole.",
+    newer: "Uuemad",
+    older: "Vanemad",
+    toastLabel: "Uus meeldetuletus",
+    close: "Sulge",
+  },
   common: {
     language: "Keel",
     loading: "Laen…",
@@ -178,6 +205,7 @@ export const et = {
   },
   /** Safe, application-controlled messages. Keys are the only thing that travels in URLs. */
   errors: {
+    reminders_invalid: "Kontrolli meeldetuletusi: päevade arv peab olema 0–365.",
     account_disabled: "See konto on peatatud. Võta ühendust KAIDLY toega.",
     current_password_wrong: "Praegune parool ei ole õige.",
     password_mismatch: "Paroolid ei kattu. Sisesta uus parool mõlemasse välja ühtemoodi.",
@@ -587,6 +615,23 @@ export const et = {
       submitCreate: "Lisa tegevus",
       saving: "Salvestan…",
       filters: { state: "Seis", priority: "Prioriteet" },
+      reminders: {
+        legend: "Meeldetuletused",
+        hint: "Millal KAIDLY tuletab omanikele, administraatoritele ja käitajatele tähtaega meelde. Tähtaeg ise ei muutu.",
+        option: (days: number) => (days === 1 ? "1 päev enne" : `${days} päeva enne`),
+        custom: "Muu (päeva enne tähtaega)",
+        customHint: "0–365; 0 tähendab tähtaja päeval.",
+        none: "Meeldetuletusi pole",
+        label: "Meeldetuletused",
+        summary: (days: number[]) => {
+          const numbers = days.filter((d) => d > 0);
+          const last = numbers[numbers.length - 1];
+          const list = numbers.length
+            ? `${numbers.length > 1 ? `${numbers.slice(0, -1).join(", ")} ja ` : ""}${last} ${last === 1 && numbers.length === 1 ? "päev" : "päeva"} enne tähtaega`
+            : "";
+          return [list, days.includes(0) ? "tähtaja päeval" : ""].filter(Boolean).join(" ja ");
+        },
+      },
     },
     deficiencies: {
       title: "Puudused",

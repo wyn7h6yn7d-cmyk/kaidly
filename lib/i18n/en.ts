@@ -16,6 +16,33 @@ export const en: Messages = {
     description:
       "KAIDLY is a digital operating log for electrical installations: operating log, operating plan, deficiencies and documents in one place.",
   },
+  countdown: {
+    left: (days: number) => (days === 1 ? "1 day left" : `${days} days left`),
+    today: "Due today",
+    overdue: (days: number) => (days === 1 ? "1 day overdue" : `${days} days overdue`),
+  },
+  notifications: {
+    title: "Notifications",
+    intro: "Reminders for operating plan deadlines. Owners, admins and operators of the organisation receive them.",
+    bell: (unread: number) => (unread === 0 ? "Notifications" : `Notifications, ${unread} unread`),
+    tabs: { unread: "Unread", all: "All" },
+    unreadCount: (n: number) => `${n} unread`,
+    markRead: "Mark as read",
+    markAllRead: "Mark all as read",
+    view: "View activity",
+    unread: "Unread",
+    due: (date: string) => `Due ${date}`,
+    reminder: (days: number) =>
+      days === 0 ? "Reminder on the due date" : days === 1 ? "Reminder 1 day ahead" : `Reminder ${days} days ahead`,
+    historical: "Earlier occurrence — the activity has since been completed or rescheduled.",
+    archived: "The activity is archived.",
+    empty: "No notifications.",
+    emptyUnread: "No unread notifications.",
+    newer: "Newer",
+    older: "Older",
+    toastLabel: "New reminder",
+    close: "Close",
+  },
   common: {
     language: "Language",
     loading: "Loading…",
@@ -179,6 +206,7 @@ export const en: Messages = {
     },
   },
   errors: {
+    reminders_invalid: "Check the reminders: the number of days must be 0–365.",
     account_disabled: "This account has been suspended. Contact KAIDLY support.",
     current_password_wrong: "The current password is not correct.",
     password_mismatch: "The passwords don't match. Type the new password the same way in both fields.",
@@ -587,6 +615,23 @@ export const en: Messages = {
       submitCreate: "Add activity",
       saving: "Saving…",
       filters: { state: "Status", priority: "Priority" },
+      reminders: {
+        legend: "Reminders",
+        hint: "When KAIDLY reminds owners, admins and operators of the deadline. The due date itself doesn't change.",
+        option: (days: number) => (days === 1 ? "1 day before" : `${days} days before`),
+        custom: "Other (days before the due date)",
+        customHint: "0–365; 0 means on the due date.",
+        none: "No reminders",
+        label: "Reminders",
+        summary: (days: number[]) => {
+          const numbers = days.filter((d) => d > 0);
+          const last = numbers[numbers.length - 1];
+          const list = numbers.length
+            ? `${numbers.length > 1 ? `${numbers.slice(0, -1).join(", ")} and ` : ""}${last} ${last === 1 && numbers.length === 1 ? "day" : "days"} before the due date`
+            : "";
+          return [list, days.includes(0) ? "on the due date" : ""].filter(Boolean).join(" and ");
+        },
+      },
     },
     deficiencies: {
       title: "Deficiencies",
