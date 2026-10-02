@@ -10,8 +10,10 @@ brief. Where the two differ, this document records which one wins and why.
 ## 0. What the brand board establishes
 
 - **Logo**: a slanted green lightning-bolt mark + heavy geometric wordmark `KAIDLY`.
-  Variants: dark on light, light on dark (black tile), black mono. App icon: green bolt on a
-  near-black rounded square. Descriptor line: *ELECTRICAL OPERATIONS. SIMPLIFIED.* /
+  Variants: dark on light, light on dark (black tile), black mono. App icon: volt bolt on a
+  deep-green rounded square (`app/icon.svg`, plus `favicon.ico` 16/32/48 and
+  `apple-icon.png` 180, generated from it) — bold enough for 16 px and visible on light and
+  dark browser chrome. Descriptor line: *ELECTRICAL OPERATIONS. SIMPLIFIED.* /
   *Digitaalne käiduraamat elektripaigaldistele*.
 - **Brand messages**: "Elektripaigaldise käit. Lihtsalt." · "Ohutumad paigaldised. Vähem Excelit." ·
   "Ohutumad paigaldised, targem haldus, parem homme."
@@ -106,7 +108,7 @@ Rules:
   links and active text use deep green.
 - **Focus ring**: deep green on light surfaces (volt is only 2 : 1 there and fails the 3 : 1
   rule for UI parts); volt on deep green surfaces (`.focus-on-dark` utility).
-- Status is never colour-only: always colour + word or icon ("Üle tähtaja · 3 päeva").
+- Status is never colour-only: always colour + word or icon ("3 päeva üle tähtaja").
 - All text meets WCAG AA (4.5 : 1); large text and UI parts 3 : 1.
 - Light theme only in the MVP. The starter's dark mode toggle (`next-themes`) is removed —
   one theme done well. (Field use in bright daylight favours a light UI.)
@@ -205,6 +207,13 @@ requests to Google).
 
 ## 5a. Public landing page (implemented, refined 2026-10-02)
 
+**Desktop scale (polish pass 2026-10-02):** the public container is `--k-max-site: 100rem`
+(1600 px incl. gutters, gutters up to 64 px); `display-1/2/3` and `lead` grow to 80/72/42/23 px;
+`xl` buttons are 60 px tall on desktop; header nav 17 px; small uppercase labels are
+13–14 px with modest tracking (0.1–0.12em). No long decorative dashes before labels —
+typography and spacing carry hierarchy; list markers are a short volt square. Section
+order and palette are unchanged; mobile sizes are unchanged.
+
 Every section sits on the **same container** (`.k-container`, §9) and the same vertical
 rhythm (`.k-section`); nothing is positioned against the viewport. Sections:
 
@@ -213,7 +222,7 @@ rhythm (`.k-section`); nothing is positioned against the viewport. Sections:
    compact code select; below 768 px "Loo konto" lives in the hero only. Links come from
    `components/marketing/public-nav.ts` (a future **Hinnad / Pricing** page is one entry).
 2. **Hero** (paper + grain) — 7/5 columns: eyebrow, "Elektripaigaldise käit. Lihtsalt."
-   (`text-display-1`, max ~70 px — not oversized), lead, **Loo konto →** and **Vaata,
+   (`text-display-1`, max 80 px — one line from 1440 px up), lead, **Loo konto →** and **Vaata,
    kuidas töötab ↓**, and the one handwritten note "kõik kirjas, mitte kellegi peas".
    Right: the **photo slot** (`hero-visual.tsx`) — intended for licensed switchgear
    photography with a few engineering-markup annotations (PK-01, Viimane kontroll 12.03.,

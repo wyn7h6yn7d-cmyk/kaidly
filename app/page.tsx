@@ -35,19 +35,18 @@ export default async function Home() {
       <main className="flex-1">
         {/* Hero */}
         <section className="k-grain">
-          <div className="k-container grid grid-cols-1 items-center gap-12 py-12 sm:py-16 lg:grid-cols-12 lg:gap-12 lg:py-24">
-            <div className="min-w-0 lg:col-span-7">
-              <p className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-k-muted [overflow-wrap:anywhere]">
-                <span aria-hidden="true" className="h-px w-8 shrink-0 bg-k-ink" />
-                <span className="min-w-0">{l.hero.eyebrow}</span>
+          <div className="k-container grid grid-cols-1 items-center gap-12 py-12 sm:py-16 lg:grid-cols-12 lg:gap-14 lg:py-28 2xl:py-32">
+            <div className="min-w-0 lg:col-span-8 xl:col-span-7">
+              <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-k-muted [overflow-wrap:anywhere] lg:text-sm">
+                {l.hero.eyebrow}
               </p>
-              <h1 className="mt-6 font-display text-display-1 font-extrabold [hyphens:auto] [overflow-wrap:break-word]">
+              <h1 className="mt-5 font-display text-display-1 font-extrabold [hyphens:auto] [overflow-wrap:break-word]">
                 {l.hero.lineOne}
                 <br />
                 <span className="text-k-green">{l.hero.lineTwo}</span>
               </h1>
-              <p className="mt-7 max-w-xl text-lead text-k-muted">{l.hero.lead}</p>
-              <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <p className="mt-7 max-w-2xl text-lead text-k-muted">{l.hero.lead}</p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Button asChild size="xl">
                   <Link href="/auth/sign-up">
                     {l.hero.primary}
@@ -61,11 +60,11 @@ export default async function Home() {
                   </Link>
                 </Button>
               </div>
-              <p className="mt-10 font-hand text-[28px] leading-tight text-k-green">
+              <p className="mt-10 font-hand text-[28px] leading-tight text-k-green lg:text-[32px]">
                 <span className="inline-block -rotate-2">{l.hero.note}</span>
               </p>
             </div>
-            <div className="min-w-0 lg:col-span-5">
+            <div className="min-w-0 lg:col-span-4 xl:col-span-5">
               <HeroVisual />
             </div>
           </div>
@@ -79,8 +78,8 @@ export default async function Home() {
               <p className="mt-6 max-w-md text-lead text-white/85">{l.excel.body}</p>
               <ul className="mt-10 space-y-4 border-t border-white/20 pt-6">
                 {l.excel.points.map((point) => (
-                  <li key={point} className="flex gap-4 text-base text-white/90">
-                    <span aria-hidden="true" className="mt-3 h-px w-6 shrink-0 bg-k-volt" />
+                  <li key={point} className="flex gap-4 text-base text-white/90 lg:text-lg">
+                    <span aria-hidden="true" className="mt-2.5 size-1.5 shrink-0 bg-k-volt" />
                     {point}
                   </li>
                 ))}
@@ -98,20 +97,20 @@ export default async function Home() {
             <div className="lg:col-span-5">
               <div className="lg:sticky lg:top-10">
                 <h2 className="font-display text-display-2 font-extrabold">{l.questions.title}</h2>
-                <p className="mt-5 max-w-sm text-lead text-k-muted">{l.questions.intro}</p>
+                <p className="mt-6 max-w-md text-lead text-k-muted">{l.questions.intro}</p>
               </div>
             </div>
             <ol className="border-t-2 border-k-ink lg:col-span-7">
               {l.questions.items.map((item, i) => (
-                <li key={item.q} className="grid grid-cols-1 gap-4 border-b border-k-line py-9 sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-6">
-                  <span aria-hidden="true" className="font-mono text-sm text-k-muted sm:pt-2">
+                <li key={item.q} className="grid grid-cols-1 gap-4 border-b border-k-line py-10 sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-6 lg:py-12">
+                  <span aria-hidden="true" className="font-mono text-base text-k-muted sm:pt-2">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 md:gap-10">
+                  <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 md:gap-10 xl:gap-14">
                     <p className="hyphens-auto break-words font-display text-display-3 font-bold">„{item.q}“</p>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-k-green">{item.where}</p>
-                      <p className="mt-2 text-[17px] leading-relaxed text-k-ink/80">{item.a}</p>
+                      <p className="text-sm font-bold uppercase tracking-[0.1em] text-k-green lg:text-[15px]">{item.where}</p>
+                      <p className="mt-2 text-[17px] leading-relaxed text-k-ink/85 lg:text-lg">{item.a}</p>
                     </div>
                   </div>
                 </li>
@@ -126,8 +125,8 @@ export default async function Home() {
           <div className="k-container k-section relative">
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
               <div className="lg:col-span-7">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-k-muted [overflow-wrap:anywhere]">{l.system.eyebrow}</p>
-                <h2 className="mt-3 font-display text-display-2 font-extrabold">{l.system.title}</h2>
+                <p className="font-mono text-[13px] uppercase tracking-[0.12em] text-k-muted [overflow-wrap:anywhere] lg:text-sm">{l.system.eyebrow}</p>
+                <h2 className="mt-4 font-display text-display-2 font-extrabold">{l.system.title}</h2>
               </div>
               <p className="max-w-xl text-lead text-k-muted lg:col-span-5 lg:self-end">{l.system.body}</p>
             </div>
@@ -135,7 +134,7 @@ export default async function Home() {
               <div className="p-5 sm:p-10 lg:p-14">
                 <SystemDiagram />
               </div>
-              <p className="border-t border-k-ink/70 px-5 py-3 font-mono text-xs uppercase tracking-[0.18em] text-k-muted sm:px-10 lg:px-14">
+              <p className="border-t border-k-ink/70 px-5 py-3 font-mono text-[13px] uppercase tracking-[0.12em] text-k-muted sm:px-10 lg:px-14">
                 KAIDLY · {l.system.sheet}
               </p>
             </div>
@@ -144,17 +143,17 @@ export default async function Home() {
 
         {/* Mobile entry: written where the work was done */}
         <section className="k-grain bg-k-ink text-white">
-          <div className="k-container k-section grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-12">
+          <div className="k-container k-section grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-16">
             <div className="min-w-0 lg:col-span-6">
               <h2 className="font-display text-display-2 font-extrabold">{l.phone.title}</h2>
               <p className="mt-6 max-w-xl text-lead text-white/80">{l.phone.body}</p>
               <ol className="mt-10 border-t border-white/20">
                 {l.phone.steps.map((step, i) => (
-                  <li key={step.title} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-4 border-b border-white/20 py-5">
-                    <span className="font-display text-3xl font-extrabold text-k-volt">{i + 1}</span>
+                  <li key={step.title} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-4 border-b border-white/20 py-5 lg:grid-cols-[3.5rem_minmax(0,1fr)] lg:py-6">
+                    <span className="font-display text-3xl font-extrabold text-k-volt lg:text-4xl">{i + 1}</span>
                     <div>
-                      <p className="text-xl font-bold">{step.title}</p>
-                      <p className="mt-1 text-base text-white/75">{step.body}</p>
+                      <p className="text-xl font-bold lg:text-2xl">{step.title}</p>
+                      <p className="mt-1 text-base text-white/75 lg:text-lg">{step.body}</p>
                     </div>
                   </li>
                 ))}
@@ -168,12 +167,12 @@ export default async function Home() {
 
         {/* Final call to action */}
         <section className="bg-k-volt text-k-ink">
-          <div className="k-container grid grid-cols-1 gap-10 py-16 sm:py-20 lg:grid-cols-12 lg:items-end lg:py-24">
+          <div className="k-container grid grid-cols-1 gap-10 py-16 sm:py-20 lg:grid-cols-12 lg:items-end lg:gap-14 lg:py-28 2xl:py-32">
             <div className="lg:col-span-8">
               <h2 className="font-display text-display-1 font-extrabold">{l.cta.title}</h2>
-              <p className="mt-5 max-w-xl text-lead">{l.cta.body}</p>
+              <p className="mt-6 max-w-2xl text-lead">{l.cta.body}</p>
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row lg:col-span-4 lg:flex-col lg:items-stretch">
+            <div className="flex flex-col gap-3 sm:flex-row lg:col-span-4 lg:flex-col lg:items-stretch xl:pl-8">
               <Button asChild size="xl" variant="dark">
                 <Link href="/auth/sign-up">
                   {t.common.signUp}

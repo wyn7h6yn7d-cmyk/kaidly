@@ -30,8 +30,11 @@ export function LogoMark({
 export function Logo({
   className,
   tone = "dark",
+  large = false,
 }: {
   className?: string;
+  /** Public header: a step up from desktop widths. */
+  large?: boolean;
   /** dark = ink wordmark for light backgrounds; light = white wordmark for dark backgrounds */
   tone?: "dark" | "light";
 }) {
@@ -41,11 +44,12 @@ export function Logo({
       aria-label="KAIDLY"
       role="img"
     >
-      <LogoMark />
+      <LogoMark className={large ? "lg:h-8 lg:w-8" : undefined} />
       <span
         aria-hidden="true"
         className={cn(
           "font-display text-[22px] font-extrabold leading-none tracking-[-0.01em]",
+          large && "lg:text-[26px]",
           tone === "light" ? "text-white" : "text-k-ink",
         )}
       >

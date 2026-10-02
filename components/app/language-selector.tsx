@@ -14,9 +14,12 @@ import { cn } from "@/lib/utils";
 export function LanguageSelector({
   tone = "dark",
   compact = false,
+  large = false,
   className,
 }: {
   tone?: "dark" | "light";
+  /** Public pages: slightly larger labels on desktop. */
+  large?: boolean;
   /** Below 1024 px: a compact native select instead of three buttons (saves header width). */
   compact?: boolean;
   className?: string;
@@ -46,6 +49,7 @@ export function LanguageSelector({
             onClick={() => choose(locale)}
             className={cn(
               "flex h-11 min-w-11 items-center justify-center rounded-sm px-2 text-sm font-semibold uppercase tracking-wide",
+              large && "lg:text-[15px]",
               tone === "light" ? "focus-on-dark" : "",
               active
                 ? tone === "light"

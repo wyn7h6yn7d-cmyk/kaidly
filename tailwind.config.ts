@@ -49,10 +49,10 @@ export default {
       // Fluid type scale (docs/DESIGN.md §3). Marketing sizes may be large; app headings
       // stay practical; body copy never drops below 15 px.
       fontSize: {
-        "display-1": ["clamp(2.05rem, 1.1rem + 3.3vw, 4.4rem)", { lineHeight: "0.98", letterSpacing: "-0.035em" }],
-        "display-2": ["clamp(2.1rem, 1.4rem + 2.9vw, 4rem)", { lineHeight: "1.04", letterSpacing: "-0.03em" }],
-        "display-3": ["clamp(1.55rem, 1.25rem + 1.25vw, 2.35rem)", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
-        lead: ["clamp(1.125rem, 1rem + 0.45vw, 1.375rem)", { lineHeight: "1.55" }],
+        "display-1": ["clamp(2.05rem, 0.8rem + 4vw, 5rem)", { lineHeight: "0.98", letterSpacing: "-0.035em" }],
+        "display-2": ["clamp(2.1rem, 1.2rem + 3.1vw, 4.5rem)", { lineHeight: "1.04", letterSpacing: "-0.03em" }],
+        "display-3": ["clamp(1.55rem, 1.2rem + 1.4vw, 2.6rem)", { lineHeight: "1.15", letterSpacing: "-0.02em" }],
+        lead: ["clamp(1.125rem, 0.95rem + 0.55vw, 1.4375rem)", { lineHeight: "1.55" }],
       },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],

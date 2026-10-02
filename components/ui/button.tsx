@@ -24,7 +24,7 @@ const buttonVariants = cva(
         sm: "min-h-11 px-3 py-1.5 text-sm sm:min-h-9",
         lg: "min-h-12 px-6 py-2.5 text-base",
         // Marketing calls to action next to display-size headings.
-        xl: "min-h-14 px-7 py-3 text-[17px] [&_svg]:size-5",
+        xl: "min-h-14 px-7 py-3 text-[17px] lg:min-h-[60px] lg:px-8 lg:text-lg [&_svg]:size-5",
         icon: "h-11 w-11",
       },
     },

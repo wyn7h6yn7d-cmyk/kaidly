@@ -29,7 +29,7 @@ export async function HeroVisual() {
         />
       )}
       <div aria-hidden="true" className="k-grid pointer-events-none absolute inset-0 text-white/[0.05]" />
-      <div className="relative mx-auto w-full max-w-[520px] px-6 py-8 sm:px-10 sm:py-12">
+      <div className="relative mx-auto w-full max-w-[620px] px-6 py-8 sm:px-10 sm:py-12 xl:px-12 xl:py-14">
         <HeroFigure label={h.figureLabel} title={h.figureTitle} meta={h.figureMeta} callouts={h.callouts} />
       </div>
     </figure>
