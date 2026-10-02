@@ -4,10 +4,10 @@ test.describe("Organisatsioonid", () => {
   test("create an organisation and switch between two @responsive", async ({ page }) => {
     const user = await createUser("Olev Omanik");
     await login(page, user);
-    await page.getByRole("link", { name: "Loo organisatsioon" }).first().click();
+    await page.getByRole("link", { name: "Loo ettevõte" }).first().click();
     await field(page, "name").fill("Esimene Elekter OÜ");
-    await page.getByRole("button", { name: "Loo organisatsioon" }).click();
-    await expect(page).toHaveURL(/\/o\/esimene-elekter-ou-[a-z2-9]{6}$/);
+    await page.getByRole("button", { name: "Loo ettevõte" }).click();
+    await expect(page).toHaveURL(/\/o\/esimene-elekter-ou-[a-z2-9]{6}(\?uus=1)?$/);
     await expect(page.getByText("Sinu roll: Omanik")).toBeVisible();
     await expectNoHorizontalScroll(page);
 
@@ -15,7 +15,7 @@ test.describe("Organisatsioonid", () => {
     await addMember(other, user, "viewer");
     await page.reload(); // the switcher lists memberships as of page load
     await page
-      .getByRole("button", { name: /Vali organisatsioon: Esimene Elekter OÜ/ })
+      .getByRole("button", { name: /Vali ettevõte: Esimene Elekter OÜ/ })
       .filter({ visible: true })
       .first()
       .click();
@@ -57,9 +57,9 @@ test.describe("Organisatsioonid", () => {
     const mine = await createOrg("Minu OÜ");
     const theirs = await createOrg("Nende OÜ");
     await login(page, mine.users.owner, `/o/${theirs.slug}`);
-    await expect(page.getByRole("heading", { name: "Organisatsiooni ei leitud" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ettevõtet ei leitud" })).toBeVisible();
     await expect(page.getByText("Nende OÜ")).toHaveCount(0);
     await page.goto(`/o/${theirs.slug}/seaded/liikmed`);
-    await expect(page.getByRole("heading", { name: "Organisatsiooni ei leitud" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ettevõtet ei leitud" })).toBeVisible();
   });
 });

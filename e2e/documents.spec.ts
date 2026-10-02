@@ -131,7 +131,7 @@ test.describe("Dokumendid ja fotod", () => {
     await page.getByRole("button", { name: "Arhiveeri" }).click();
     await expect(page.getByRole("button", { name: "Taasta" })).toBeVisible();
     await page.goto(`/o/${org.slug}/dokumendid`);
-    await expect(page.getByText("Dokumente pole veel üles laaditud.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Dokumente pole veel lisatud" })).toBeVisible();
     await page.getByRole("link", { name: "Arhiveeritud dokumendid" }).click();
     await page.getByRole("link", { name: "Ühejooneskeem PJK-1" }).click();
     await page.getByRole("button", { name: "Taasta" }).click();

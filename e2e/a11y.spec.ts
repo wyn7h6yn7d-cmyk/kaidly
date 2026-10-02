@@ -31,7 +31,7 @@ async function expectAccessible(page: Page) {
 }
 
 test("main pages pass axe (WCAG 2.1 AA) and fit the screen @responsive", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   const org = await createOrg();
   const site = await createSite(org, "Tootmishoone", "Tööstuse 1, Tallinn");
   const installation = await createInstallation(org, site, "Peajaotuskilp", "PJK-1");
@@ -60,8 +60,15 @@ test("main pages pass axe (WCAG 2.1 AA) and fit the screen @responsive", async (
     `${base}/dokumendid`,
     `${base}/dokumendid/uus`,
     `${base}/dokumendid/${doc}`,
+    `${base}/abi`,
+    `${base}/seaded/kustuta`,
   ];
-  await login(page, org.users.admin, base);
+  // An empty second organisation: the getting-started checklist and module empty states.
+  const empty = await createOrg("Tühi OÜ");
+  sql(`insert into public.organisation_members (organisation_id, user_id, role) values ('${empty.id}', '${org.users.owner.id}', 'owner');`);
+  const emptyBase = `/o/${empty.slug}`;
+  pages.push(emptyBase, `${emptyBase}/objektid`, `${emptyBase}/paevik`, `${emptyBase}/kaidukava`, `${emptyBase}/puudused`, `${emptyBase}/dokumendid`, `${emptyBase}/paigaldised/uus`);
+  await login(page, org.users.owner, base);
   for (const path of pages) {
     await page.goto(path);
     await page.locator("main h1").first().waitFor();

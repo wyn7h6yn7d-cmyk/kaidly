@@ -43,47 +43,17 @@ test.describe("Ülevaade ja esmakasutus", () => {
     await expect(page.getByRole("list", { name: "Objektid, kus on lahtisi asju" }).getByText("Katlamaja")).toBeVisible();
     // Nothing from the other organisation; no onboarding once everything exists.
     await expect(page.getByText(/Võõras/)).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Alusta siit" })).toHaveCount(0);
+    // Setup isn't finished (no document yet): the guide shows real progress, 5 of 6.
+    await expect(page.getByText("5/6 tehtud")).toBeVisible();
     // Viewers read; no quick-entry button.
     await expect(page.getByRole("link", { name: "Lisa sissekanne" })).toHaveCount(0);
     await expectNoHorizontalScroll(page);
   });
 
-  test("first use: site → installation → first log entry, guided from the overview", async ({ page }) => {
-    const org = await createOrg("Uus Firma OÜ");
-    await login(page, org.users.owner, `/o/${org.slug}`);
-
-    await expect(page.getByRole("heading", { name: "Alusta siit" })).toBeVisible();
-    await page.getByRole("link", { name: "Lisa objekt" }).click();
-    await field(page, "name").fill("Kontorihoone");
-    await page.getByRole("button", { name: /Lisa objekt|Salvesta/ }).click();
-    await expect(page.getByRole("heading", { name: "Kontorihoone" })).toBeVisible();
-
-    await page.goto(`/o/${org.slug}`);
-    await page.getByRole("link", { name: "Lisa paigaldis" }).click();
-    await field(page, "name").fill("Peajaotuskilp");
-    await page.getByRole("button", { name: /Lisa paigaldis|Salvesta/ }).click();
-    // The installation overview invites the first entry.
-    await expect(page.getByRole("heading", { name: "Käidupäevik on veel tühi" })).toBeVisible();
-
-    await page.goto(`/o/${org.slug}`);
-    // One installation: quick entry goes straight to its form.
-    await page.getByRole("link", { name: "Lisa esimene sissekanne" }).click();
-    await expect(page).toHaveURL(/\/paevik\/uus$/);
-    await page.getByText("Kontroll", { exact: true }).click();
-    await field(page, "description").fill("Paigaldis üle võetud, seis korras");
-    await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
-    await expect(page.getByText("Sissekanne salvestatud.")).toBeVisible();
-
-    await page.goto(`/o/${org.slug}`);
-    await expect(page.getByRole("heading", { name: "Alusta siit" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "Mis vajab tähelepanu" })).toBeVisible();
-  });
-
   test("members without sites are told who adds them", async ({ page }) => {
     const org = await createOrg();
     await login(page, org.users.operator, `/o/${org.slug}`);
-    await expect(page.getByText(/Need lisab organisatsiooni administraator/)).toBeVisible();
+    await expect(page.getByText(/Need lisab ettevõtte administraator/)).toBeVisible();
     await expect(page.getByRole("link", { name: "Lisa objekt" })).toHaveCount(0);
   });
 

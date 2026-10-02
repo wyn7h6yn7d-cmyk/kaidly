@@ -30,7 +30,7 @@ test.describe("Autentimine", () => {
     // The confirmation link works in the same browser (PKCE).
     await page.goto(await confirmationLink(email));
     await expect(page).toHaveURL(/\/o(\?.*)?$/);
-    await expect(page.getByText("Sa ei kuulu veel ühtegi organisatsiooni")).toBeVisible();
+    await expect(page.getByText("Sul pole aktiivset ettevõtet")).toBeVisible();
   });
 
   test("short password and mismatched passwords are caught before sign-up", async ({ page }) => {

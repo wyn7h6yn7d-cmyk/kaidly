@@ -78,7 +78,13 @@ test.describe("Paigutus", () => {
       `${base}/puudused/uus`,
       `${base}/dokumendid`,
       `${base}/sissekanne`,
+      `${base}/abi`,
+      `${base}/seaded/kustuta`,
     ];
+    // An empty organisation: checklist and module empty states.
+    const empty = await createOrg("Tühi OÜ");
+    sql(`insert into public.organisation_members (organisation_id, user_id, role) values ('${empty.id}', '${org.users.owner.id}', 'owner');`);
+    appPages.push(`/o/${empty.slug}`, `/o/${empty.slug}/objektid`, `/o/${empty.slug}/paevik`, `/o/${empty.slug}/kaidukava`, `/o/${empty.slug}/paigaldised/uus`);
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
       for (const path of publicPages) {
@@ -87,7 +93,7 @@ test.describe("Paigutus", () => {
         await checkEdges(page);
       }
     }
-    await login(page, org.users.admin, base);
+    await login(page, org.users.owner, base);
     for (const width of WIDTHS) {
       await page.setViewportSize({ width, height: 900 });
       for (const path of appPages) {

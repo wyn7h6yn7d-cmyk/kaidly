@@ -13,7 +13,7 @@ test.describe("Objektid ja paigaldised", () => {
   test("admin creates a site and an installation, edits and archives @responsive", async ({ page }) => {
     const org = await createOrg();
     await login(page, org.users.admin, `/o/${org.slug}/objektid`);
-    await expect(page.getByText("Objekte pole veel lisatud")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Alusta esimesest objektist" })).toBeVisible();
     await page.getByRole("link", { name: "Lisa objekt" }).first().click();
     await field(page, "name").fill("Tallinna logistikakeskus");
     await field(page, "address").fill("Laki 12, Tallinn");

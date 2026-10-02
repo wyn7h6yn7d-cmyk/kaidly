@@ -37,7 +37,7 @@ test.describe("Käidupäevik", () => {
     const installation = await createInstallation(org, site, "Kilp");
 
     await login(page, org.users.viewer, `/o/${org.slug}/paigaldised/${installation}/paevik`);
-    await expect(page.getByText("Käidupäevikus pole veel sissekandeid.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Käidupäevik on veel tühi" })).toBeVisible();
     await expect(page.getByRole("link", { name: /Lisa (esimene )?sissekanne/ })).toHaveCount(0);
 
     await page.goto(`/o/${org.slug}/paigaldised/${installation}/paevik/uus`);
@@ -112,10 +112,12 @@ test.describe("Käidupäevik", () => {
     await page.getByText("Rike", { exact: true }).click();
     await field(page, "description").fill("Kaitse rakendus");
     await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
+    await expect(page.getByText("Sissekanne salvestatud.")).toBeVisible();
     await page.goto(`/o/${org.slug}/paigaldised/${second}/paevik/uus`);
     await page.getByText("Kontroll", { exact: true }).click();
     await field(page, "description").fill("Teise kilbi kontroll");
     await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
+    await expect(page.getByText("Sissekanne salvestatud.")).toBeVisible();
 
     await page.goto(`/o/${org.slug}/paevik`);
     await expect(page.getByText("Kaitse rakendus")).toBeVisible();

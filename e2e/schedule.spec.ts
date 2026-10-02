@@ -21,7 +21,7 @@ test.describe("Käidukava", () => {
 
     // Admin creates a monthly activity from the installation (context not asked again).
     await login(page, org.users.admin, `/o/${org.slug}/paigaldised/${installation}/kaidukava`);
-    await page.getByRole("link", { name: "Lisa tegevus" }).first().click();
+    await page.getByRole("link", { name: /Lisa (esimene )?tegevus/ }).first().click();
     await expect(page.locator('input[type="hidden"][name="installationId"]')).toHaveCount(1);
     await expect(page.locator('select[name="installationId"]')).toHaveCount(0);
     await field(page, "title").fill("Kilbi visuaalne kontroll");
