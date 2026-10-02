@@ -84,7 +84,14 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Select explicit columns. Map database errors to Estonian user messages.
 - Lists that grow over time are paginated with a deterministic order (id tie-break); no
   per-row queries (N+1) and no signing URLs for whole lists.
-- UI strings in `lib/i18n/et.ts`, used via `t` from `@/lib/i18n`. No hard-coded user-facing text in components.
+- UI strings live in `lib/i18n/et.ts` (source) **and** `en.ts`, `ru.ts` (same keys — the typecheck
+  and `tests/unit/i18n.test.ts` fail otherwise). Server code: `const t = await getT()` from
+  `@/lib/i18n/server`; client components: `const t = useT()` from `@/lib/i18n/client`. No
+  hard-coded user-facing text; dates/numbers via `t.fmt`. Never translate identifiers,
+  filenames or user input. Russian changes need native electrical-professional review.
+- Actions return error **codes** (`failure("code")`, `ActionState.errorCode`), never text;
+  `FormMessage code={...}` translates them.
+- Routes never change with the language.
 - User-facing errors are application-controlled codes mapped to messages (`lib/auth/errors.ts`,
   `t.errors`). Never display or put provider/database error text in URLs.
 - Redirect targets from user input go through `safeRedirectPath` (allowlist in `lib/auth/redirect.ts`).
@@ -96,11 +103,15 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 
 **Design**
 - Follow `docs/DESIGN.md`. Restrained, industrial, light theme only.
+- Layout system (DESIGN.md §9): `.k-container` (public) / `.k-app-container` (app), fluid
+  gutters, `minmax(0,1fr)` grid tracks and `min-w-0` children, buttons may wrap, no
+  negative-margin patches, no `overflow-x: hidden` to hide bugs. `e2e/layout.spec.ts` must
+  pass (320–1440 px, 200 % text).
 - No gradients, glow, glassmorphism, card grids, illustrations, big radii or heavy shadows.
 - Mobile-first: 44 px touch targets, 16 px inputs, primary action in thumb reach.
 
 ## Definition of done
 
-`npm run check` and `npm run test:e2e` pass (CI runs the same); RLS tests cover touched tables; the feature
+`npm run check` and `npm run test:e2e` pass (CI runs the same), including the layout and ET/EN/RU accessibility specs; RLS tests cover touched tables; the feature
 works at 375 px (no horizontal scroll, 44 px targets); docs updated if behaviour or schema
 changed.

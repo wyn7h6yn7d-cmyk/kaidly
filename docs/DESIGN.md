@@ -131,7 +131,13 @@ requests to Google).
 - Strong black headings, tight but not cramped tracking; sentence case (Estonian style).
 - Body 16 px minimum on mobile (prevents iOS zoom on inputs); 15 px allowed in dense desktop tables.
 - Numbers tabular (`font-variant-numeric: tabular-nums`) in lists and tables.
-- Estonian formats via `Intl`: `12.03.2026`, `14:05`, decimal comma.
+- Dates, times and numbers via `Intl` per language (`t.fmt`): et `12.03.2026 14:05`,
+  en `12/03/2026 14:05`, ru `12.03.2026 14:05`; decimal comma in et/ru. Always Tallinn time.
+- Cyrillic: Inter, Manrope and Caveat are loaded with the `cyrillic` subset.
+- **Fluid scale** (`tailwind.config.ts`): `display-1` clamp(33–70 px) for the hero and final
+  CTA, `display-2` (34–64 px) section titles, `display-3` (25–38 px) editorial questions,
+  `lead` (18–22 px). App headings stay practical (28/32 px page title). Body text never
+  below 15 px; technical labels (12 px uppercase) only for eyebrows and drawing marks.
 
 ## 4. Shape, space, texture
 
@@ -197,41 +203,49 @@ requests to Google).
   ebaõnnestus) and a 44 px remove button; a thin progress bar while uploading. Refused
   files are listed in an alert with the reason.
 
-## 5a. Public landing page (implemented)
+## 5a. Public landing page (implemented, refined 2026-10-02)
 
-Sections, alternating surfaces for rhythm:
+Every section sits on the **same container** (`.k-container`, §9) and the same vertical
+rhythm (`.k-section`); nothing is positioned against the viewport. Sections:
 
-1. **Header** (paper).
-2. **Hero** (paper + grain): the full-width oversized headline (Manrope 800; on phones it
-   breaks after "Elektripaigaldise" so it can stay large), then the lead and CTAs left
-   (Loo konto / Logi sisse) and the deep green "photo slot" right. The slot holds a
-   technical line drawing of a switchboard with callouts and a drawing title block —
-   until real switchgear photography is licensed (D11), when the photo goes underneath.
-   One handwritten note: "kõik kirjas, mitte kellegi peas", with its arrow pointing right on
-   desktop and down on phones.
-3. **"Excel ei ole käiduraamat."** (deep green): editorial text left; the product's log view
-   (static HTML, fictional data) bleeding off the right edge — no laptop mock-up.
-4. **Real questions** (paper): numbered rows split by hairlines — question in display type,
-   KAIDLY's answer with the module name. No cards.
-5. **Structure** (paper-2 + technical grid): drawn as a single-line diagram — Objekt →
-   Elektripaigaldis → busbar → Käidupäevik, Käidukava, Puudused, Dokumendid; terminal
-   squares, drawing indices (A, B, Q1–Q4); vertical trunk on phones. Second handwritten
-   note: "üks koht, mitte kümme faili".
-6. **On the phone** (near-black): phone-sized entry form preview and the three steps.
-7. **Final CTA** (volt, ink text 8.8 : 1).
-8. **Footer** (near-black).
+1. **Header** — logo left; "Kuidas töötab", "Logi sisse", "Loo konto" and the language
+   selector right, on the same container as the hero. Below 1024 px the selector is a
+   compact code select; below 768 px "Loo konto" lives in the hero only. Links come from
+   `components/marketing/public-nav.ts` (a future **Hinnad / Pricing** page is one entry).
+2. **Hero** (paper + grain) — 7/5 columns: eyebrow, "Elektripaigaldise käit. Lihtsalt."
+   (`text-display-1`, max ~70 px — not oversized), lead, **Loo konto →** and **Vaata,
+   kuidas töötab ↓**, and the one handwritten note "kõik kirjas, mitte kellegi peas".
+   Right: the **photo slot** (`hero-visual.tsx`) — intended for licensed switchgear
+   photography with a few engineering-markup annotations (PK-01, Viimane kontroll 12.03.,
+   Järgmine mõõtmine 04/2027, Puudus kõrvaldatud ✓). Until a licensed photo is in the
+   repo it shows the technical drawing; set `HERO_PHOTO` to switch. No stock or
+   unlicensed images.
+3. **"Excel ei ole käiduraamat."** (deep green) — 4/8 columns; the product's log view
+   (static HTML, translated example data) is the proof, contained in the column with a
+   volt rule — no laptop mock-up, no bleed off the edge.
+4. **Real questions** (paper) — 5/7 columns; editorial numbered rows: question in
+   `display-3`, the KAIDLY module and answer at 17 px.
+5. **Structure** (paper-2 + grid) — an engineering sheet: Ettevõte → Objekt →
+   Elektripaigaldis → busbar → Käidupäevik, Käidukava, Puudused, Dokumendid, with a
+   title strip. Plain grid flow; connector lines are borders. Vertical rail on phones.
+6. **Mobile entry** (near-black) — "Kirja pandud seal, kus töö tehti.", three numbered
+   steps (Ava paigaldis · Lisa sissekanne · Salvesta) and a 340 px phone preview of the
+   real form.
+7. **Final CTA** (volt) — "Pane järgmine kontroll kirja." in `display-1` with `xl` buttons.
+8. **Footer** (near-black) — wordmark, tagline, links, language selector.
 
-Marketing-only tokens (not used in the application UI):
+Marketing-only tokens: `font-hand` (Caveat, latin-ext + cyrillic, loaded on the landing page
+only), `.k-grain`, `.k-grid`. Components: `components/marketing/`. Copy: `t.landing`
+(including the preview example data, so previews translate).
 
-| Token | Where | What |
-|---|---|---|
-| `font-hand` / `--font-hand` | `tailwind.config.ts`; loaded in `app/page.tsx` only | Caveat 600 (latin-ext) for handwritten notes |
-| `.k-grain` | `app/globals.css` | inline SVG fractal-noise paper grain at 5 % opacity |
-| `.k-grid` | `app/globals.css` | 24 px technical grid in `currentColor` (set very low alpha via `text-…/[0.05]`) |
+## 5b. Change history and language
 
-Components: `components/marketing/` (`hero-figure`, `hand-note`, `log-preview`,
-`phone-preview`, `system-diagram`). Copy lives in `t.landing`. Verified at 375, 768 and
-1440 px: no horizontal overflow, no axe violations, one h1.
+- **Muudatuste ajalugu** (Settings, owners/admins): rows of time + person, then one plain
+  sentence ("Objektid: lisati „Katlamaja“", "Puudus „X“: Avatud → Töös") and "Ava". A
+  filter by area. No diffs, no JSON, no charts.
+- **Language selector:** quiet — ET · EN · RU as small uppercase buttons (active one
+  underlined) in the public header/footer from 1024 px, a compact code select below; in
+  the app, the account menu and the account page. Switching re-renders in place.
 
 ## 6. Mobile UX
 
@@ -240,7 +254,9 @@ not a different product.
 
 ### Navigation
 
-- Bottom tab bar on mobile (thumb zone): **Ülevaade · Käidupäevik · Käidukava · Puudused · Rohkem**
+- Bottom tab bar on mobile (thumb zone): **Ülevaade · Päevik · Kava · Puudused · Rohkem** —
+  short labels per language (`t.app.navShort`, EN Log/Plan, RU Журнал/План); the full
+  term is the accessible name
   (Rohkem = Objektid, Dokumendid, Seaded). Sites are listed on the overview.
 - A full-width volt **"+ Lisa sissekanne"** button in the installation header on phones
   (hidden while the entry form itself is open), on the overview and on the organisation log.
@@ -271,9 +287,14 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
   uuesti" and "Jätka ilma nende failideta". More photos can be added from the entry page
   for 24 hours (author only); later ones go on a correction.
 
-**Not built yet (planned):** device-side drafts for poor signal (Phase 9), "Leidsin
-puuduse" shortcut that creates a deficiency from an entry, photos in the deficiency
-creation form (today: add them on the deficiency page right after saving).
+- **Deficiencies** take photos in the creation form too (same flow: saved first, then
+  uploaded; failure keeps the deficiency and the typed text).
+- **Drafts:** new entries, corrections and deficiencies keep unsaved text in this tab
+  (sessionStorage) — a reload or lost connection doesn't cost it; "Taastasime … mustandi"
+  with "Alusta tühjalt". A lost connection while saving shows the network error and keeps
+  everything typed.
+
+**Not built yet:** full offline mode (queued saves), "Leidsin puuduse" from an entry.
 
 ### Completing planned work and resolving deficiencies
 
@@ -289,7 +310,7 @@ creation form (today: add them on the deficiency page right after saving).
 - Works with gloves: no small icon-only controls for primary actions; no swipe-only gestures.
 - High contrast; nothing relies on hover.
 - Slow network: pending state on save, per-file upload progress, clear retry on failure;
-  text is never lost after a validation or upload error (device drafts: Phase 9).
+  text is never lost after a validation, upload or connection error (tab drafts).
 - Respects `prefers-reduced-motion`; motion is minimal anyway (≤ 150 ms fades).
 
 ## 7. Copy
@@ -297,7 +318,10 @@ creation form (today: add them on the deficiency page right after saving).
 - Estonian, plain, short, active voice. "Lisa sissekanne", not "Uue sissekande lisamine".
 - Use the field's own vocabulary (see PRODUCT.md §8 glossary).
 - Errors say what happened and what to do: "Foto üleslaadimine ebaõnnestus. Proovi uuesti — tekst on salvestatud."
-- All strings live in `lib/i18n/et.ts` so English can be added later without hunting through components.
+- Three languages: Estonian (default), English, Russian — `lib/i18n/{et,en,ru}.ts`, same
+  keys (typecheck + unit test). One term per concept in every language (PRODUCT.md §8).
+- Russian copy is professional, not literal; it needs native electrical-professional
+  review before public launch.
 
 ## 8. Open items
 
@@ -307,3 +331,40 @@ creation form (today: add them on the deficiency page right after saving).
 - [ ] choose the handwritten face against the board
 - [ ] photography: the board's photos look illustrative/generated; production marketing needs real, licensed photos (D11)
 - [ ] paper / concrete texture assets
+
+## 9. Layout system (2026-10-02)
+
+**Audit before refactoring** (screenshots at 375/768/1280/1440/1920): no page scrolled
+sideways, but — landing: the hero drawing ran into the section edge, the product preview
+ran off the right edge (negative-margin bleed), sections used different widths, the
+structure diagram was small and weak, buttons tiny next to the headings, the phone preview
+small; app: content centred in the space right of the sidebar (a large empty band at 1920),
+negative-margin bleed in the installation tabs, two negative-margin nudges, fixed row
+heights, 16 px phone gutters. Later testing found: buttons that couldn't wrap (long and
+translated labels), grids whose implicit columns grew with content, the bottom bar's
+Russian labels overlapping, the public header too wide at 320 px.
+
+**The system** (only what removes real duplication):
+
+| Concept | Implementation |
+|---|---|
+| Gutters | `--k-gutter` clamp(20 → 48 px) public, `--k-gutter-app` clamp(20 → 40 px) app |
+| Public container | `.k-container` — centred, max 86rem incl. gutters, 12-column grids inside |
+| App container | `.k-app-container` — aligned to the navigation, max 78rem, fluid gutters |
+| Section rhythm | `.k-section` — clamp(72 → 144 px) vertical padding |
+| Reading width | `.k-measure` (44rem) for forms and running text |
+| Type | `display-1/2/3`, `lead` (§3) |
+| Buttons | min-heights 44/48/56 px, labels may wrap; `xl` for marketing CTAs |
+| Page header, empty state, filter panel, status marks, form messages | existing components (`components/app`, `components/forms`) |
+
+**Rules** (enforced by `e2e/layout.spec.ts`): no horizontal page scroll at 320–1440 px or
+with 125 %/200 % text; no control or heading crossing the viewport edge (content in its own
+scroll strip, like the installation tabs, is fine); grids use `minmax(0,1fr)` tracks and
+flex/grid children `min-w-0`; long words break (`overflow-wrap: break-word` on body,
+hyphenation on headings via `lang`); form controls have `min-width: 0`; no negative-margin
+patches; absolute positioning only for decorative layers; no `overflow-x: hidden` to hide
+bugs.
+
+**Remaining design debt:** real licensed photography for the hero (D11); production logo
+SVGs; the dashboard and lists are good but not yet tested with very large organisations;
+a native Russian review may shorten some labels further.

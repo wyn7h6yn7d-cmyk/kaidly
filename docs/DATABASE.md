@@ -95,8 +95,9 @@ Helpers live in `private`, a schema not exposed through the Data API. All are
 
 ### profiles
 `id` (= `auth.users.id`, cascade), `email` (synced, not user-writable), `full_name` ≤ 200,
-`phone` ≤ 40. Readable by the user and co-members; the user may update `full_name` and
-`phone` only.
+`phone` ≤ 40, `preferred_locale` (`et` | `en` | `ru` | null — UI language, migration
+`language_preference`). Readable by the user and co-members; the user may update
+`full_name`, `phone` and `preferred_locale` of their own row only (column grants).
 
 ### organisations
 `name` 1–200, `slug` (unique; slugified name + 6 random characters; never changed),
@@ -328,9 +329,16 @@ organisation's own numbers. `select` for `authenticated` only. Partial indexes
 `scheduled_activities_site_due_idx` and `deficiencies_site_open_idx` back the counts.
 The dashboard's other sections are bounded queries (`limit 5` + exact count) on the tables.
 
+## 10b. Change history read model
+
+`activity_history` (written by triggers, admin+ read, token hashes stripped at write time)
+is shown at `/o/[org]/seaded/ajalugu`. `lib/history.ts` turns rows into events and only
+ever names allowlisted fields; document upload bookkeeping (pending inserts, failed-upload
+deletes) is filtered in the query. No schema change was needed.
+
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 378 tests in 11 files, using the shared fixture
+`npm run test:db` runs pgTAP: 392 tests in 12 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -347,6 +355,7 @@ a user in both) and `helpers/sites.psql`.
 | `080_documents` | 44 | metadata isolation, roles (viewer can't upload, operator scope, admin-only general documents), forged/foreign paths and parents, SVG/size/filename rules, attachment window (23 h allowed, 25 h refused), storage read/upload/overwrite/delete across tenants, pending objects unreadable, finalize (missing object, size mismatch, foreign caller), historical files immutable and undeletable, archive/restore, anon reads nothing |
 | `090_dashboard` | 12 | `site_attention` counts, isolation per role, member of two organisations, outsider and anon, archived sites, `security_invoker` |
 | `100_cross_tenant_oracles` | 9 | naming another tenant's archived/resolved/correction records gives the generic FK error, non-members get the plain RLS error, Storage refuses another tenant's existing path like an unknown one and lists nothing |
+| `110_language_and_history` | 14 | own language only (even viewers), only et/en/ru, no other profile column opened, anon refused; change history readable by owners/admins of the same organisation only — not operators, viewers, outsiders, a two-organisation non-admin or anon — and never containing token hashes |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

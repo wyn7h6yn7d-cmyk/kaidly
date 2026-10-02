@@ -101,6 +101,13 @@ npm run dev:local        # http://localhost:3000, reads the local values from `s
 
 Local auth emails are caught by Mailpit (URL in `npx supabase status`).
 
+### Languages
+
+The UI is Estonian by default, with English and Russian (`lib/i18n/{et,en,ru}.ts`). The
+language is chosen in the public header or the account menu and kept in a cookie and, for
+signed-in users, in their profile. Russian terminology still needs review by a native
+electrical professional before public launch.
+
 ### Continuous integration
 
 `.github/workflows/ci.yml` runs on pull requests and on pushes to every branch except

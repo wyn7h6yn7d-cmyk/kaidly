@@ -6,7 +6,7 @@ KAIDLY is a digital operations logbook for electrical installations. It replaces
 paper *käidupäevik*, the Excel *käidukava* and the folder of protocols that every
 electrical operation supervisor (*käidukorraldaja*) keeps today.
 
-Status: approved 2026-10-01; Phases 1–8 implemented (see [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)), including documents and the dashboard.
+Status: approved 2026-10-01; Phases 1–8 implemented, plus ET/EN/RU, change history and mobile workflow improvements (see [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)).
 
 ---
 
@@ -74,12 +74,18 @@ organisation is one tap.
 7. **Deficiencies / Puudused** — found problems with severity (*Madal*, *Keskmine*, *Kõrge*, *Kriitiline*), due date and status *Avatud* (open), *Töös* (in progress) or *Lahendatud* (resolved). Resolving requires a note and writes the log entry; resolved deficiencies stay in history and are never deleted.
 8. **Documents** — schemes, protocols, manuals and photos for the organisation, a site, an installation, a log entry or a deficiency (PDF, JPG, PNG, WebP, DOCX, XLSX; up to 25 MB). Files on log entries and deficiencies are part of the record and never change; a log entry's author can add files for 24 hours, later evidence goes on a correction. General documents can be archived and restored, never deleted. Anyone who may read a document may also open and download it. HEIC is not supported in the MVP (phone photos are converted to JPEG). *(Site cover photo: not built.)*
 9. **Users and permissions** — invite with a copyable, single-use link; four roles; remove members.
+10. **Change history** — owners and admins read who changed what and when (sites,
+    installations, operating plan, deficiencies, documents, members, invitations), in plain
+    sentences. Operating log entries are their own history.
+11. **Languages** — Estonian (default), English and Russian. Visitors choose in the header
+    (remembered in a cookie); signed-in users' choice is saved to their profile and follows
+    them to other devices. URLs never change with the language.
 
 ### Out of MVP (explicitly)
 
 Offline mode with sync, native apps, PDF report generation, e-signatures, QR stickers,
 email sending of any kind (invitations, reminders), push notifications, public API,
-integrations (EAM, ERP, IoT), AI features, payments/billing, multi-language UI.
+integrations (EAM, ERP, IoT), AI features, payments/billing, 
 Several of these are good ideas for after MVP (see §7) — they are listed so nobody
 builds them early.
 
@@ -130,12 +136,30 @@ Ideas:
 - Offline entry queue for sites without signal
 - PDF export of the operating log and *käidukava* for audits
 - Email reminders for overdue activities
-- English UI
 
 ## 8. Terminology
 
 The UI speaks the vocabulary of electrical operations in Estonian. One term per concept,
 used the same way everywhere (strings live in `lib/i18n/et.ts`).
+
+Main terms in all three languages (RU = **pending native electrical-professional review**):
+
+| et | en | ru |
+|---|---|---|
+| Käidupäevik | Operating log | Оперативный журнал |
+| Käidukava | Operating plan | План эксплуатации |
+| Puudused | Deficiencies | Дефекты |
+| Dokumendid | Documents | Документы |
+| Objekt | Site | Объект |
+| Elektripaigaldis | Electrical installation | Электроустановка |
+| Sissekanne | Entry | Запись |
+| Tegevus | Activity | Мероприятие |
+| Parandus | Correction | Исправление |
+| Omanik · Administraator · Käitaja · Vaataja | Owner · Administrator · Operator · Viewer | Владелец · Администратор · Оператор · Наблюдатель |
+
+Never translated: identifiers, uploaded filenames, user-entered text, company and site names.
+
+Estonian term rules:
 
 | Concept | UI term (et) | Not | Notes |
 |---|---|---|---|

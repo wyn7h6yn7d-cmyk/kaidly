@@ -89,10 +89,10 @@ template, so confirmation works with Supabase's default templates.
 
 ```
 app/
-  page.tsx                     public landing (placeholder until Phase 9)
+  page.tsx                     public landing (header/footer in components/marketing)
   auth/                        login, sign-up, confirm, error, forgot/update password
   invite/[token]/              invitation landing (sign-in required)
-  konto/                       own profile
+  konto/                       own profile and language
   o/
     page.tsx                   organisation picker (redirects to the last used one)
     uus/                       create organisation
@@ -124,7 +124,9 @@ lib/
   actions/                     Server Actions, one file per area; context.ts (role check), state.ts
   validation/                  zod schemas
   db/errors.ts                 database error → application error code
-  i18n/                        et.ts (all UI strings), index.ts
+  i18n/                        et.ts, en.ts, ru.ts (same keys), index.ts (types), server.ts (getT),
+                               client.tsx (I18nProvider, useT), format.ts (dates/numbers), locales.ts
+  history.ts                   activity_history rows → readable events (allowlisted fields)
   documents/                   rules.ts (types, size, filenames — shared), upload-client.ts (browser: resize, XHR upload)
   schedule.ts, time.ts, labels.ts, env.ts
 scripts/                       local-supabase.mjs, dev-local.mjs, seed-files.mjs (local stack only)
@@ -143,7 +145,7 @@ code identifiers are English.
 |---|---|---|
 | `/`, `/auth/*` | landing, authentication | public |
 | `/invite/[token]` | invitation preview and accept | signed in |
-| `/o`, `/o/uus`, `/konto` | organisation picker, create, own profile | signed in |
+| `/o`, `/o/uus`, `/konto` | organisation picker, create, own profile and language | signed in |
 | `/o/[org]` | overview: what needs attention (overdue, due soon, high/critical deficiencies, latest entries, sites with open items), first-use checklist | viewer |
 | `/o/[org]/sissekanne` | quick entry: recently used installations first, then by site; one installation → straight to its form | operator |
 | `/o/[org]/objektid` (+ `?arhiiv`) | sites | viewer |
@@ -163,6 +165,7 @@ code identifiers are English.
 | `/o/[org]/puudused/[deficiency]` | detail; Märgi töös / Lahenda puudus | viewer |
 | `…/[installation]/puudused` | active first; latest 50 resolved with the total and a link to the full list | viewer |
 | `/o/[org]/seaded`, `/seaded/liikmed` | settings (owner edits), members and invitations | viewer (admin manages) |
+| `/o/[org]/seaded/ajalugu` (`?ala=`, `lk`) | change history, read-only | admin |
 | `/o/[org]/dokumendid` (+ `?arhiiv=1`) | ready documents; filters `objekt`, `paigaldis`, `liik`, `alates`, `kuni`; `lk` page | viewer |
 | `/o/[org]/dokumendid/uus?paigaldis=` / `?objekt=` | upload a general document (operators: installations only) | operator |
 | `/o/[org]/dokumendid/[document]` | details, open/download; admins rename, recategorise, archive/restore general documents | viewer |
@@ -239,6 +242,14 @@ Rules:
 Cache Components stays enabled (D10). Phase 1 confirmed the pattern: session reads sit
 behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 
+**Language and rendering.** The language comes from the `kaidly_locale` cookie (§6b), so
+the root layout wraps the app in `<Suspense><LocaleBoundary>` and page metadata is
+generated per request. Consequence: routes have no prerendered static shell — including the
+public landing page — and Next's dev-time "instant navigation" insights report runtime data
+in `generateMetadata()`. Behaviour and security are unaffected (every app route was already
+per-request because of the session). *Performance debt:* per-locale cached shells
+(`use cache` keyed by locale for public pages) would restore CDN-served landing pages.
+
 ## 6a. Next.js 16 behaviours that shaped the UI code
 
 - **Hidden pages stay mounted.** With Cache Components, Next keeps up to three visited
@@ -260,6 +271,46 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
   non-member opening an organisation). Expected; production is unaffected.
 - **Tests must ignore hidden pages:** E2E locators use visible fields or accessible names
   (lists carry `aria-label`s), never "first match in the DOM".
+
+## 6b. Languages (ET / EN / RU)
+
+- **Dictionaries:** `lib/i18n/et.ts` is the source; `en.ts` and `ru.ts` are typed as
+  `Messages`, so a missing or extra key fails the typecheck; `tests/unit/i18n.test.ts`
+  re-checks key parity at runtime, empty strings, message functions and Russian plurals.
+- **Server:** `await getT()` (`lib/i18n/server.ts`) in Server Components, metadata, actions
+  and routes — cached per request; reads the cookie.
+- **Client:** `useT()` (`lib/i18n/client.tsx`) from `I18nProvider`, rendered by
+  `LocaleBoundary` in the root layout. Estonian is bundled; English and Russian load as
+  separate chunks only when used (`use()` on a dynamic import).
+- **Actions return error codes** (`ActionState.errorCode`), never text; `FormMessage`
+  translates them, so a language switch never leaves stale server text.
+- **Formatting:** `t.fmt.date/dateTime/time/number/bytes` per locale (en-GB, et-EE, ru-RU),
+  always Europe/Tallinn.
+- **`<html lang>`:** default `et`; an inline script sets it from the cookie before hydration
+  (Next guide "Preventing flash before hydration"; reading cookies in the root layout would
+  block every route); `I18nProvider` keeps it right after in-place switches; content is
+  also wrapped in a server-rendered `lang`.
+- **Preference:** `setLocale` (Server Action) writes the cookie (1 year, lax) and, when
+  signed in, `profiles.preferred_locale` (own row, own column only). After sign-in
+  `syncLocale` brings the device in step: the profile wins; a choice made while signed out is
+  saved to an empty profile. `LocaleSync` covers sessions that start without the login form
+  (email links, other devices). Switching calls `router.refresh()`: URL, organisation,
+  session and form state stay.
+- **Routes never change with the language** (`/o/[org]/paevik` in every language).
+
+## 6c. Forms on unreliable networks
+
+- `useFormAction` catches a failed Server Action request (`unstable_rethrow` lets Next
+  redirects through) and returns the `network` error with the typed values kept.
+- `useSaveThenUpload` (`components/documents/use-save-then-upload.tsx`) is the one
+  implementation for "save a record, then upload its photos" (log entries, corrections,
+  deficiencies): the action returns a `SavedRecord` when files follow; failed uploads leave
+  the record saved and offer retry / continue.
+- `useSessionDraft` keeps unsaved field values in `sessionStorage` (this tab only; cleared
+  when the form goes out, restored if saving fails, discardable). Not an offline mode —
+  full offline entry with sync remains future scope.
+- Auth forms use `method="post"` so a submit before hydration can never put credentials in
+  the URL.
 
 ## 7. Auth flow
 
@@ -290,7 +341,9 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 - Lists that grow are paginated (50, deterministic order, one extra row to detect more):
   log, documents, deficiencies, activities. Dashboard sections are `limit 5` + exact count;
   per-site counts come from one view. No N+1: labels come from one installation lookup.
-- *Planned (Phase 9):* log entry drafts in `localStorage` per installation until saved.
+- Only the active language's dictionary reaches the browser (Estonian bundled, others on
+  demand).
+- Unsaved form text is kept per tab in `sessionStorage` (§6c).
 
 ## 9. Environments and deployment
 
@@ -315,7 +368,7 @@ behind `<Suspense>` in `app/o/layout.tsx` and `app/o/page.tsx`.
 | Level | Tool | Scope |
 |---|---|---|
 | Database / RLS | pgTAP via `supabase test db` | Every policy, every RPC, cross-tenant isolation. Mandatory per database phase. |
-| Unit | `node --test` (built in), 44 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules (type + extension, size, filenames). |
-| End-to-end | Playwright, 55 runs (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, and an axe-core WCAG 2.1 AA + no-horizontal-scroll sweep of the main pages. |
+| Unit | `node --test` (built in), 56 tests | Redirect allowlist, error-code mapping, configuration, roles, validation, Tallinn time, due-state logic, file rules, change-history descriptions, dictionary parity (ET/EN/RU) and Russian plurals. |
+| End-to-end | Playwright (see README for the current count) (desktop; `@responsive` tests also at 375 and 768 px) | Auth (incl. email confirmation via local Mailpit), organisations and invitations, tenant isolation by URL, sites/installations and role restrictions, operating log + corrections, plan completion, deficiency resolution and pagination, photo upload from a phone, upload failure and retry, deficiency photos at creation, network loss while saving, tab drafts, documents roles/archive/signed URLs, cross-tenant document 404s, dashboard scoping, first use, quick entry, change history and its access, language switching (anonymous and signed in, profile persistence), credentials never in the URL, an axe-core WCAG 2.1 AA sweep in ET/EN/RU, and layout protection at 320–1440 px and 125/200 % text (`layout.spec.ts`). |
 | Checks | `npm run check` (lint, typecheck, unit, database, build) + `npm run test:e2e` | Before every commit. |
 | CI | GitHub Actions `.github/workflows/ci.yml` | On PRs and pushes to non-main branches: **verify** (lint, typecheck, unit, build with placeholder public config), **database** (fresh local stack in the runner: migrations + seed, pgTAP, generated types up to date), **e2e** (Playwright against the local stack; traces kept on failure). Actions pinned to SHAs, no secrets, no hosted project. |

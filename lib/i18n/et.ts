@@ -1,6 +1,6 @@
 /**
- * Estonian UI strings. Every user-facing string lives here so another language can be
- * added later as a second dictionary with the same shape (see `Messages` in ./index.ts).
+ * Estonian UI strings — the source dictionary and the default language. en.ts and ru.ts
+ * have exactly the same shape (`Messages` in ./index.ts); add every new key to all three.
  */
 export const et = {
   brand: {

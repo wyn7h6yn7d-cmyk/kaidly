@@ -1,9 +1,11 @@
 # KAIDLY — Implementation plan
 
-Status (2026-10-02): **Phases 1–8 implemented**, plus responsive/accessibility polish, a CI
-pipeline and a Storage-focused security review. Work is on branch
+Status (2026-10-02): **Phases 1–8 implemented**, plus a layout system and refined public
+site, ET/EN/RU localisation with a saved language preference, deficiency photos at
+creation, tab drafts and network-failure handling, an admin change-history page, CI, and
+security/accessibility/responsive regression coverage. Work is on branch
 `phase-2-3-organisations-sites`; nothing is merged to `main`, no migration has been pushed
-to a hosted project. **Phase 9 does not start without explicit approval.**
+to a hosted project. **No further phase starts without explicit approval.**
 
 Each phase ends with a deployable app and every check passing: `npm run lint`,
 `typecheck`, `test`, `test:db`, `test:e2e`, `build`.
@@ -23,18 +25,20 @@ Each phase ends with a deployable app and every check passing: `npm run lint`,
 | 7 Dokumendid | One private bucket, pending → ready uploads verified in the database, immutable attachments on log entries and deficiencies, archivable general documents, photos from the phone with resize/progress/retry, documents pages, 60 s signed URLs | DATABASE.md §10, ARCHITECTURE.md §5 |
 | 8 Ülevaade | "Mis vajab tähelepanu" dashboard on real tenant-scoped data, first-use checklist, installation status, quick entry | DATABASE.md §10a, DESIGN.md §5 |
 | CI | GitHub Actions: verify, database, e2e against a local stack in the runner | ARCHITECTURE.md §10 |
-| Tests | 377 pgTAP, 44 unit, 55 E2E runs (incl. axe sweep at three widths) | DATABASE.md §11, README |
+| Design & language | Layout system, refined landing page, ET/EN/RU with profile preference, change history, deficiency photos at creation, tab drafts | DESIGN.md §5a/§9, ARCHITECTURE.md §6b/§6c |
+| Tests | 392 pgTAP, 56 unit, E2E incl. layout (320–1440 px, 200 % text) and ET/EN/RU axe sweeps | DATABASE.md §11, ARCHITECTURE.md §10 |
 | Reviews | Responsive (375/768/1440), accessibility (axe + keyboard), security regression (+ review gates), code quality; Phase 7–8: storage security, cross-tenant oracles, pagination | this file, "Review log" |
 
 **Still not final for Phase 3:** the electrical-professional domain review (PRODUCT.md §8).
 
 ## Next phases (not started)
 
-### Phase 9 — Mobile polish (recommended next)
-Real-device pass (iOS Safari incl. HEIC photos, Android Chrome; keyboard overlap, camera,
-slow network), local drafts for entry forms, photos in the deficiency creation form,
-"Leidsin puuduse" from a log entry, change history (`activity_history`) for admins,
-marketing page with real photography (D11), Estonian copy review by a native professional.
+### Phase 9 — Field validation (recommended next)
+Real-device pass (iOS Safari, Android Chrome: keyboard overlap, camera, slow network, large
+text), native-speaker reviews (Estonian domain wording, Russian electrical terminology),
+"Leidsin puuduse" from a log entry, licensed hero photography (D11), per-locale cached
+public pages (performance debt, ARCHITECTURE.md §6), full offline entry if field tests
+show it is needed.
 
 ### Phase 10 — Production readiness
 Separate production Supabase project, push migrations, auth settings and Estonian email
@@ -63,7 +67,7 @@ All decided 2026-10-01 unless noted.
 | D10 | Cache Components | Kept; tenant data is never cached; dev-only "instant" validation logs on `notFound()` are expected |
 | D11 | Marketing photography | Real, licensed photos to be supplied; no stock |
 | D12 | Sign-up | Open for now; revisit before launch |
-| D13 | UI language | Estonian only; strings centralised in `lib/i18n/et.ts` |
+| D13 | UI language | ~~Estonian only~~ — superseded by D37 |
 | D14 | Tailwind | Stays on v3; no upgrades without a concrete reason |
 | D15 | Agent instructions | `CLAUDE.md` only |
 | D16–D21 | Brand, cover photos, states, logo, terminology, CTA | DESIGN.md |
@@ -80,6 +84,11 @@ All decided 2026-10-01 unless noted.
 | D32 | Document deletion (2026-10-02) | No normal hard deletion of historical evidence; general documents archive/restore; attachments immutable. Privacy erasure = future dedicated admin workflow (launch requirement) |
 | D33 | Retention (2026-10-02) | No hardcoded legal retention periods, no automatic deletion |
 | D34 | Viewer access (2026-10-02) | Read permission on a document includes opening/downloading the file |
+| D37 | Languages (2026-10-02) | Estonian (default), English, Russian; typed dictionaries with identical keys; stable routes (no locale in URLs); cookie for visitors, `profiles.preferred_locale` for signed-in users (profile wins after sign-in) |
+| D38 | Drafts (2026-10-02) | Unsaved entry/deficiency text kept in sessionStorage per tab, not localStorage (shared devices); no offline queue yet |
+| D39 | Change history (2026-10-02) | Read-only page for owners/admins over `activity_history`, allowlisted fields only, no new schema |
+| D40 | Layout system (2026-10-02) | One public container, one app container (aligned to the navigation), fluid gutters, fluid type scale; enforced by `e2e/layout.spec.ts` |
+| D41 | Visual regression (2026-10-02) | Structural layout assertions plus screenshots attached for review; no pixel baselines (brittle across machines/fonts) |
 | D35 | Upload quotas (2026-10-02) | Storage quotas and upload rate limits are a **production launch blocker**; no package/storage limits invented yet |
 | D36 | Pricing (2026-10-02) | A **public pricing page** (Hinnad / Pricing) is required eventually: simple, high value, aggressively affordable vs. electrical/compliance software, aimed at small contractors and independent käidukorraldajad; normal plans publicly priced (no "contact sales"). Prices, plan, storage and feature limits are **not decided** — they follow separate Estonia/EU competitor research. No billing, Stripe or subscription logic until then |
 | — | Out of scope | No AI, payments, IoT, ERP/EAM integrations, email infrastructure, analytics, notifications |
@@ -88,7 +97,7 @@ All decided 2026-10-01 unless noted.
 
 - **Storage quotas and upload rate limits (D35).** Today any member can upload without limit.
 - **Privacy-erasure workflow** for legitimate personal-data deletion (D32), designed with legal input.
-- **Russian terminology review** by a native electrical professional before the RU UI is public.
+- **Russian terminology review** by a native electrical professional before the RU UI is public (all of `lib/i18n/ru.ts`; key terms in PRODUCT.md §8).
 - Production Supabase project, migrations pushed, auth email templates, security headers, backups (Phase 10).
 
 ## Open questions (need a decision or domain review)
@@ -110,12 +119,34 @@ All decided 2026-10-01 unless noted.
 | Risk | Mitigation |
 |---|---|
 | RLS mistake leaks data between customers | Composite FKs, single helper, default-deny privileges, baseline review gates, pgTAP matrix per table, mutation testing, no service-role key in the app |
-| Poor signal on site | Short forms, typed values preserved on errors; offline drafts in Phase 9; true offline sync post-MVP |
+| Poor signal on site | Short forms; typed values kept on validation, upload and connection errors; tab drafts survive reloads; true offline sync post-MVP |
 | Domain model mismatch | Professional review before Phase 3 is final; small enums |
 | Regulatory expectations | Append-only log + history; no compliance claims until reviewed |
 | Next.js 16 differences | Follow `node_modules/next/dist/docs/` (CLAUDE.md); lessons in ARCHITECTURE.md §6a |
 | Local/hosted drift | Same Postgres major (17); migrations only; confirm when linking |
 | Scope creep | PRODUCT.md §2 is the filter |
+
+## Review log (2026-10-02, design + localisation package)
+
+- **Design audit** (375–1920 px): see DESIGN.md §9 for findings; fixed structurally (layout
+  system, contained previews, aligned app container, no negative-margin patches).
+- **Responsive / zoom:** `e2e/layout.spec.ts` checks 320, 375, 390, 430, 768, 1280, 1440 px
+  and 125 %/200 % text on public and app pages. It found and drove fixes for: buttons that
+  could not wrap, implicit grid tracks growing with content, unbreakable compound words,
+  date inputs wider than phones at 200 %, the public header at 320 px, and (visual review)
+  overlapping Russian bottom-bar labels.
+- **Accessibility:** axe (WCAG 2.1 AA) in ET, EN and RU on the main pages at three widths;
+  `<html lang>` follows the language (it didn't after in-place switches — fixed); language
+  controls are labelled buttons/select with each language's own name; history links name
+  their event; bottom-bar labels are contained in their accessible names (2.5.3).
+- **Security:** found and fixed — auth forms without `method` would have put credentials in
+  the URL if submitted before hydration. Verified: 24 h attachment rule (both boundaries,
+  mutation-tested), own-row/own-column language updates, history isolation and no token
+  hashes, no service-role key in app code or history, all redirects through the allowlist,
+  baseline gates unchanged (no new definer functions or RPCs), no public bucket.
+- **Performance:** only the active dictionary ships to the browser; no new N+1 (history: one
+  query + one profile lookup per page); hero has no large image (photo slot empty until
+  licensed); known debt: cookie-based language makes public pages per-request.
 
 ## Review log (2026-10-01)
 
