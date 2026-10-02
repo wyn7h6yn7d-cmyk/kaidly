@@ -1049,6 +1049,7 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      admin_access_overview: { Args: never; Returns: Json }
       admin_audit_entries: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: Json
@@ -1058,6 +1059,8 @@ export type Database = {
         Returns: Json
       }
       admin_company: { Args: { p_org: string }; Returns: Json }
+      admin_company_access: { Args: { p_org: string }; Returns: Json }
+      admin_company_access_list: { Args: { p_filter?: string }; Returns: Json }
       admin_deadlines: {
         Args: {
           p_company?: string
@@ -1071,6 +1074,11 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_expire_access: { Args: { p_org: string }; Returns: undefined }
+      admin_extend_trial: {
+        Args: { p_org: string; p_trial_ends_at: string }
+        Returns: undefined
+      }
       admin_overview: { Args: never; Returns: Json }
       admin_password_reset_target: { Args: { p_user: string }; Returns: string }
       admin_remove_member: {
@@ -1078,6 +1086,19 @@ export type Database = {
         Returns: undefined
       }
       admin_revoke_sessions: { Args: { p_user: string }; Returns: undefined }
+      admin_set_access_reference: {
+        Args: { p_invoice_reference: string; p_notes: string; p_org: string }
+        Returns: undefined
+      }
+      admin_set_full_access: {
+        Args: {
+          p_invoice_reference: string
+          p_notes: string
+          p_org: string
+          p_until: string
+        }
+        Returns: undefined
+      }
       admin_set_member_role: {
         Args: {
           p_membership: string
@@ -1141,6 +1162,7 @@ export type Database = {
         Args: { p_limit?: number; p_offset?: number; p_unread_only?: boolean }
         Returns: Json
       }
+      organisation_access: { Args: { p_org: string }; Returns: Json }
       reactivate_organisation: {
         Args: { p_organisation_id: string }
         Returns: undefined

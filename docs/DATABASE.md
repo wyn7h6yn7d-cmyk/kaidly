@@ -343,6 +343,53 @@ read/update, no insert/delete/other columns, generator not callable, operator/vi
 can't change thresholds, range check, cron job, Tallinn midnight. Mutation-tested (role
 filter, deactivated filter, ban filter, identity constraint, read policy, trigger).
 
+## 5d. Company access — trial, full access, read-only expiry (migration `organisation_access`)
+
+Commercial access belongs to the **company**, not to a user, and is separate from the
+lifecycle (`deactivated_at`). `private.organisation_access` (one row per organisation,
+created by trigger on insert; existing companies got a fresh trial when the migration ran):
+`trial_started_at`, `trial_ends_at`, `full_access_from`, `full_access_until` (null = indefinite),
+`expired_manually_at`, `activated_by`, `invoice_reference`, `admin_notes`. Not exposed to
+the API; customers read their own state through `public.organisation_access(org)` (status,
+writable, end, expired since — no admin fields).
+
+**State, derived at query time** (`private.organisation_access_state(org, at)`):
+deactivated (lifecycle wins) → expired (manual) → active (full access started and not
+ended) → trial (`now() < trial_ends_at`) → expired. **Expiry rule: exact timestamp**, the
+trial ends exactly 14 × 24 h after the company was created (database `now()`); no cron is
+involved. The UI shows the end date/time (Tallinn) and whole calendar days left.
+
+**Enforcement:** `private.org_ids(min_role)` requires, for every role above viewer,
+`deactivated_at is null and private.can_company_write(org)` (trial or active). Every write
+policy and — through `has_org_role()` — every write RPC and insert trigger therefore
+refuses an expired company; reads at viewer level are untouched. The two admin-level
+**read** policies (change history, invitations) use `private.org_ids_readable(min_role)`
+(same rule without the access check). Not affected while expired: reading everything,
+own notifications (read/mark read), leaving the company, own account; the owner's
+`delete_organisation` / `deactivate_organisation` / `reactivate_organisation` (they use
+`private.is_owner`). Reminder generation continues for expired (not deactivated) companies
+so users still see what is becoming due; completing needs restored access.
+
+**Platform admin** (all `require_platform_admin()`, all audited with before/after state —
+no emails, no secrets): `admin_set_full_access(org, until|null, invoice_reference, notes)`
+(activate, set a date, indefinite, or restore after expiry), `admin_extend_trial(org, new end)`
+(must be later than the current end; the trial start is never changed),
+`admin_expire_access(org)`, `admin_set_access_reference(org, …)`, reads
+`admin_company_access`, `admin_access_overview`, `admin_company_access_list(filter)`.
+Customers can't read or change any of it (owner ≠ platform admin).
+
+**90 days after expiry:** flagged (`expired_90`, admin filter "Aegunud 90+ päeva"); nothing is
+deleted automatically. An empty company may be deleted by its owner under §5a; a company
+with history can only be deactivated. Users are never deleted because a company expired.
+
+pgTAP `150_organisation_access` (56): 14-day trial, exact boundary, trial writes, every
+blocked write path (log, completion, resolution, deficiencies, documents, sites,
+installations, plan/thresholds, invitations, roles, company details), reads and history kept,
+multi-company, no customer access to the table/helpers/admin RPCs, cross-tenant, reminders,
+owner deactivate/reactivate, extension, activation with date / indefinite, manual expiry,
+restore, audit trail, 90-day flag, nothing deleted. Mutation-tested (no access check in
+`org_ids`, history through `org_ids`, never-expiring helper, readable table).
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -373,6 +420,8 @@ filter, deactivated filter, ban filter, identity constraint, read policy, trigge
 | `finalize_document(document)` | the uploader, Op+ | §10: `ready` if the object exists at the registered path with the registered size and type, else `failed` |
 | `am_platform_admin()`, `admin_*` | platform admins (others: `not_found`) | §5b |
 | `my_notifications(unread_only, limit, offset)` | signed in (security invoker: own rows under RLS) | §5c |
+| `organisation_access(org)` | members (viewer+) | §5d |
+| `admin_set_full_access`, `admin_extend_trial`, `admin_expire_access`, `admin_set_access_reference`, `admin_company_access`, `admin_access_overview`, `admin_company_access_list` | platform admins | §5d |
 
 All RPCs return the **same** `not_found` error for "doesn't exist" and "not allowed", so ids
 can't be probed. The baseline test pins this exact list.
@@ -482,7 +531,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 537 tests in 16 files, using the shared fixture
+`npm run test:db` runs pgTAP: 593 tests in 17 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -504,6 +553,7 @@ a user in both) and `helpers/sites.psql`.
 | `125_company_settings` | 11 | owners and admins edit company details, operators/viewers read only, slug and lifecycle columns not writable, email format, other tenant, deactivated company |
 | `130_platform_admin` | 57 | §5b |
 | `140_activity_reminders` | 45 | §5c |
+| `150_organisation_access` | 56 | §5d |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.
