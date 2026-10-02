@@ -1,4 +1,5 @@
 import { SiteFooter } from "@/components/marketing/site-footer";
+import { ScrollToTop } from "@/components/marketing/scroll-to-top";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { getT } from "@/lib/i18n/server";
 import { LEGAL_CONTENT } from "@/lib/legal/content";
@@ -48,6 +49,7 @@ export async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
         </article>
       </main>
       <SiteFooter />
+      <ScrollToTop />
     </div>
   );
 }
