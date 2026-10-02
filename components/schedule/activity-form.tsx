@@ -151,7 +151,7 @@ export function ActivityForm({
         </fieldset>
       )}
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field
           id={id("nextDueOn")}
           label={activity ? f.nextDueOn : frequency === "recurring" ? f.firstDueOn : f.dueOn}

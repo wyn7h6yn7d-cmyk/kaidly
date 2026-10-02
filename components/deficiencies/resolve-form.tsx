@@ -51,7 +51,7 @@ export function ResolveDeficiencyForm({
         />
       </Field>
       <EntryTypeField selected={value("entryType", "repair")} invalid={state.fields?.entryType} />
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id={id("occurredAt")} label={log.fields.occurredAt}>
           <Input
             id={id("occurredAt")}
@@ -79,7 +79,7 @@ export function ResolveDeficiencyForm({
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>
         </Button>
-        <Button type="submit" size="lg" disabled={pending} className="sm:min-w-56">
+        <Button type="submit" size="lg" disabled={pending} className="sm:min-w-[224px]">
           {pending ? copy.resolving : copy.resolveSubmit}
         </Button>
       </div>

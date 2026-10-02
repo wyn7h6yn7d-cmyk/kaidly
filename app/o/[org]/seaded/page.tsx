@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 function ReadOnlyRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid gap-1 border-b border-k-line py-3 sm:grid-cols-[200px_1fr] sm:gap-4">
+    <div className="grid gap-1 border-b border-k-line py-3 sm:grid-cols-[200px_minmax(0,1fr)] sm:gap-4">
       <dt className="text-sm font-semibold text-k-muted">{label}</dt>
       <dd className="break-words">{value}</dd>
     </div>

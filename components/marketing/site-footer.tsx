@@ -7,7 +7,7 @@ export async function SiteFooter() {
   const t = await getT();
   return (
     <footer className="bg-k-ink text-white/75">
-      <div className="k-container grid gap-8 py-12 sm:grid-cols-[1fr_auto] sm:items-end">
+      <div className="k-container grid grid-cols-1 gap-8 py-12 sm:grid-cols-[1fr_auto] sm:items-end">
         <div>
           <p className="font-display text-xl font-extrabold tracking-wide text-white">{t.brand.name}</p>
           <p className="mt-2 text-[15px]">{t.landing.footer}</p>

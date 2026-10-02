@@ -44,7 +44,7 @@ export async function ActivityList({
         const completable = canComplete && !item.archivedAt && (state === "overdue" || state === "soon");
         return (
           <li key={item.id} className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-6 sm:px-5">
-            <Link href={href} className="grid min-w-0 flex-1 gap-x-6 gap-y-1 sm:grid-cols-[150px_1fr]">
+            <Link href={href} className="grid min-w-0 flex-1 gap-x-6 gap-y-1 sm:grid-cols-[150px_minmax(0,1fr)]">
               <span className="flex flex-wrap items-baseline gap-x-3 sm:block">
                 <DueDate nextDueOn={item.nextDueOn} />
                 <span className="sm:mt-1 sm:block">

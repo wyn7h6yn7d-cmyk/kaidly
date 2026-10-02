@@ -5,7 +5,7 @@ export function DetailList({ items }: { items: { label: string; value: React.Rea
       {items.map((item) => (
         <div
           key={item.label}
-          className="grid gap-1 border-b border-k-line py-3 sm:grid-cols-[220px_1fr] sm:gap-6"
+          className="grid gap-1 border-b border-k-line py-3 sm:grid-cols-[220px_minmax(0,1fr)] sm:gap-6"
         >
           <dt className="text-sm font-semibold text-k-muted">{item.label}</dt>
           <dd className="min-w-0 whitespace-pre-line break-words">

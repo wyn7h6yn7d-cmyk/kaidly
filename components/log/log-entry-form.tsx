@@ -74,7 +74,7 @@ export function LogEntryForm({
           aria-invalid={state.fields?.result}
         />
       </Field>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id={id("occurredAt")} label={copy.fields.occurredAt}>
           <Input
             id={id("occurredAt")}
@@ -176,7 +176,7 @@ export function LogEntryForm({
           <Button asChild variant="ghost" size="lg">
             <Link href={cancelHref}>{t.app.cancel}</Link>
           </Button>
-          <Button type="submit" size="lg" disabled={locked} className="sm:min-w-56">
+          <Button type="submit" size="lg" disabled={locked} className="sm:min-w-[224px]">
             {pending ? copy.saving : isCorrection ? copy.submitCorrection : copy.submit}
           </Button>
         </div>

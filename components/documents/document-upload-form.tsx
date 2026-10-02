@@ -170,7 +170,7 @@ export function DocumentUploadForm({
         <Button asChild variant="ghost" size="lg">
           <Link href={cancelHref}>{t.app.cancel}</Link>
         </Button>
-        <Button type="submit" size="lg" disabled={submitting || queue.busy} className="sm:min-w-56">
+        <Button type="submit" size="lg" disabled={submitting || queue.busy} className="sm:min-w-[224px]">
           {submitting ? t.app.saving : copy.uploadSubmit}
         </Button>
       </div>

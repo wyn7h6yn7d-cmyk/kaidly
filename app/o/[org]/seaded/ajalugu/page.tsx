@@ -112,7 +112,7 @@ export default async function HistoryPage({
                     const href = historyHref(org.slug, item.table, item.recordId);
                     const text = sentence(item.event, t, person);
                     return (
-                      <li key={item.id} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
+                      <li key={item.id} className="grid gap-1 py-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-6">
                         <div className="text-sm text-k-muted">
                           <time dateTime={item.at} className="block font-semibold tabular-nums text-k-ink">
                             {t.fmt.dateTime(item.at)}

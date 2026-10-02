@@ -35,11 +35,11 @@ export default async function Home() {
       <main className="flex-1">
         {/* Hero */}
         <section className="k-grain">
-          <div className="k-container grid items-center gap-12 py-12 sm:py-16 lg:grid-cols-12 lg:gap-12 lg:py-24">
+          <div className="k-container grid grid-cols-1 items-center gap-12 py-12 sm:py-16 lg:grid-cols-12 lg:gap-12 lg:py-24">
             <div className="min-w-0 lg:col-span-7">
-              <p className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-k-muted">
+              <p className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-k-muted [overflow-wrap:anywhere]">
                 <span aria-hidden="true" className="h-px w-8 shrink-0 bg-k-ink" />
-                {l.hero.eyebrow}
+                <span className="min-w-0">{l.hero.eyebrow}</span>
               </p>
               <h1 className="mt-6 font-display text-display-1 font-extrabold [hyphens:auto] [overflow-wrap:break-word]">
                 {l.hero.lineOne}
@@ -73,7 +73,7 @@ export default async function Home() {
 
         {/* "Excel ei ole käiduraamat." — the product interface is the proof */}
         <section id="kuidas-toimib" className="k-grain scroll-mt-4 bg-k-green text-white">
-          <div className="k-container k-section grid gap-12 lg:grid-cols-12 lg:gap-12">
+          <div className="k-container k-section grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-12">
             <div className="min-w-0 lg:col-span-4">
               <h2 className="font-display text-display-2 font-extrabold">{l.excel.title}</h2>
               <p className="mt-6 max-w-md text-lead text-white/85">{l.excel.body}</p>
@@ -94,7 +94,7 @@ export default async function Home() {
 
         {/* Real questions, each answered by one part of KAIDLY */}
         <section className="k-grain">
-          <div className="k-container k-section grid gap-10 lg:grid-cols-12 lg:gap-12">
+          <div className="k-container k-section grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
             <div className="lg:col-span-5">
               <div className="lg:sticky lg:top-10">
                 <h2 className="font-display text-display-2 font-extrabold">{l.questions.title}</h2>
@@ -103,12 +103,12 @@ export default async function Home() {
             </div>
             <ol className="border-t-2 border-k-ink lg:col-span-7">
               {l.questions.items.map((item, i) => (
-                <li key={item.q} className="grid gap-4 border-b border-k-line py-9 sm:grid-cols-[3.5rem_1fr] sm:gap-6">
+                <li key={item.q} className="grid grid-cols-1 gap-4 border-b border-k-line py-9 sm:grid-cols-[3.5rem_minmax(0,1fr)] sm:gap-6">
                   <span aria-hidden="true" className="font-mono text-sm text-k-muted sm:pt-2">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div className="grid min-w-0 gap-4 md:grid-cols-2 md:gap-10">
-                    <p className="font-display text-display-3 font-bold">„{item.q}“</p>
+                  <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 md:gap-10">
+                    <p className="hyphens-auto break-words font-display text-display-3 font-bold">„{item.q}“</p>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold uppercase tracking-[0.14em] text-k-green">{item.where}</p>
                       <p className="mt-2 text-[17px] leading-relaxed text-k-ink/80">{item.a}</p>
@@ -126,7 +126,7 @@ export default async function Home() {
           <div className="k-container k-section relative">
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
               <div className="lg:col-span-7">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-k-muted">{l.system.eyebrow}</p>
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-k-muted [overflow-wrap:anywhere]">{l.system.eyebrow}</p>
                 <h2 className="mt-3 font-display text-display-2 font-extrabold">{l.system.title}</h2>
               </div>
               <p className="max-w-xl text-lead text-k-muted lg:col-span-5 lg:self-end">{l.system.body}</p>
@@ -144,13 +144,13 @@ export default async function Home() {
 
         {/* Mobile entry: written where the work was done */}
         <section className="k-grain bg-k-ink text-white">
-          <div className="k-container k-section grid items-center gap-14 lg:grid-cols-12 lg:gap-12">
+          <div className="k-container k-section grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-12">
             <div className="min-w-0 lg:col-span-6">
               <h2 className="font-display text-display-2 font-extrabold">{l.phone.title}</h2>
               <p className="mt-6 max-w-xl text-lead text-white/80">{l.phone.body}</p>
               <ol className="mt-10 border-t border-white/20">
                 {l.phone.steps.map((step, i) => (
-                  <li key={step.title} className="grid grid-cols-[3rem_1fr] gap-4 border-b border-white/20 py-5">
+                  <li key={step.title} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-4 border-b border-white/20 py-5">
                     <span className="font-display text-3xl font-extrabold text-k-volt">{i + 1}</span>
                     <div>
                       <p className="text-xl font-bold">{step.title}</p>
@@ -168,7 +168,7 @@ export default async function Home() {
 
         {/* Final call to action */}
         <section className="bg-k-volt text-k-ink">
-          <div className="k-container grid gap-10 py-16 sm:py-20 lg:grid-cols-12 lg:items-end lg:py-24">
+          <div className="k-container grid grid-cols-1 gap-10 py-16 sm:py-20 lg:grid-cols-12 lg:items-end lg:py-24">
             <div className="lg:col-span-8">
               <h2 className="font-display text-display-1 font-extrabold">{l.cta.title}</h2>
               <p className="mt-5 max-w-xl text-lead">{l.cta.body}</p>

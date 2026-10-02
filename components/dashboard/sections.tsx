@@ -101,7 +101,7 @@ export async function Onboarding({ steps }: { steps: OnboardingStep[] }) {
         {copy.title}
       </h2>
       <p className="mt-1 text-k-muted">{copy.intro}</p>
-      <ol className="mt-5 grid gap-4">
+      <ol className="mt-5 grid grid-cols-1 gap-4">
         {steps.map((step, index) => {
           const current = index === next;
           return (

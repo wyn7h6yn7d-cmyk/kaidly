@@ -17,7 +17,7 @@ export function LanguageSelector({
   className,
 }: {
   tone?: "dark" | "light";
-  /** Phones: a compact native select instead of three buttons (saves header width). */
+  /** Below 1024 px: a compact native select instead of three buttons (saves header width). */
   compact?: boolean;
   className?: string;
 }) {
@@ -32,7 +32,7 @@ export function LanguageSelector({
     });
 
   const buttons = (
-    <div role="group" aria-label={t.common.language} className={cn("flex items-center", compact && "hidden sm:flex", className)}>
+    <div role="group" aria-label={t.common.language} className={cn("flex items-center", compact && "hidden lg:flex", className)}>
       {LOCALES.map((locale) => {
         const active = locale === t.locale;
         return (
@@ -66,7 +66,7 @@ export function LanguageSelector({
   return (
     <>
       {buttons}
-      <label className="relative flex h-11 items-center sm:hidden">
+      <label className="relative flex h-11 shrink-0 items-center lg:hidden">
         <span className="sr-only">{t.common.language}</span>
         <select
           value={t.locale}
@@ -75,8 +75,8 @@ export function LanguageSelector({
           className="h-11 appearance-none rounded-sm bg-transparent pl-2 pr-6 text-sm font-semibold uppercase text-k-ink"
         >
           {LOCALES.map((locale) => (
-            <option key={locale} value={locale} lang={locale}>
-              {locale.toUpperCase()} · {LOCALE_NAMES[locale]}
+            <option key={locale} value={locale} lang={locale} title={LOCALE_NAMES[locale]}>
+              {locale.toUpperCase()}
             </option>
           ))}
         </select>

@@ -67,14 +67,28 @@
   html {
     -webkit-text-size-adjust: 100%;
   }
+  /* Form controls never force their container wider than the screen (date inputs have a
+     large intrinsic width, especially with larger text). */
+  input,
+  select,
+  textarea {
+    min-width: 0;
+  }
   body {
     @apply bg-background text-foreground antialiased;
+    /* Long compound words (Estonian), Russian and large text sizes break instead of
+       pushing the page sideways. */
+    overflow-wrap: break-word;
     font-feature-settings: "cv11", "ss01";
   }
   h1,
   h2,
   h3 {
     @apply font-display tracking-tight;
+    /* Long words (and translations, and large text sizes) break instead of overflowing;
+       hyphenation follows the element's lang. */
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
   :focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;

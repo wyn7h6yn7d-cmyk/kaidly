@@ -24,7 +24,7 @@ export async function PhonePreview({ className }: { className?: string }) {
       </div>
       <div className="px-5 pb-6 pt-5">
         <p className="truncate text-sm text-k-muted">‹ {p.site}</p>
-        <p className="mt-1 font-display text-2xl font-extrabold">{p.installation}</p>
+        <p className="mt-1 font-display text-2xl font-extrabold [overflow-wrap:anywhere]">{p.installation}</p>
         <p className="mt-4 font-bold">{log.newTitle}</p>
         <p className="mt-4 text-sm font-semibold">{log.fields.type}</p>
         <div className="mt-2 flex flex-wrap gap-1.5">

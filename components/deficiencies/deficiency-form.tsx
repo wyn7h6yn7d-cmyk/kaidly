@@ -105,7 +105,7 @@ export function DeficiencyForm({
           aria-invalid={state.fields?.description}
         />
       </Field>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id={id("severity")} label={f.severity} hint={f.severityHint}>
           <Select
             key={value("severity", deficiency?.severity ?? "medium")}
@@ -131,7 +131,7 @@ export function DeficiencyForm({
           />
         </Field>
       </div>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id={id("detectedAt")} label={f.detectedAt}>
           <Input
             id={id("detectedAt")}

@@ -12,8 +12,8 @@ export async function SystemDiagram() {
   const modules = [n.log, n.schedule, n.deficiencies, n.documents];
 
   return (
-    <div role="img" aria-label={s.diagramLabel} className="grid">
-      <div className="grid max-w-md">
+    <div role="img" aria-label={s.diagramLabel} className="grid grid-cols-1">
+      <div className="grid w-full max-w-md grid-cols-1">
         <Node index="A" node={n.organisation} />
         <Wire />
         <Node index="B" node={n.site} />
@@ -22,7 +22,7 @@ export async function SystemDiagram() {
         <Wire />
       </div>
       {/* Bus: a rail along the left on phones, a horizontal busbar from tablet up. */}
-      <ol className="ml-8 grid gap-3 border-l-2 border-k-ink pl-6 sm:ml-10 sm:gap-4 md:ml-0 md:grid-cols-4 md:gap-0 md:border-l-0 md:pl-0">
+      <ol className="ml-8 grid grid-cols-1 gap-3 border-l-2 border-k-ink pl-6 sm:ml-10 sm:gap-4 md:ml-0 md:grid-cols-4 md:gap-0 md:border-l-0 md:pl-0">
         {modules.map((module, i) => (
           <li
             key={module.label}
@@ -53,7 +53,7 @@ function Node({ index, node, strong }: { index: string; node: { label: string; d
       }
     >
       <p className="font-mono text-xs text-k-muted">{index}</p>
-      <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.08em] sm:text-xl">{node.label}</p>
+      <p className="mt-1 font-display text-lg font-extrabold uppercase tracking-[0.08em] [overflow-wrap:anywhere] sm:text-xl">{node.label}</p>
       <p className="mt-0.5 text-[15px] text-k-muted">{node.detail}</p>
     </div>
   );
