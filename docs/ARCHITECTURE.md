@@ -460,6 +460,11 @@ lõppenud…"), then a missing earlier step.
   facts come only from `lib/legal/operator.ts` and are shown as marked gaps with a "draft"
   notice until filled and approved.
 - **Account deletion request** on `/konto` (validated mailto to `KAIDLY_CONTACT_EMAIL`).
+- **Build guard** (`lib/env-guard.ts`): Production builds must target the production
+  Supabase project and Preview builds must not (the CSP is derived from the same variable).
+- **Hero background** (`components/marketing/hero-backdrop.tsx`): static inline SVG tiles on a
+  faint grid, `aria-hidden`, masked behind the text, simpler on phones; no images, no motion.
+- Legal pages are `noindex` and left out of the sitemap while drafts (`legalReady()`).
 - Production setup, environment inventory, email, domain and rollback: DEPLOYMENT.md.
 
 ## 7. Auth flow

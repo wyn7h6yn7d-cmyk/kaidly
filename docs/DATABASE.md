@@ -432,7 +432,13 @@ company read and write access on the next request (worst case: one in-flight req
 though the access token itself stays valid until its expiry. Tokens without `session_id`
 (maintenance, tests that set claims) have no session to check.
 
-pgTAP `170_release_hardening` (18): hourly, daily-bytes, company and configurable limits;
+The two write paths outside `org_ids()` — creating a company and joining one — are guarded
+by trigger `a_require_live_session` (`private.require_live_session()`, migration
+`session_guard_inserts`) on `organisations` and `organisation_members`. What a revoked
+token can still do until it expires: read/update its own profile row and see the
+(empty) signed-in frame.
+
+pgTAP `170_release_hardening` (20): hourly, daily-bytes, company and configurable limits;
 deleting pending uploads doesn't reset counters; per-user isolation; limits not readable by
 users; live vs revoked session; banned account; cleanup job. Mutation-tested.
 
@@ -578,7 +584,7 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 631 tests in 19 files, using the shared fixture
+`npm run test:db` runs pgTAP: 633 tests in 19 files, using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -602,7 +608,7 @@ a user in both) and `helpers/sites.psql`.
 | `140_activity_reminders` | 45 | §5c |
 | `150_organisation_access` | 56 | §5d |
 | `160_global_search` | 20 | §5e |
-| `170_release_hardening` | 18 | §5f |
+| `170_release_hardening` | 20 | §5f |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

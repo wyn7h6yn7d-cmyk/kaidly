@@ -1,93 +1,117 @@
 # KAIDLY v1.0.0 — Release checklist
 
-The launch source of truth. `[x]` done and verified · `[ ]` open · **(you)** needs a manual
-action by the owner (account, payment, DNS, legal facts, secrets). Runbooks:
-[DEPLOYMENT.md](DEPLOYMENT.md), [BACKUP_RECOVERY.md](BACKUP_RECOVERY.md),
+The launch source of truth, reconciled with the verified state on **2026-10-02**.
+Runbooks: [DEPLOYMENT.md](DEPLOYMENT.md), [BACKUP_RECOVERY.md](BACKUP_RECOVERY.md),
 [PRIVACY_PROCESS.md](PRIVACY_PROCESS.md).
 
-**Release gate: RED — do not merge `main`.** Blockers are marked ⛔.
+Status legend: **GREEN** done and verified · **MANUAL REQUIRED** needs the owner ·
+**EXCEPTION** known limitation, launch possible only if the owner explicitly accepts it ·
+**BLOCKING** must be resolved before `main` is merged / Production is deployed ·
+**NOT STARTED** happens during the launch itself.
 
-Environments: DEVELOPMENT `gdpzavhkblbcxivoaqax` · PRODUCTION `xakpbtmksxvjmsbipwmj` (state as of 2026-10-02)
+| | |
+|---|---|
+| DEVELOPMENT | `gdpzavhkblbcxivoaqax` (Preview, feature branches) |
+| PRODUCTION | `xakpbtmksxvjmsbipwmj` — note "**msbi**", eu-west-1 (Ireland) |
+| Domain | `https://kaidly.ee` (canonical); `www.kaidly.ee` → 308 → `kaidly.ee` |
+| Release | v1.0.0 — tag only after the production smoke test on kaidly.ee |
+
+**Gate:** `main` merge and Production deploy wait for the two BLOCKING items (admin account,
+backup decision) and the owner's explicit acceptance of the EXCEPTIONS below.
 
 ## APPLICATION
-- [x] Feature freeze; release baseline green on the feature branch (2026-10-02: 83 unit, 613 pgTAP, 144 E2E, build) — re-verified after the hardening changes (see IMPLEMENTATION_PLAN.md)
-- [x] Error pages: translated `app/error.tsx`, trilingual `global-error.tsx`, 404; users never see SQL, stack traces or provider messages
-- [x] Upload abuse protection active (database-enforced, DATABASE.md §5f)
-- [x] Account deletion request in Konto (ET/EN/RU)
-- [ ] Release version decided: **v1.0.0**; tag only after the production smoke test
+| Status | Item |
+|---|---|
+| GREEN | Feature freeze; clean full verification on the feature branch (see IMPLEMENTATION_PLAN.md for the latest totals) |
+| GREEN | Error pages (translated `error.tsx`, trilingual `global-error.tsx`, 404); no SQL, stack traces, keys or provider messages to users |
+| GREEN | Upload abuse limits (database-enforced), user-facing message ET/EN/RU |
+| GREEN | Account deletion request on /konto (validated mailto; plain text when no usable address) |
+| GREEN | Landing: final hero background (static SVG, decorative, masked behind text), title `KAIDLY \| Elektripaigaldise käit lihtsalt`, favicon set |
 
 ## DATABASE
-- [x] Production Supabase project created: `xakpbtmksxvjmsbipwmj` ("KAIDLY Production", eu-west-1)
-- [ ] ⛔ **(you)** Plan with daily backups decided (BACKUP_RECOVERY.md)
-- [x] Production verified empty (no migration history, tables, users, buckets); dry-run listed all 20 migrations in order, `seeds: []`; all 20 applied, no seed
-- [x] Production catalog identical to a local build (17 tables with RLS flags, 2 security_invoker views, 80 functions, 41 triggers, 87 indexes, 32 policies, function grants, private `documents` bucket, pg_cron + pg_trgm, jobs `kaidly-activity-reminders 15 3 * * *` and `kaidly-upload-events-cleanup 40 3 * * *`); only extra object: Supabase's `ensure_rls` / `rls_auto_enable()`; 0 rows; anon refused, signed-in non-member sees nothing
-- [x] CLI re-linked to development; `npm run db:target` shows the target
-- [x] Migration history linear; all migrations forward-only and additive
+| Status | Item |
+|---|---|
+| GREEN | Separate production project; verified empty before migration; no development data copied |
+| GREEN | Production built from zero: 20 migrations in order, no seed; catalog identical to a local build (17 tables with RLS, 2 views, 80 functions, 41 triggers, 87 indexes, 32 policies, private bucket + 3 policies, pg_cron + pg_trgm) |
+| GREEN | Supabase's own `ensure_rls` / `rls_auto_enable()` reviewed and kept |
+| GREEN | Upload-limit and session-check functions byte-identical in production and the repository |
+| READY | Migration `20261002200000_session_guard_inserts` (live session required to create/join a company): applied to development; apply to production at launch (`npm run db:target` first) |
+| GREEN | CLI default target is development; `npm run db:target` labels the linked project |
 
 ## AUTH
-- [ ] **(you)** Production Auth → URL Configuration: Site URL `https://kaidly.ee`; Redirect URLs only `https://kaidly.ee/**`; email templates from `supabase/templates/` (DEPLOYMENT.md §3.5)
-- [x] App-side redirect allowlist (`safeRedirectPath`) and open-redirect tests pass
-- [x] Flows covered by E2E: sign-up + confirmation, login, logout, forgot/reset, password change, email change, invitation, direct authenticated URL, disabled account, session revocation, ET/EN/RU
-- [x] Revoked sessions / disabled accounts lose data access immediately (database check on every request)
-- [ ] ⛔ **(you)** Kenneth's production account signed up and confirmed → bootstrap platform admin (DEPLOYMENT.md §3.7)
+| Status | Item |
+|---|---|
+| GREEN | Production Auth Site URL `https://kaidly.ee`; Redirect URLs only `https://kaidly.ee/**` (owner-configured) |
+| GREEN | App redirect allowlist and open-redirect tests |
+| GREEN | Flows covered by E2E: sign-up/confirm, login, logout, forgot/reset, password change, email change, invitation, direct URL, disabled account, session revocation, ET/EN/RU |
+| GREEN | Revoked sessions / disabled accounts: no company reads or writes from the next request on; cannot create or join companies either. What remains until the access token expires (≤ `jwt_expiry`, default 1 h): the signed-in frame and the user's own profile row |
+| MANUAL REQUIRED | Paste `supabase/templates/{confirmation,recovery,email_change}.html` into Production → Authentication → Emails → Templates (validated by unit tests; installation not verifiable from here) |
+| **BLOCKING** | Production account **kennethalto95@gmail.com** does not exist yet (checked: 0 users). Create it (Authentication → Users → Add user → Create new user, Auto Confirm), then I bootstrap it as the only platform admin |
 
 ## EMAIL
-- [x] Branded token_hash templates prepared (`supabase/templates/*.html`)
-- [ ] Templates pasted into the production dashboard
-- [ ] ⛔ **(you)** Custom SMTP provider + verified sender domain (`no-reply@kaidly.ee`); fields in DEPLOYMENT.md §5
-- [x] `KAIDLY_CONTACT_EMAIL` set in Production (info@kaidly.ee); mailbox delivery to be confirmed in the smoke test
+| Status | Item |
+|---|---|
+| EXCEPTION | **Custom SMTP intentionally postponed.** Production uses Supabase's built-in sender, which only delivers to the project's team-member addresses and is rate-limited to a few emails per hour. Concretely: **sign-up confirmation** emails to customers will not arrive (customers can't confirm accounts — sign-up is effectively unavailable unless users are created/confirmed by an admin), **password reset** and **email change** emails to customers won't arrive. Invitations are unaffected (KAIDLY invitations are copyable links, no email). Fix: SMTP + verified sender (DEPLOYMENT.md §5) |
+| MANUAL REQUIRED | Mailbox behind `KAIDLY_CONTACT_EMAIL` (`info@kaidly.ee`) — the app only builds the mailto link; whether mail arrives is operational |
 
 ## STORAGE
-- [x] One private bucket `documents`, 25 MB, MIME allowlist, tenant-scoped policies, signed URLs only (pgTAP baseline)
-- [x] Verified in the production project after migration (private, 25 MB, MIME list, 3 policies)
+| Status | Item |
+|---|---|
+| GREEN | One private bucket `documents`, 25 MB, MIME allowlist, tenant-scoped policies, signed URLs only — verified in production |
 
 ## SECURITY
-- [x] Security headers: CSP, HSTS, nosniff, X-Frame-Options DENY / frame-ancestors 'none', Referrer-Policy, Permissions-Policy; `X-Powered-By` off (E2E)
-- [x] Secret audit: no service-role key, tokens, DB passwords or SMTP credentials in files, git history or build output
-- [x] `npm audit --omit=dev`: 0 vulnerabilities; pdfmake/pdfkit server-only (not in client chunks)
-- [ ] ⛔ **(you)** Vercel Production `NEXT_PUBLIC_SUPABASE_URL` has a typo (`…msblpwmj`, NXDOMAIN) — set it to `https://xakpbtmksxvjmsbipwmj.supabase.co`; the publishable key is correct (accepted by production, rejected by development)
+| Status | Item |
+|---|---|
+| GREEN | Headers: CSP (derived per build from `NEXT_PUBLIC_SUPABASE_URL` — production build allows only `xakpbtmksxvjmsbipwmj.supabase.co`, Preview only development), HSTS, nosniff, `X-Frame-Options: DENY` + `frame-ancestors 'none'`, Referrer-Policy, Permissions-Policy, no `X-Powered-By` |
+| GREEN | Build guard: a Production build fails if it targets development (or anything but the production ref); a Preview build fails if it targets production |
+| GREEN | Database audit: all 36 user-callable SECURITY DEFINER functions pin `search_path=''`, check authorization explicitly, none executable by `anon` |
+| GREEN | Secret audit (files, git history, build output): nothing found |
+| GREEN | `npm audit --omit=dev`: 0 vulnerabilities; pdfmake/pdfkit server-only |
 
 ## PRIVACY
-- [x] Manual privacy-request process documented (export, erasure, account vs operating records)
-- [x] Cookies: essential only (Supabase session, `kaidly_locale`, last company, guide hidden) + localStorage for shown reminder toasts; no analytics/tracking → no cookie banner needed
-- [ ] ⛔ **(you)** Legal facts for Privaatsus / Kasutustingimused (`lib/legal/operator.ts`): operator legal name, registry code, address, privacy contact, effective date, production data region — then legal review and `approved: true`
-- [ ] Retention periods / automated erasure — open legal decision (not invented)
+| Status | Item |
+|---|---|
+| GREEN | Manual privacy-request process (PRIVACY_PROCESS.md); no automatic deletion |
+| GREEN | Cookies: essential only; no tracking → no banner needed |
+| MANUAL REQUIRED | Legal facts in `lib/legal/operator.ts`: **operator legal name, registry code, legal/contact address, privacy contact email, effective date** (data region already filled: EU, Ireland). Then legal review and `approved: true`. Until then both pages show a draft notice, replace fact-dependent paragraphs with "published before launch", are `noindex` and out of the sitemap |
+| EXCEPTION | Retention periods / automated erasure — open legal decision, not invented |
 
-## DOMAIN
-- [x] `kaidly.ee` → Production in Vercel, DNS valid (owner-confirmed)
-- [x] `www.kaidly.ee` → 308 → `kaidly.ee` (owner-confirmed; re-checked in the smoke test)
-- [ ] HTTPS valid; HTTP → HTTPS
-
-## VERCEL
-- [x] Production tracks `main`; Preview = feature branches
-- [x] Production publishable key and `KAIDLY_CONTACT_EMAIL` set; no development value in the Production scope
-- [ ] ⛔ **(you)** Production `NEXT_PUBLIC_SUPABASE_URL` typo fixed (see SECURITY)
-- [ ] **(you)** Production `KAIDLY_SITE_URL=https://kaidly.ee` added (canonical URLs, indexing)
-- [x] Preview env: development Supabase, no `KAIDLY_SITE_URL` → noindex everywhere
-- [x] Report PDFs: fonts traced with the export route; verified on a Vercel Preview
+## DOMAIN / VERCEL
+| Status | Item |
+|---|---|
+| GREEN | `kaidly.ee` → Production; `www.kaidly.ee` → 308 → `kaidly.ee`; both "Valid Configuration" (owner-confirmed) |
+| GREEN | Production env: production Supabase URL (typo fixed by owner) and publishable key, `KAIDLY_SITE_URL=https://kaidly.ee`, `KAIDLY_CONTACT_EMAIL` |
+| GREEN | Preview env: development Supabase, no `KAIDLY_SITE_URL` → noindex everywhere |
+| GREEN | Production build simulated locally with production settings: canonical `https://kaidly.ee`, sitemap/robots on kaidly.ee, app routes noindex, CSP production-only |
+| NOT STARTED | Production redeploy from `main` (waits for the gate) |
 
 ## OBSERVABILITY
-- [x] `GET /api/health` (app/auth/storage/version, no secrets)
-- [x] Structured server error logs (`instrumentation.ts`); Vercel runtime logs
-- [ ] Uptime monitor on `/api/health` (optional, any provider)
+| Status | Item |
+|---|---|
+| GREEN | `/api/health` (app/auth/storage/version, no keys, URLs or project refs) |
+| GREEN | Structured server error logs (`instrumentation.ts`) |
+| MANUAL REQUIRED | (optional) uptime monitor on `https://kaidly.ee/api/health` |
 
 ## BACKUP/RECOVERY
-- [x] Runbook and limitations documented (Storage files not in DB backups)
-- [ ] ⛔ **(you)** Plan with daily backups (Pro) chosen for production; record retention/PITR (project is eu-west-1)
+| Status | Item |
+|---|---|
+| **BLOCKING** | Production has **no restorable backups** (verified: backups list empty, PITR off). Decide: upgrade to a plan with daily backups (Pro), or explicitly accept launching without backups |
+| EXCEPTION | Storage files are not in database backups; no file backup job yet |
 
 ## PLATFORM ADMIN
-- [x] Database-backed (`private.platform_admins` by user id); org roles never grant it
-- [ ] Production bootstrap of kennethalto95@gmail.com + audit row + `/admin` verified
-- [ ] Ordinary user denied `/admin` on production
+| Status | Item |
+|---|---|
+| GREEN | Database-backed (`private.platform_admins` by user id); company roles never grant it |
+| **BLOCKING** | Bootstrap kennethalto95@gmail.com in production (needs the account above), verify audit row and `/admin` |
 
-## SMOKE TEST (production, on kaidly.ee; company named "KAIDLY Launch Test")
-- [ ] Public: landing, language switch, title/metadata/canonical, favicon, privacy/terms
-- [ ] Auth: sign-up/confirm, login, logout, password-reset email link on kaidly.ee, direct authenticated URL
-- [ ] Customer: company → 14-day trial, site, installation, log entry, plan, deficiency, document, reminder/notification, search, PDF, CSV
-- [ ] Admin: /admin, users, companies, deadlines, system, audit; trial extension/activation
-- [ ] Security: non-admin denied /admin, cross-tenant 404, expired company read-only
-- [ ] No 5xx; Vercel and Supabase logs clean
-- [ ] Launch test data removed or (if it has history) deactivated and reported
+## SMOKE TEST (production, kaidly.ee, company "KAIDLY Launch Test") — NOT STARTED
+Public pages, language switch, metadata/canonical, favicon, privacy/terms · login, logout,
+direct authenticated URL (password reset only once SMTP works) · company/trial, site,
+installation, log, plan, deficiency, document, notification, search, PDF, CSV · /admin pages ·
+non-admin denied /admin, cross-tenant 404, expired company read-only · no 5xx, logs clean ·
+remove or (with history) deactivate the test company.
 
 ## ROLLBACK
-- [x] Procedure documented (DEPLOYMENT.md §7): promote previous deployment; forward-only database; no destructive restore
+| Status | Item |
+|---|---|
+| GREEN | DEPLOYMENT.md §7: promote previous deployment; forward-only database; emergency auth switches |

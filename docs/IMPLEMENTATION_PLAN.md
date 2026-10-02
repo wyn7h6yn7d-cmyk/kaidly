@@ -177,3 +177,33 @@ wording reviews.
   - *Accessibility:* axe-core sweep of 11 pages at three widths, committed as an E2E test; it caught an invalid `dl` structure in the new dashboard. Upload status is announced through a polite live region; upload controls are labelled; 44 px targets.
   - *Responsive:* every new page checked at 375/768/1440 (no horizontal scroll); the installation header no longer duplicates "Lisa sissekanne" on the entry form.
 - **Fixed during Phases 4–6:** a stale completion form showed "no access" instead of "already done"; two corrections in one transaction had no defined order (now `clock_timestamp()`); dropdown and field values lost after validation errors (Phase 3 fix, now covered by E2E).
+
+## POST-v1 / FUTURE (documented only — not part of v1.0)
+
+No dates. Priority: **v1.1** = first follow-up once real customers use v1; **later** = when
+demand or a decision exists.
+
+| | Item | Benefit | Depends on | Priority |
+|---|---|---|---|---|
+| R/C | Custom SMTP + branded transactional mail (`no-reply@kaidly.ee`: confirmation, recovery, email change) | real customers can sign up and reset passwords | SMTP provider, verified domain | **v1.1 (launch-critical for open sign-up)** |
+| Q | Backup/recovery improvement (paid plan, Storage file backups, restore drill) | recoverable customer data and files | plan decision | **v1.1** |
+| N | Final retention / privacy-erasure policy (automation after legal review) | GDPR-grade erasure without manual work | legal/domain review | v1.1 |
+| O/P | Native Russian and Estonian electrical-professional terminology reviews | trustworthy wording | reviewers | v1.1 |
+| A | Email reminders (reminder channel `email`, weekly digest, per-user preferences) | reminders without opening the app | SMTP; `notifications.channel` is ready | v1.1 |
+| D | Excel/CSV import (sites, installations, existing history where safe; guided mapping, validation, never fabricated history) | faster onboarding of existing customers | product decisions on history | v1.1 |
+| I | Linked responsible KAIDLY user (alongside free text) | targeted reminders | schema change | v1.1 |
+| F | Saved report presets | repeat reports quickly | — | later |
+| E | Scheduled / emailed reports | monthly reporting without effort | SMTP, saved presets | later |
+| G | Larger exports (> 5000 rows: streaming or background generation) | very large companies | real demand | later |
+| H | Search: Cmd/Ctrl+K overlay, "show more" per group | faster navigation | — | later |
+| B | Browser/mobile push (opt-in) | timely reminders on phones | push infrastructure | later |
+| J | Per-company time zone (instead of Tallinn-only) | customers outside Estonia | product decision | later |
+| K | Platform admin scaling (pagination beyond current limits) | many customers | growth | later |
+| L | Commercial pricing/packages (public pricing; manual invoicing first, online payment only if needed) | revenue | pricing research | later |
+| M | Commercial storage quotas (separate from abuse limits) | fair use per plan | pricing | later |
+| S | Optional analytics — only after a privacy decision, never added silently | product insight | privacy review, consent | later |
+| T | Mobile/PWA/offline workflow | sites without signal | proven field demand | later |
+| U | API / integrations | customer systems | validated core usage | later |
+| V | Data import/export portability (full company export) | lock-in avoidance, GDPR portability | — | later |
+| W | Customer support access (explicit, time-bounded, audited; never silent impersonation) | faster support | design + audit | later |
+

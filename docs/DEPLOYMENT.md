@@ -49,6 +49,9 @@ production ref, then delete the file.
 
 ## 3. Production Supabase from zero (runbook)
 
+0. **Build guard** (`lib/env-guard.ts`, run by `next.config.ts`): a Production build fails
+   unless `NEXT_PUBLIC_SUPABASE_URL` is the production project; a Preview build fails if it
+   is. Refs: development `gdpzavhkblbcxivoaqax`, production `xakpbtmksxvjmsbipwmj`.
 1. Supabase Dashboard → **New project** → name `kaidly-production`, **EU region** (e.g.
    Frankfurt `eu-central-1`; the development project is `eu-west-2` London), strong DB
    password stored in a password manager. Plan: see BACKUP_RECOVERY.md (Pro recommended for
@@ -133,3 +136,11 @@ KAIDLY itself sends no email; invitations are copyable links.
   (BACKUP_RECOVERY.md).
 - **Configuration:** environment-variable changes need a redeploy; keep the previous values
   in the password manager until the new deploy is verified.
+- **Domain:** stays attached to the Production environment during any of the above —
+  promoting an older deployment changes what kaidly.ee serves, not the DNS.
+- **Auth emergency** (e.g. abuse or an auth bug): Production → Authentication → Sign In /
+  Providers → turn off "Allow new users to sign up" (existing users keep working);
+  revoke a user's sessions or disable the account from `/admin/users/<id>` (database access
+  ends on the next request); in the worst case promote a maintenance deployment or the
+  previous good deployment. Never drop or restore the production database to "undo" an
+  incident.
