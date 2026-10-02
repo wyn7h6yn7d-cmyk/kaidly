@@ -250,6 +250,16 @@ export const et = {
       documents: "Dokumendid",
       settings: "Seaded",
     },
+    /** Bottom bar on phones: short forms of the same terms (full names are the accessible names). */
+    navShort: {
+      overview: "Ülevaade",
+      sites: "Objektid",
+      log: "Päevik",
+      schedule: "Kava",
+      deficiencies: "Puudused",
+      documents: "Dokumendid",
+      settings: "Seaded",
+    },
     signedInAs: "Sisse logitud kui",
     save: "Salvesta",
     saving: "Salvestan…",

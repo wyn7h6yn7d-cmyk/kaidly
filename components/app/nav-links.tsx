@@ -71,13 +71,13 @@ export function BottomNav({ orgSlug }: { orgSlug: string }) {
     "flex h-16 flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold leading-none";
 
   return (
-    <ul className="grid grid-cols-5">
+    <ul className="grid grid-cols-5 [&>li]:min-w-0">
       {primary.map((item) => {
         const Icon = item.icon;
         const content = (
           <>
             <Icon className="size-5" aria-hidden="true" />
-            <span className="truncate">{t.app.nav[item.key]}</span>
+            <span className="w-full truncate text-center">{t.app.navShort[item.key]}</span>
           </>
         );
         const href = hrefFor(orgSlug, item);
@@ -87,6 +87,7 @@ export function BottomNav({ orgSlug }: { orgSlug: string }) {
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
+              aria-label={t.app.nav[item.key]}
               className={cn(
                 cell,
                 active

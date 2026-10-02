@@ -251,6 +251,16 @@ export const en: Messages = {
       documents: "Documents",
       settings: "Settings",
     },
+    /** Bottom bar on phones: short forms of the same terms (full names are the accessible names). */
+    navShort: {
+      overview: "Overview",
+      sites: "Sites",
+      log: "Log",
+      schedule: "Plan",
+      deficiencies: "Deficiencies",
+      documents: "Documents",
+      settings: "Settings",
+    },
     signedInAs: "Signed in as",
     save: "Save",
     saving: "Saving…",

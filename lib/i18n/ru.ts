@@ -264,6 +264,16 @@ export const ru: Messages = {
       documents: "Документы",
       settings: "Настройки",
     },
+    /** Bottom bar on phones: short forms of the same terms (full names are the accessible names). */
+    navShort: {
+      overview: "Обзор",
+      sites: "Объекты",
+      log: "Журнал",
+      schedule: "План",
+      deficiencies: "Дефекты",
+      documents: "Документы",
+      settings: "Настройки",
+    },
     signedInAs: "Вы вошли как",
     save: "Сохранить",
     saving: "Сохранение…",
