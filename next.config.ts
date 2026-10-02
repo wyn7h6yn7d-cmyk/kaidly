@@ -1,4 +1,14 @@
 import type { NextConfig } from "next";
+import { checkDeploymentTarget } from "./lib/env-guard";
+
+// Never build Production against Development (or Preview against Production).
+const guard = checkDeploymentTarget({
+  VERCEL_ENV: process.env.VERCEL_ENV,
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+  KAIDLY_SITE_URL: process.env.KAIDLY_SITE_URL,
+});
+for (const warning of guard.warnings) console.warn(`[kaidly] ${warning}`);
+if (guard.errors.length) throw new Error(`[kaidly] ${guard.errors.join(" ")}`);
 
 // Security headers (docs/DEPLOYMENT.md). The CSP allows only this origin and the project's
 // Supabase API. 'unsafe-inline' for scripts is required by the App Router's inline
