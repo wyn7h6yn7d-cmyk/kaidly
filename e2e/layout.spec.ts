@@ -66,7 +66,7 @@ test.describe("Paigutus", () => {
          values ('${org.id}', '${site}', '${installation}', 'Pikk puuduse pealkiri: lahtine klemm X3 ja ülekuumenemise jäljed isolatsioonil',
                  'Kirjeldus', 'critical', '${org.users.operator.id}');`);
     await page.goto("/");
-    const publicPages = ["/", "/auth/login", "/auth/sign-up", "/privaatsus", "/kasutustingimused"];
+    const publicPages = ["/", "/auth/login", "/auth/sign-up", "/auth/forgot-password", "/privaatsus", "/kasutustingimused"];
     const base = `/o/${org.slug}`;
     const appPages = [
       base,

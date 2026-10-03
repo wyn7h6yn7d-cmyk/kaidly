@@ -119,7 +119,7 @@ test("account, company settings and the KAIDLY Admin console pass axe and fit th
 
 test("public legal pages and an expired (read-only) company pass axe @responsive", async ({ page }) => {
   test.setTimeout(180_000);
-  for (const path of ["/", "/privaatsus", "/kasutustingimused", "/auth/login", "/auth/sign-up"]) {
+  for (const path of ["/", "/privaatsus", "/kasutustingimused", "/auth/login", "/auth/sign-up", "/auth/forgot-password", "/auth/sign-up-success", "/auth/error"]) {
     await page.goto(path);
     await page.locator("h1").first().waitFor();
     await expectAccessible(page);
