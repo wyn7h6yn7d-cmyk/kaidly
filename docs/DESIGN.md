@@ -400,6 +400,14 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
   tinted with the reason in plain words; the import button only appears when every row is
   valid. Success is a left-bordered status block, like other confirmations.
 
+- **Auth pages (2026-10-03):** one shell for login, sign-up, password reset, update
+  password, sign-up success and error — a simplified header (logo, "Tagasi avalehele",
+  languages; on phones the back link is an arrow), the landing grid at lower contrast,
+  faded behind the form, with faint panels only on wide screens, and one ~430 px card
+  (hairline border, 1 px shadow) placed a little above the visual centre; below 360 px the
+  card goes edge to edge. 48 px inputs, password show/hide buttons, a length hint that
+  turns green, an inline mismatch message, a spinner on the primary button, the
+  login/sign-up switch under a hairline at the bottom of the card.
 ## 9. Layout system (2026-10-02)
 
 **Audit before refactoring** (screenshots at 375/768/1280/1440/1920): no page scrolled

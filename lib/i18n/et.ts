@@ -191,6 +191,9 @@ export const et = {
     home: "Avalehele",
   },
   common: {
+    backToHome: "Tagasi avalehele",
+    showPassword: "Näita parooli",
+    hidePassword: "Peida parool",
     backToTop: "Tagasi üles",
     language: "Keel",
     loading: "Laen…",
@@ -332,11 +335,12 @@ export const et = {
     footerNav: "Jaluse menüü",
   },
   auth: {
+    navLabel: "Konto",
     login: {
       title: "Logi sisse",
       description: "Sisesta oma e-post ja parool.",
       submit: "Logi sisse",
-      submitting: "Login sisse…",
+      submitting: "Sisenen…",
       forgot: "Unustasid parooli?",
       noAccount: "Pole veel kontot?",
     },

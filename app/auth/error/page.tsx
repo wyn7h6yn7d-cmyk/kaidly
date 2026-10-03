@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { AuthHeading } from "@/components/auth/auth-heading";
+import { AuthHeading, AuthSwitch } from "@/components/auth/auth-heading";
 import { isErrorCode } from "@/lib/i18n";
 import { getT } from "@/lib/i18n/server";
 
@@ -19,7 +19,7 @@ async function ErrorMessage({ searchParams }: { searchParams: Promise<{ code?: s
   const t = await getT();
   const { code } = await searchParams;
   const message = isErrorCode(code, t) ? t.errors[code] : t.errors.unknown;
-  return <p className="mb-8 text-k-muted">{message}</p>;
+  return <p className="text-k-muted">{message}</p>;
 }
 
 export default async function Page({
@@ -31,12 +31,14 @@ export default async function Page({
   return (
     <>
       <AuthHeading title={t.auth.error.title} />
-      <Suspense fallback={<p className="mb-8 text-k-muted">{t.common.loading}</p>}>
+      <Suspense fallback={<p className="text-k-muted">{t.common.loading}</p>}>
         <ErrorMessage searchParams={searchParams} />
       </Suspense>
-      <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
-        {t.common.backToLogin}
-      </Link>
+      <AuthSwitch>
+        <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
+          {t.common.backToLogin}
+        </Link>
+      </AuthSwitch>
     </>
   );
 }

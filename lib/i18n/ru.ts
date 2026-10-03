@@ -208,6 +208,9 @@ export const ru: Messages = {
     home: "На главную",
   },
   common: {
+    backToHome: "На главную",
+    showPassword: "Показать пароль",
+    hidePassword: "Скрыть пароль",
     backToTop: "Наверх",
     language: "Язык",
     loading: "Загрузка…",
@@ -348,6 +351,7 @@ export const ru: Messages = {
     footerNav: "Меню в подвале",
   },
   auth: {
+    navLabel: "Аккаунт",
     login: {
       title: "Вход",
       description: "Введите эл. почту и пароль.",

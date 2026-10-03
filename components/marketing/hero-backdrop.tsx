@@ -49,7 +49,7 @@ function Tiles({ tiles }: { tiles: Tile[] }) {
 }
 
 /** Drafting-paper grid: fine lines every `cell` px, a slightly stronger line every 5 cells. */
-function grid(cell: number, fine: number, major: number): React.CSSProperties {
+export function grid(cell: number, fine: number, major: number): React.CSSProperties {
   const line = (o: number) => `rgba(17, 24, 39, ${o})`;
   return {
     backgroundImage: [

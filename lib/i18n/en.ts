@@ -195,6 +195,9 @@ export const en: Messages = {
     home: "Home",
   },
   common: {
+    backToHome: "Back to home",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     backToTop: "Back to top",
     language: "Language",
     loading: "Loading…",
@@ -335,6 +338,7 @@ export const en: Messages = {
     footerNav: "Footer menu",
   },
   auth: {
+    navLabel: "Account",
     login: {
       title: "Sign in",
       description: "Enter your email and password.",
