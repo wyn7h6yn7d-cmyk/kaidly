@@ -5,10 +5,9 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { authErrorCode } from "@/lib/auth/errors";
 import { DEFAULT_AFTER_LOGIN } from "@/lib/auth/redirect";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthHeading, FormError } from "./auth-heading";
+import { AuthHeading, AuthSubmit, FormError } from "./auth-heading";
+import { AUTH_INPUT, PasswordInput } from "./password-input";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { useT } from "@/lib/i18n/client";
 
@@ -24,6 +23,7 @@ export function UpdatePasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError(null);
     if (password.length < MIN_PASSWORD_LENGTH) {
       setError(t.errors.weak_password);
@@ -55,14 +55,14 @@ export function UpdatePasswordForm() {
       <form method="post" onSubmit={handleSubmit} className="flex flex-col gap-5">
         <div className="grid gap-2">
           <Label htmlFor={id("password")}>{t.auth.updatePassword.newPassword}</Label>
-          <Input
+          <PasswordInput
             id={id("password")}
             name="password"
-            type="password"
             autoComplete="new-password"
             required
             minLength={MIN_PASSWORD_LENGTH}
-            aria-describedby={`${id("password")}-hint`}
+            aria-describedby={id("password-hint")}
+            className={AUTH_INPUT}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -71,9 +71,7 @@ export function UpdatePasswordForm() {
           </p>
         </div>
         <FormError message={error} />
-        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-          {isLoading ? t.auth.updatePassword.submitting : t.auth.updatePassword.submit}
-        </Button>
+        <AuthSubmit busy={isLoading} label={t.auth.updatePassword.submit} busyLabel={t.auth.updatePassword.submitting} />
       </form>
     </>
   );

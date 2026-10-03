@@ -6,10 +6,10 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { authErrorCode } from "@/lib/auth/errors";
 import { safeRedirectPath } from "@/lib/auth/redirect";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthHeading, FormError } from "./auth-heading";
+import { AuthHeading, AuthSubmit, AuthSwitch, FormError } from "./auth-heading";
+import { AUTH_INPUT, PasswordInput } from "./password-input";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { syncLocale } from "@/lib/actions/locale";
 import { useT } from "@/lib/i18n/client";
@@ -26,6 +26,7 @@ export function LoginForm() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // a second click while signing in does nothing
     setIsLoading(true);
     setError(null);
 
@@ -65,36 +66,33 @@ export function LoginForm() {
             autoComplete="email"
             inputMode="email"
             required
+            className={AUTH_INPUT}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="grid gap-2">
-          <div className="flex items-baseline justify-between gap-4">
-            <Label htmlFor={id("password")}>{t.common.password}</Label>
-            <Link
-              href="/auth/forgot-password"
-              className="text-sm text-k-green underline-offset-4 hover:underline"
-            >
-              {t.auth.login.forgot}
-            </Link>
-          </div>
-          <Input
+          <Label htmlFor={id("password")}>{t.common.password}</Label>
+          <PasswordInput
             id={id("password")}
             name="password"
-            type="password"
             autoComplete="current-password"
             required
+            className={AUTH_INPUT}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <Link
+            href="/auth/forgot-password"
+            className="inline-flex min-h-8 items-center justify-self-end rounded-sm text-sm font-medium text-k-green underline-offset-4 hover:underline"
+          >
+            {t.auth.login.forgot}
+          </Link>
         </div>
         <FormError message={error} />
-        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-          {isLoading ? t.auth.login.submitting : t.auth.login.submit}
-        </Button>
+        <AuthSubmit busy={isLoading} label={t.auth.login.submit} busyLabel={t.auth.login.submitting} />
       </form>
-      <p className="mt-8 text-sm text-k-muted">
+      <AuthSwitch>
         {t.auth.login.noAccount}{" "}
         <Link
           href={isInvite ? `/auth/sign-up?next=${encodeURIComponent(next)}` : "/auth/sign-up"}
@@ -102,7 +100,7 @@ export function LoginForm() {
         >
           {t.common.signUp}
         </Link>
-      </p>
+      </AuthSwitch>
     </>
   );
 }

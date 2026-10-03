@@ -6,7 +6,7 @@ import { Field } from "@/components/forms/field";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/auth/password-input";
 import { changePassword } from "@/lib/actions/account";
 import { initialState } from "@/lib/actions/state";
 import { useT } from "@/lib/i18n/client";
@@ -23,20 +23,18 @@ export function PasswordChangeForm() {
   return (
     <form action={action} className="flex max-w-lg flex-col gap-5">
       <Field id={id("currentPassword")} label={t.app.account.currentPassword}>
-        <Input
+        <PasswordInput
           id={id("currentPassword")}
           name="currentPassword"
-          type="password"
           autoComplete="current-password"
           required
           aria-invalid={state.fields?.currentPassword}
         />
       </Field>
       <Field id={id("newPassword")} label={t.app.account.newPassword} hint={t.auth.signUp.passwordHint}>
-        <Input
+        <PasswordInput
           id={id("newPassword")}
           name="newPassword"
-          type="password"
           autoComplete="new-password"
           required
           minLength={MIN_PASSWORD_LENGTH}
@@ -45,10 +43,9 @@ export function PasswordChangeForm() {
         />
       </Field>
       <Field id={id("confirmPassword")} label={t.app.account.confirmPassword}>
-        <Input
+        <PasswordInput
           id={id("confirmPassword")}
           name="confirmPassword"
-          type="password"
           autoComplete="new-password"
           required
           minLength={MIN_PASSWORD_LENGTH}

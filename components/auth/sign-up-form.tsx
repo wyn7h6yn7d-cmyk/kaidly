@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { authErrorCode } from "@/lib/auth/errors";
 import { safeRedirectPath } from "@/lib/auth/redirect";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthHeading, FormError } from "./auth-heading";
+import { AuthHeading, AuthSubmit, AuthSwitch, FormError } from "./auth-heading";
+import { AUTH_INPUT, PasswordInput } from "./password-input";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { useT } from "@/lib/i18n/client";
 
@@ -24,12 +25,18 @@ export function SignUpForm() {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [repeatTouched, setRepeatTouched] = useState(false);
   const router = useRouter();
+  const lengthMet = password.length >= MIN_PASSWORD_LENGTH;
+  // Shown once the repeat field has been left, or as soon as it is as long as the password.
+  const mismatch =
+    repeatPassword !== "" && (repeatTouched || repeatPassword.length >= password.length) && repeatPassword !== password;
   // An invitation link survives sign-up and email confirmation.
   const next = safeRedirectPath(useSearchParams().get("next"));
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setError(null);
 
     if (password.length < MIN_PASSWORD_LENGTH) {
@@ -37,7 +44,7 @@ export function SignUpForm() {
       return;
     }
     if (password !== repeatPassword) {
-      setError(t.auth.signUp.passwordsDoNotMatch);
+      setRepeatTouched(true);
       return;
     }
 
@@ -76,6 +83,7 @@ export function SignUpForm() {
             autoComplete="name"
             required
             maxLength={200}
+            className={AUTH_INPUT}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
@@ -89,45 +97,57 @@ export function SignUpForm() {
             autoComplete="email"
             inputMode="email"
             required
+            className={AUTH_INPUT}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="grid gap-2">
           <Label htmlFor={id("password")}>{t.common.password}</Label>
-          <Input
+          <PasswordInput
             id={id("password")}
             name="password"
-            type="password"
             autoComplete="new-password"
             required
             minLength={MIN_PASSWORD_LENGTH}
-            aria-describedby={`${id("password")}-hint`}
+            aria-describedby={id("password-hint")}
+            className={AUTH_INPUT}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <p id={id("password-hint")} className="text-sm text-k-muted">
+          <p
+            id={id("password-hint")}
+            data-met={lengthMet}
+            className="flex items-center gap-1.5 text-sm text-k-muted data-[met=true]:text-k-green"
+          >
+            {lengthMet && <Check className="size-4" aria-hidden="true" />}
             {t.auth.signUp.passwordHint}
           </p>
         </div>
         <div className="grid gap-2">
           <Label htmlFor={id("repeat-password")}>{t.auth.signUp.repeatPassword}</Label>
-          <Input
+          <PasswordInput
             id={id("repeat-password")}
             name="repeatPassword"
-            type="password"
             autoComplete="new-password"
             required
+            aria-invalid={mismatch || undefined}
+            aria-describedby={mismatch ? id("repeat-error") : undefined}
+            className={AUTH_INPUT}
             value={repeatPassword}
             onChange={(e) => setRepeatPassword(e.target.value)}
+            onBlur={() => setRepeatTouched(true)}
           />
+          {mismatch && (
+            <p id={id("repeat-error")} className="text-sm font-medium text-k-danger">
+              {t.auth.signUp.passwordsDoNotMatch}
+            </p>
+          )}
         </div>
         <FormError message={error} />
-        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-          {isLoading ? t.auth.signUp.submitting : t.auth.signUp.submit}
-        </Button>
+        <AuthSubmit busy={isLoading} label={t.auth.signUp.submit} busyLabel={t.auth.signUp.submitting} />
       </form>
-      <p className="mt-8 text-sm text-k-muted">
+      <AuthSwitch>
         {t.auth.signUp.haveAccount}{" "}
         <Link
           href={next.startsWith("/invite/") ? `/auth/login?next=${encodeURIComponent(next)}` : "/auth/login"}
@@ -135,7 +155,7 @@ export function SignUpForm() {
         >
           {t.common.signIn}
         </Link>
-      </p>
+      </AuthSwitch>
     </>
   );
 }

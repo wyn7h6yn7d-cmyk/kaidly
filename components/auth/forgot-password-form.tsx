@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { authErrorCode } from "@/lib/auth/errors";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AuthHeading, FormError } from "./auth-heading";
+import { AuthHeading, AuthSubmit, AuthSwitch, FormError } from "./auth-heading";
+import { AUTH_INPUT } from "./password-input";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { useT } from "@/lib/i18n/client";
 
@@ -21,6 +21,7 @@ export function ForgotPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setIsLoading(true);
     setError(null);
 
@@ -47,9 +48,11 @@ export function ForgotPasswordForm() {
     return (
       <>
         <AuthHeading title={t.auth.forgot.sentTitle} description={t.auth.forgot.sentDescription} />
-        <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
-          {t.common.backToLogin}
-        </Link>
+        <AuthSwitch>
+          <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
+            {t.common.backToLogin}
+          </Link>
+        </AuthSwitch>
       </>
     );
   }
@@ -67,20 +70,19 @@ export function ForgotPasswordForm() {
             autoComplete="email"
             inputMode="email"
             required
+            className={AUTH_INPUT}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <FormError message={error} />
-        <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
-          {isLoading ? t.auth.forgot.submitting : t.auth.forgot.submit}
-        </Button>
+        <AuthSubmit busy={isLoading} label={t.auth.forgot.submit} busyLabel={t.auth.forgot.submitting} />
       </form>
-      <p className="mt-8 text-sm">
+      <AuthSwitch>
         <Link href="/auth/login" className="font-semibold text-k-green underline underline-offset-4">
           {t.common.backToLogin}
         </Link>
-      </p>
+      </AuthSwitch>
     </>
   );
 }
