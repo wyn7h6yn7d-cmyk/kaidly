@@ -60,3 +60,15 @@ test("filters: only valid values survive and round-trip", () => {
   });
   assert.deepEqual(parseFilters(Object.fromEntries(new URLSearchParams(filtersQuery(f)))), f);
 });
+
+test("CSV: every formula trigger at the start of a cell is neutralised, other text is untouched", () => {
+  const payloads = ["=1+1", "+cmd|' /C calc'!A0", "-2+3", "@SUM(A1)", "\t=1", "\r=HYPERLINK(\"x\")", "\n=1", "\r\n@x"];
+  for (const value of payloads) {
+    const csv = toCsv([{ key: "a", label: "A" }], [{ a: value }]);
+    const cellText = csv.split("\r\n")[1].replace(/^"|"$/g, "");
+    assert.ok(cellText.startsWith("'"), `not neutralised: ${JSON.stringify(value)}`);
+  }
+  const plain = toCsv([{ key: "a", label: "A" }], [{ a: "Kilp 1 = korras" }]);
+  assert.ok(plain.includes("\r\nKilp 1 = korras\r\n"));
+});
+

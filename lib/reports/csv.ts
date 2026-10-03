@@ -8,8 +8,9 @@ import type { Column, Row } from "./types.ts";
 export function toCsv(columns: Column[], rows: Row[]): string {
   const cell = (value: string | undefined) => {
     const text = (value ?? "").replace(/\r\n?/g, "\n");
-    // Neutralise spreadsheet formulas (=, +, -, @ at the start).
-    const safe = /^[=+\-@\t]/.test(text) ? `'${text}` : text;
+    // Neutralise spreadsheet formulas: =, +, -, @, tab or a line break (CR is normalised to
+    // LF above) at the start (OWASP CSV injection).
+    const safe = /^[=+\-@\t\n]/.test(text) ? `'${text}` : text;
     return /[";\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
   };
   const lines = [columns.map((c) => cell(c.label)).join(";"), ...rows.map((r) => columns.map((c) => cell(r[c.key])).join(";"))];
