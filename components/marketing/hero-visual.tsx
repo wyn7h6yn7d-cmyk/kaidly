@@ -17,22 +17,24 @@ export async function HeroVisual() {
   const h = t.landing.hero;
   return (
     <figure className="relative">
-      {/* A faint pencil trace leading in from the copy (wide screens only). */}
+      {/* A faint pencil trace leading in from the copy (wide screens only). The sheet itself is
+          scaled up ~7 % on xl (from its centre, into the gap and the page margin), so the copy
+          column keeps its full width. */}
       <svg
         aria-hidden="true"
         focusable="false"
         viewBox="0 0 160 120"
-        className="pointer-events-none absolute -left-36 bottom-10 hidden w-40 text-k-green/30 xl:block"
+        className="pointer-events-none absolute -left-36 bottom-10 hidden w-40 text-k-green/50 xl:block"
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.5}
+        strokeWidth={1.6}
         strokeLinecap="round"
         strokeDasharray="5 6"
       >
         <path d="M6 100 C40 104 70 90 96 66 C114 50 128 40 150 34" />
         <path d="M150 34 L139 31 M150 34 L143 43" strokeDasharray="none" />
       </svg>
-      <div className="relative overflow-hidden rounded-sm border border-k-line bg-k-surface shadow-[0_1px_2px_rgba(17,24,39,0.05),0_12px_32px_-18px_rgba(17,24,39,0.25)] lg:rotate-[0.6deg]">
+      <div className="relative overflow-hidden rounded-sm border border-k-line bg-k-surface shadow-[0_1px_2px_rgba(17,24,39,0.05),0_12px_32px_-18px_rgba(17,24,39,0.25)] lg:rotate-[0.6deg] xl:scale-[1.07]">
         {HERO_PHOTO && (
           <Image
             src={HERO_PHOTO.src}

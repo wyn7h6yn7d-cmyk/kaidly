@@ -77,7 +77,16 @@ export function HeroFigure({
       );
     });
 
-  const hand = { fontFamily: "var(--font-hand), cursive", fontWeight: 600 } as const;
+  // A thin paper-coloured halo behind the handwriting lifts it off the grid and drawing lines
+  // (paint-order: stroke first) — more legible without looking bold or typeset.
+  const hand = {
+    fontFamily: "var(--font-hand), cursive",
+    fontWeight: 600,
+    stroke: "hsl(var(--k-surface))",
+    strokeWidth: 4,
+    paintOrder: "stroke",
+    strokeLinejoin: "round",
+  } as const;
 
   return (
     <svg viewBox="0 0 520 600" role="img" aria-label={label} className="h-auto w-full text-k-ink">
@@ -142,50 +151,50 @@ export function HeroFigure({
       <g
         fill="none"
         stroke="hsl(var(--k-green))"
-        strokeWidth={2}
+        strokeWidth={2.2}
         strokeLinecap="round"
         strokeLinejoin="round"
         style={{ color: "hsl(var(--k-green))" }}
       >
         {/* 1 · inspection done, with the circled date */}
-        <path d="M100 136 c-14 2 -18 18 -10 30 c8 12 26 12 32 0 c5 -11 -3 -26 -18 -28" strokeOpacity={0.85} />
+        <path d="M100 136 c-14 2 -18 18 -10 30 c8 12 26 12 32 0 c5 -11 -3 -26 -18 -28" strokeOpacity={0.95} />
         <Arrow from={[132, 150]} to={[296, 120]} bow={-10} />
         <Tick x={304} y={114} s={0.9} />
-        <text x={326} y={124} fill="currentColor" stroke="none" fontSize={24} style={hand}>
+        <text x={326} y={124} fill="currentColor" fontSize={25} style={hand}>
           {notes[0]}
         </text>
         <g className="hidden sm:inline">
-          <text x={336} y={160} fill="currentColor" stroke="none" fontSize={20} style={hand}>
+          <text x={336} y={160} fill="currentColor" fontSize={21} style={hand}>
             {date}
           </text>
-          <path d="M330 150 c2 -16 44 -18 56 -6 c10 10 -6 22 -30 22 c-20 0 -32 -8 -24 -20" strokeOpacity={0.8} />
+          <path d="M330 150 c2 -16 44 -18 56 -6 c10 10 -6 22 -30 22 c-20 0 -32 -8 -24 -20" strokeOpacity={0.9} />
         </g>
 
         {/* row 2: quick ticks along the breakers */}
-        <g className="hidden sm:inline" strokeOpacity={0.75}>
+        <g className="hidden sm:inline" strokeOpacity={0.88}>
           <Tick x={78} y={276} s={0.7} />
           <Tick x={108} y={276} s={0.7} />
           <Tick x={138} y={276} s={0.7} />
         </g>
 
         {/* 2 · measurement date, around the highlighted breaker in row 3 */}
-        <path d="M198 302 c-6 -8 24 -12 30 -2 c6 10 4 40 -2 46 c-8 8 -30 4 -30 -6 c0 -12 0 -30 4 -38" strokeOpacity={0.85} />
+        <path d="M198 302 c-6 -8 24 -12 30 -2 c6 10 4 40 -2 46 c-8 8 -30 4 -30 -6 c0 -12 0 -30 4 -38" strokeOpacity={0.95} />
         <Arrow from={[232, 316]} to={[296, 290]} bow={-6} />
-        <text x={304} y={294} fill="currentColor" stroke="none" fontSize={24} style={hand}>
+        <text x={304} y={294} fill="currentColor" fontSize={25} style={hand}>
           {notes[1]}
         </text>
-        <path d={stroke([306, 302], [446, 300], 2)} strokeOpacity={0.6} strokeWidth={1.5} />
+        <path d={stroke([306, 302], [446, 300], 2)} strokeOpacity={0.75} strokeWidth={1.6} />
 
         {/* 3 · next service, from the meter */}
         <Arrow from={[140, 380]} to={[296, 366]} bow={-12} />
-        <text x={304} y={370} fill="currentColor" stroke="none" fontSize={24} style={hand}>
+        <text x={304} y={370} fill="currentColor" fontSize={25} style={hand}>
           {notes[2]}
         </text>
 
         {/* 4 · deficiency cleared, from the empty slot */}
         <Arrow from={[252, 420]} to={[296, 432]} bow={4} />
         <Tick x={304} y={430} s={0.9} />
-        <text x={326} y={440} fill="currentColor" stroke="none" fontSize={24} style={hand}>
+        <text x={326} y={440} fill="currentColor" fontSize={25} style={hand}>
           {notes[3]}
         </text>
       </g>
