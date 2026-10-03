@@ -246,10 +246,11 @@ export const en: Messages = {
       primary: "Create account",
       secondary: "See how it works",
       note: "all on record, not in someone's head",
-      figureLabel: "Drawing: main switchboard PK-01 with operating notes",
+      figureLabel: "Drawing: maintenance sheet for main switchboard PK-01 with handwritten notes",
       figureTitle: "PK-01 · Main switchboard",
       figureMeta: "Example site · sheet 1/1",
-      callouts: ["Last inspection 12.03.", "Next measurement 04/2027", "Deficiency cleared ✓"],
+      figureNotes: ["inspection done", "measurement 04/2027", "next service", "deficiency cleared"],
+      figureDate: "12.03.",
     },
     excel: {
       title: "Excel is not an operating log.",

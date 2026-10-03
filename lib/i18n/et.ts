@@ -243,10 +243,11 @@ export const et = {
       primary: "Loo konto",
       secondary: "Vaata, kuidas töötab",
       note: "kõik kirjas, mitte kellegi peas",
-      figureLabel: "Joonis: peajaotuskilp PK-01 käidu märkmetega",
+      figureLabel: "Joonis: peajaotuskilbi PK-01 hooldusleht käsitsi tehtud märkmetega",
       figureTitle: "PK-01 · Peajaotuskilp",
       figureMeta: "Näidisobjekt · leht 1/1",
-      callouts: ["Viimane kontroll 12.03.", "Järgmine mõõtmine 04/2027", "Puudus kõrvaldatud ✓"],
+      figureNotes: ["kontroll tehtud", "mõõtmine 04/2027", "järgmine hooldus", "puudus kõrvaldatud"],
+      figureDate: "12.03.",
     },
     excel: {
       title: "Excel ei ole käiduraamat.",

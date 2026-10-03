@@ -408,6 +408,14 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
   card goes edge to edge. 48 px inputs, password show/hide buttons, a length hint that
   turns green, an inline mismatch message, a spinner on the primary button, the
   login/sign-up switch under a hairline at the bottom of the card.
+- **Hero drawing as a maintenance sheet (2026-10-03):** the right-hand visual is a light
+  grid-paper sheet (hairline border, soft shadow, 0.6° tilt from lg) instead of the dark
+  green panel. Layer 1 is the neat ink drawing of PK-01 (cabinet, breaker rows, meter,
+  dimension line, title block); layer 2 is green "field notes" in the tagline's Caveat face —
+  bowed pen arrows, ticks, a circle round a breaker, a circled date and four short labels
+  (kontroll tehtud · mõõtmine 04/2027 · järgmine hooldus · puudus kõrvaldatud). Phones drop the
+  row ticks and the date. A faint dashed pencil trace leads from the copy to the sheet on xl.
+  Headline, copy and buttons unchanged.
 ## 9. Layout system (2026-10-02)
 
 **Audit before refactoring** (screenshots at 375/768/1280/1440/1920): no page scrolled
