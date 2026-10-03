@@ -3,6 +3,7 @@ import { createOrg, expect, expectNoHorizontalScroll, login, test } from "./supp
 test.describe("UX polish", () => {
   test("scroll-to-top appears after scrolling, returns to the top and keeps focus usable @responsive", async ({ page }) => {
     await page.goto("/");
+    await page.waitForLoadState("networkidle"); // hydrated: the scroll listener is attached
     const button = page.getByRole("button", { name: "Tagasi üles" });
     await expect(button).toBeHidden();
     await page.evaluate(() => window.scrollTo(0, 400));
@@ -10,7 +11,8 @@ test.describe("UX polish", () => {
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
     await expect(button).toBeVisible();
     // Stays clear of the footer at the very bottom.
-    const footerTop = await page.locator("footer").evaluate((f) => f.getBoundingClientRect().top);
+    // (by test id: the Next.js dev overlay can contain a footer of its own)
+    const footerTop = await page.getByTestId("site-footer").evaluate((f) => f.getBoundingClientRect().top);
     const buttonBottom = await button.evaluate((b) => b.getBoundingClientRect().bottom);
     expect(buttonBottom).toBeLessThanOrEqual(footerTop);
     await button.focus();
@@ -23,8 +25,11 @@ test.describe("UX polish", () => {
   test("reduced motion: scroll-to-top jumps without animation", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
+    await page.waitForLoadState("networkidle"); // hydrated: the scroll listener is attached
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await page.getByRole("button", { name: "Tagasi üles" }).click();
+    const button = page.getByRole("button", { name: "Tagasi üles" });
+    await expect(button).toBeVisible();
+    await button.click();
     expect(await page.evaluate(() => window.scrollY)).toBe(0);
   });
 

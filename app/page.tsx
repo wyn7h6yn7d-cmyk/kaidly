@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { HeroBackdrop } from "@/components/marketing/hero-backdrop";
 import { HeroVisual } from "@/components/marketing/hero-visual";
+import { TaglineConnector } from "@/components/marketing/tagline-connector";
 import { LogPreview } from "@/components/marketing/log-preview";
 import { PhonePreview } from "@/components/marketing/phone-preview";
 import { ReminderExample } from "@/components/marketing/reminder-example";
@@ -64,8 +65,9 @@ export default async function Home() {
                   </Link>
                 </Button>
               </div>
-              <p className="mt-10 font-hand text-[28px] leading-tight text-k-green lg:text-[32px]">
-                <span className="inline-block -rotate-2">{l.hero.note}</span>
+              <p className="mt-10 flex font-hand text-[28px] leading-tight text-k-green lg:text-[32px]">
+                <span className="inline-block min-w-0 -rotate-2">{l.hero.note}</span>
+                <TaglineConnector />
               </p>
             </div>
             <div className="min-w-0 lg:col-span-4 xl:col-span-5">

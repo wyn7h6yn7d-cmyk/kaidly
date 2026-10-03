@@ -6,7 +6,7 @@ import { PUBLIC_LINKS } from "./public-nav";
 export async function SiteFooter() {
   const t = await getT();
   return (
-    <footer className="bg-k-ink text-white/75">
+    <footer data-testid="site-footer" className="bg-k-ink text-white/75">
       <div className="k-container grid grid-cols-1 gap-8 py-12 sm:grid-cols-[1fr_auto] sm:items-end lg:py-16">
         <div>
           <p className="font-display text-2xl font-extrabold tracking-wide text-white lg:text-[32px]">{t.brand.name}</p>
