@@ -11,6 +11,8 @@ import { localSupabaseEnv } from "./scripts/local-supabase.mjs";
 const local = localSupabaseEnv();
 process.env.E2E_API_URL = local.API_URL;
 process.env.E2E_SERVICE_ROLE_KEY = local.SERVICE_ROLE_KEY;
+// The public (publishable) key: raw-API security tests act exactly like a browser client.
+process.env.E2E_PUBLISHABLE_KEY = local.PUBLISHABLE_KEY;
 process.env.E2E_MAILPIT_URL = local.MAILPIT_URL ?? local.INBUCKET_URL ?? "";
 
 const PORT = 3100;
