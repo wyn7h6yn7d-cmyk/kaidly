@@ -1,6 +1,6 @@
 # KAIDLY v1.0.0 — Release checklist
 
-The launch source of truth, reconciled with the verified state on **2026-10-02**.
+The launch source of truth, reconciled with the verified state on **2026-10-03**.
 Runbooks: [DEPLOYMENT.md](DEPLOYMENT.md), [BACKUP_RECOVERY.md](BACKUP_RECOVERY.md),
 [PRIVACY_PROCESS.md](PRIVACY_PROCESS.md).
 
@@ -31,8 +31,11 @@ do **not** block engineering, QA, Preview or production-like testing; they block
 | **PRE-LAUNCH MANUAL** | Legal operator details — **TBA** (company not founded yet): legal name, registry code, address, privacy contact, effective date; then final privacy/terms text and review · Custom SMTP + verified sender (postponed) · Working mailbox behind `KAIDLY_CONTACT_EMAIL` · Production backup plan · Paste email templates into the dashboard · (optional) uptime monitor |
 | **LAUNCH BLOCKER** (public launch only) | Legal operator facts + finalized, reviewed privacy/terms · Production backups resolved — or the risk explicitly accepted by the owner at launch time · Transactional email (SMTP) working for real users — or self-service sign-up deliberately limited · Production smoke test on kaidly.ee passed |
 
-`main` is not merged and v1.0.0 is not tagged until the launch blockers are resolved;
-development and QA continue on the feature branch / Preview.
+**Pre-launch test build deployed 2026-10-03** (owner-authorised controlled deployment, not a
+public launch): `main` = `7d0ef41`, Vercel Production `dpl_B2WJfNHVP1RcjdKLjawjfBLEGHMK`
+serves https://kaidly.ee; production database at all 22 migrations. **v1.0.0 is not tagged**
+until the launch blockers are resolved. **Do not add real customer data until the backup
+decision is resolved.**
 
 ## APPLICATION
 | Status | Item |
@@ -50,7 +53,8 @@ development and QA continue on the feature branch / Preview.
 | GREEN | Production built from zero: 20 migrations in order, no seed; catalog identical to a local build (17 tables with RLS, 2 views, 80 functions, 41 triggers, 87 indexes, 32 policies, private bucket + 3 policies, pg_cron + pg_trgm) |
 | GREEN | Supabase's own `ensure_rls` / `rls_auto_enable()` reviewed and kept |
 | GREEN | Upload-limit and session-check functions byte-identical in production and the repository |
-| GREEN | Migration `20261002200000_session_guard_inserts` (live session required to create/join a company) applied to development and production after dry-runs; production now has all 21 migrations |
+| GREEN | Migration `20261002200000_session_guard_inserts` (live session required to create/join a company) applied to development and production after dry-runs |
+| GREEN | Migration `20261003100000_company_import` (CSV import) applied to development and production (2026-10-03) after dry-runs showing only that migration and no seed; production verified: 22 migrations, RLS on all 12 public tables, import function definer with pinned search_path, not executable by anon (also refused over the API), batch table private; CLI re-linked to development right after |
 | GREEN | CLI default target is development; `npm run db:target` labels the linked project |
 
 ## AUTH
@@ -98,7 +102,8 @@ development and QA continue on the feature branch / Preview.
 | GREEN | Production env: production Supabase URL (typo fixed by owner) and publishable key, `KAIDLY_SITE_URL=https://kaidly.ee`, `KAIDLY_CONTACT_EMAIL` |
 | GREEN | Preview env: development Supabase, no `KAIDLY_SITE_URL` → noindex everywhere |
 | GREEN | Production build simulated locally with production settings: canonical `https://kaidly.ee`, sitemap/robots on kaidly.ee, app routes noindex, CSP production-only |
-| NOT STARTED | Production redeploy from `main` (waits for the gate) |
+| GREEN | Production deployed from `main` `7d0ef41` (2026-10-03, pre-launch test build): `/api/health` app/auth/storage ok with version `7d0ef4175e67`; www and http → 308 → https://kaidly.ee; no runtime errors or 5xx in the logs |
+| NOTE | The landing page is indexable on kaidly.ee (canonical, sitemap with `/` only); app, auth, admin and the draft legal pages are noindex. There is no separate pre-launch switch — accepted for the controlled test phase |
 
 ## OBSERVABILITY
 | Status | Item |
@@ -118,12 +123,22 @@ development and QA continue on the feature branch / Preview.
 |---|---|
 | GREEN | Database-backed (`private.platform_admins` by user id); company roles never grant it |
 | GREEN | Bootstrapped 2026-10-03 via `private.bootstrap_platform_admin` (exact user id; 1 active platform admin; audit `platform_admin_granted` targeting that id, `{"via": "bootstrap"}`; no company memberships). Database check as that user: `am_platform_admin` true, admin overview/system/access/audit readable, normal RLS shows no companies |
-| NOT STARTED | `/admin` in the browser on kaidly.ee and a non-admin denied — part of the production smoke test |
+| MANUAL REQUIRED | `/admin` in the browser on kaidly.ee as Kenneth (needs his sign-in); a non-admin denied (covered by local/Preview tests; no extra production account was created) |
 
-## SMOKE TEST (production, kaidly.ee, company "KAIDLY Launch Test") — NOT STARTED
+## SMOKE TEST (production, kaidly.ee)
+
+**Automated 2026-10-03 — GREEN:** landing at 375/1440/1920 (hero grid, "Kuidas töötab"
+anchor, reminder explanation, scroll-to-top, no overflow), ET/EN/RU, title, canonical,
+favicon, robots/sitemap, privacy/terms draft notice + noindex, login/sign-up/forgot-password
+render in three languages, password-reset submit shows the neutral confirmation (SMTP
+limitation, no crash), security headers and production-only CSP, no console/CSP errors, no
+5xx, health without secrets.
+
+**Manual — Kenneth (no password available to automation; no auth bypass):** with company
+"KAIDLY Prelaunch Test" (keep it minimal; deactivate afterwards if it has history):
 Public pages, language switch, metadata/canonical, favicon, privacy/terms · login, logout,
 direct authenticated URL (password reset only once SMTP works) · company/trial, site,
-installation, log, plan, deficiency, document, notification, search, PDF, CSV · /admin pages ·
+installation, log, plan, deficiency, document, notification, search, PDF, CSV, CSV import (Seaded → Andmete import, small template file) · /admin pages ·
 non-admin denied /admin, cross-tenant 404, expired company read-only · no 5xx, logs clean ·
 remove or (with history) deactivate the test company.
 

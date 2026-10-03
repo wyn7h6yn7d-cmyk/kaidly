@@ -15,11 +15,12 @@ Production must never point at the development project, and the development proj
 (Preview users, test companies, audit rows) is never copied to production. Project refs are
 configuration (environment variables), never hard-coded in application code.
 
-> **Status 2026-10-02:** all 20 migrations applied to production from zero (no seed) and
-> verified identical to a local build. Vercel Production's publishable key is the
-> production key, but **`NEXT_PUBLIC_SUPABASE_URL` contains a typo** (`…msblpwmj`, a host
-> that does not exist) — it must be `https://xakpbtmksxvjmsbipwmj.supabase.co` before the
-> next Production deploy. `KAIDLY_SITE_URL` is not set yet.
+> **Status 2026-10-03 — pre-launch test build live:** production database at all 22
+> migrations (latest `20261003100000_company_import`, applied after a clean dry-run; CLI
+> re-linked to development). Vercel Production env verified without printing values
+> (production URL — no "msbl" typo — production publishable key, `KAIDLY_SITE_URL`,
+> `KAIDLY_CONTACT_EMAIL`). `main` `7d0ef41` deployed (`dpl_B2WJfNHVP1RcjdKLjawjfBLEGHMK`) and
+> served on https://kaidly.ee. Not a public launch; v1.0.0 not tagged.
 
 Check which project the CLI targets before any `--linked` command: `npm run db:target`
 (development is the default; production is linked only for a release step and re-linked

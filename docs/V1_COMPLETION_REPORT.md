@@ -210,4 +210,22 @@ facts TBA, SMTP, mailbox, backups, email templates, optional uptime monitor.
 
 ## 17. Verification and sync
 
-Filled in after the final clean run (see the end of this file).
+Clean run before merge (`npm ci`, `supabase db reset`, then every check): lint, typecheck,
+**98 unit**, **667 pgTAP (20 files)**, build, **164 E2E** — all pass.
+
+- Development: `20261003100000_company_import` applied after a dry-run (22/22).
+- Preview `7d0ef41`: health ok, public and auth routes 200, templates download when signed in.
+
+## 18. Pre-launch test deployment (2026-10-03)
+
+| | |
+|---|---|
+| Production migration | dry-run listed only `20261003100000_company_import`, no seed → applied → verified (22 migrations; 12 public tables all with RLS; 50 triggers, 32 policies, 89 indexes = local build; +1 function is Supabase's `rls_auto_enable`; bucket private 25 MB 6 MIME types; both cron jobs; upload-limit trigger; 1 active platform admin = Kenneth; 1 auth user; 0 companies) |
+| CLI | re-linked to development immediately; `npm run db:target` → DEVELOPMENT |
+| Merge | `main` fast-forwarded from `9e4cee5` to `7d0ef41` (main had no own commits), pushed; no force push |
+| Vercel | Production `dpl_B2WJfNHVP1RcjdKLjawjfBLEGHMK` Ready, aliases kaidly.ee, www.kaidly.ee |
+| kaidly.ee | `/api/health` `{"app":"ok","auth":"ok","storage":"ok","version":"7d0ef4175e67"}`; www/http → 308 → https://kaidly.ee |
+| Public smoke | landing 375/1440/1920, ET/EN/RU, anchors, reminders, scroll-to-top, legal drafts noindex, auth pages, reset submit (no crash) — all pass, no console/CSP errors |
+| Security | CSP lists only `xakpbtmksxvjmsbipwmj.supabase.co` (https, wss); HSTS, nosniff, DENY, Referrer-Policy, Permissions-Policy; anon import RPC → 401 permission denied |
+| Logs | no error/warning entries, no 5xx |
+| Authenticated / admin / import in production | **manual for Kenneth** (no password available; no bypass created); no production test data created |
