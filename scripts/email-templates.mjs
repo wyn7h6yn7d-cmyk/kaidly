@@ -6,8 +6,10 @@
 //   node scripts/email-templates.mjs --preview  also writes .email-preview/<template>.<lang>.html
 //                                               (fake values only; local files, never deployed)
 //
-// Design: conservative e-mail HTML (tables, inline styles, no web fonts, no images required —
-// the only remote asset is the logo mark, with a text wordmark beside it), max 560 px.
+// Design: conservative e-mail HTML (tables, inline styles, no web fonts), max 560 px.
+// No images at all: the header is the text wordmark KAIDLY beside a volt-green block drawn
+// with a table cell, so nothing can show as a broken image and image blocking changes
+// nothing (a remote logo showed as broken in a real iCloud Mail message, 2026-10-06).
 // Language: Auth user metadata key `locale` (et | en | ru; written at sign-up and on language
 // change), read nil-safely; anything else falls back to Estonian. No tracking of any kind.
 // Auth/security mails never contain customer operational data. docs/EMAIL_TEMPLATES.md.
@@ -15,7 +17,6 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 export const LANGS = ["et", "en", "ru"];
-const LOGO = "https://kaidly.ee/email/kaidly-mark.png";
 const C = { paper: "#E7E5E1", card: "#FFFFFF", line: "#D6D3CD", ink: "#111827", muted: "#4B5563", green: "#0F3D32", volt: "#22D07A", fill: "#EFEDE9" };
 const FONT = "-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
@@ -187,7 +188,8 @@ function shell(inner, lang) {
         <tr>
           <td style="padding:22px 28px 6px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-              <td style="padding-right:10px;vertical-align:middle;"><img src="${LOGO}" width="28" height="28" alt="" style="display:block;border:0;border-radius:4px;"></td>
+              <td width="12" height="24" bgcolor="${C.volt}" style="width:12px;height:24px;background:${C.volt};font-size:0;line-height:0;">&nbsp;</td>
+              <td width="10" style="width:10px;font-size:0;line-height:0;">&nbsp;</td>
               <td style="vertical-align:middle;font-family:${FONT};font-size:20px;font-weight:800;letter-spacing:1px;color:${C.green};">KAIDLY</td>
             </tr></table>
           </td>

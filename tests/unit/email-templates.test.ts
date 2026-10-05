@@ -39,7 +39,7 @@ test("local config.toml wires the same files and subjects", () => {
   assert.match(config, /secure_password_change = false/, "not enabled before the reauthentication mail is verified in production");
 });
 
-test("logo mark is a stable kaidly.ee asset in public/", () => {
+test("the old logo URL keeps working for templates pasted before the image-free header", () => {
   const png = readFileSync(repo("public/email/kaidly-mark.png"));
   assert.equal(png.subarray(1, 4).toString(), "PNG");
 });
@@ -69,8 +69,10 @@ for (const name of REQUIRED) {
     assert.doesNotMatch(html, /localhost|127\.0\.0\.1|vercel\.app|supabase\.co|preview|gdpzavhkblbcxivoaqax|xakpbtmksxvjmsbipwmj/i);
     for (const [, url] of html.matchAll(/https?:\/\/([^/"'\s<>]+)/g)) assert.equal(url, "kaidly.ee");
     assert.doesNotMatch(html, /utm_|[?&](ref|src|cid|mc_[a-z]+)=|resend|click\.|track|pixel|unsubscribe/i);
-    assert.equal(html.match(/<img\b/g)?.length, 3, "only the logo mark, once per language");
-    for (const img of html.match(/<img\b[^>]*>/g) ?? []) assert.match(img, /src="https:\/\/kaidly\.ee\/email\/kaidly-mark\.png"[^>]*alt=""/);
+    // Image-free: nothing can render as a broken image, and blocked images change nothing.
+    assert.doesNotMatch(html, /<img\b|<svg\b|<picture\b|data:|background-image|url\(|\.png|\.svg|\.webp|\.gif|\.jpe?g/i);
+    const header = /<td [^>]*bgcolor="#22D07A"[^>]*>&nbsp;<\/td>\s*<td [^>]*>&nbsp;<\/td>\s*<td [^>]*color:#0F3D32;">KAIDLY<\/td>/g;
+    assert.equal(html.match(header)?.length, 3, "header: volt block + text wordmark, once per language");
     assert.doesNotMatch(html, /sb_secret_|sb_publishable_|service_role|eyJ[A-Za-z0-9_-]{20,}|password=|apikey/i);
     assert.doesNotMatch(html, /<script|<style|<link|@import|javascript:/i, "inline styles only");
 

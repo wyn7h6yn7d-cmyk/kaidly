@@ -95,9 +95,13 @@ no unrendered placeholders.
   below that (checked at 375 px: no horizontal scroll). Light theme colours from DESIGN.md:
   paper `#E7E5E1`, white card, line `#D6D3CD`, deep green `#0F3D32`, volt `#22D07A` button
   with deep-green text (contrast 6.0:1), body ink `#111827` / `#4B5563`.
-- Header: the existing KAIDLY mark (`app/apple-icon.png`, unchanged, published as
-  `https://kaidly.ee/email/kaidly-mark.png`, 28 px) + the text wordmark **KAIDLY**. The image
-  is decorative (`alt=""`): with images blocked the text wordmark carries the brand.
+- Header: **no images**. A small volt-green block (a table cell with `bgcolor`) beside the
+  bold deep-green text wordmark **KAIDLY**. The first real Production message (iCloud Mail,
+  2026-10-06) showed the remote logo `https://kaidly.ee/email/kaidly-mark.png` as a broken
+  image, although the file serves correctly (200, `image/png`, 180×180 PNG, no auth or
+  redirect). A text header cannot break and looks the same with images blocked. Tests forbid
+  `<img>`, SVG, `data:` URLs and CSS background images in every template. The PNG stays in
+  `public/email/` only so copies pasted before this change keep working.
 - Every link button has the same URL as a plain visible fallback link that wraps
   (`word-break: break-all`).
 - Footer: **KAIDLY · Elektripaigaldise käit. Lihtsalt. · kaidly.ee** (translated tagline in
@@ -154,7 +158,7 @@ Production project **`xakpbtmksxvjmsbipwmj`** → Authentication → Emails:
    - Konto → change e-mail → both addresses get a mail; confirm both → old address gets
      "e-posti aadress muudeti";
    - change password → "parool muudeti" mail.
-   - In each mail: logo shows (or the text wordmark with images off), no tracking host in
+   - In each mail: the KAIDLY header (green block + wordmark) shows, no broken image, no tracking host in
      the links, no `{{` left anywhere.
 
 ### Secure password change
