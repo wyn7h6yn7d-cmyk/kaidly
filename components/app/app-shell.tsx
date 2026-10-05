@@ -116,11 +116,11 @@ export function PlainShell({
   return (
     <div className="flex min-h-svh flex-col">
       <header className="border-b border-k-line bg-k-paper">
-        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-[var(--k-gutter-app)]">
+        <div className="mx-auto flex min-h-16 max-w-3xl flex-wrap items-center justify-between gap-x-2 px-[var(--k-gutter-app)] py-1">
           <Link href="/o?vali=1" className="inline-flex h-11 items-center rounded-sm">
             <Logo />
           </Link>
-          <div className="flex items-center">
+          <div className="flex min-w-0 flex-wrap items-center justify-end">
             <SearchButton shortcut />
             <Suspense fallback={<BellPlaceholder />}>
               <NotificationBell />

@@ -25,14 +25,14 @@ export async function SettingsTabs({
       : []),
   ];
   return (
-    <nav aria-label={t.app.settings.title} className="mb-8 flex gap-1 overflow-x-auto border-b border-k-line">
+    <nav aria-label={t.app.settings.title} className="mb-8 flex min-w-0 max-w-full gap-1 overflow-x-auto border-b border-k-line">
       {tabs.map((tab) => (
         <Link
           key={tab.key}
           href={tab.href}
           aria-current={active === tab.key ? "page" : undefined}
           className={cn(
-            "-mb-px flex h-11 items-center border-b-2 px-3 text-[15px] font-semibold",
+            "-mb-px flex h-11 shrink-0 items-center whitespace-nowrap border-b-2 px-3 text-[15px] font-semibold",
             active === tab.key
               ? "border-k-green text-k-ink"
               : "border-transparent text-k-muted hover:text-k-ink",

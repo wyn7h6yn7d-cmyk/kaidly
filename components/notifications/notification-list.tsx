@@ -27,7 +27,7 @@ export async function NotificationList({ items }: { items: NotificationItem[] })
             <div className="min-w-0 flex-1">
               <p className="flex flex-wrap items-baseline gap-x-2">
                 {unread && <span className="text-xs font-bold uppercase tracking-wider text-k-green">{copy.unread}</span>}
-                <span className={cn("break-words", unread ? "font-bold" : "font-semibold")}>{item.title}</span>
+                <span className={cn("min-w-0 [overflow-wrap:anywhere]", unread ? "font-bold" : "font-semibold")}>{item.title}</span>
               </p>
               <p className="break-words text-sm text-k-muted">
                 {item.company} · {d.where}

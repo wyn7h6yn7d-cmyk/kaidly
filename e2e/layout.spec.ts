@@ -158,4 +158,22 @@ test.describe("Paigutus", () => {
       }
     }
   });
+
+  test("200 % text: account, notifications, search and members fit on a phone", async ({ page }) => {
+    test.setTimeout(120_000);
+    const org = await createOrg("Väga Pika Nimega Elektripaigaldiste Hooldusettevõte OÜ");
+    const site = await createSite(org, "Objekt");
+    const installation = await createInstallation(org, site, "Peajaotuskilp", "PJK-1");
+    const activity = sql(`insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on, reminder_days)
+      values ('${org.id}', '${site}', '${installation}', 'Isolatsioonitakistusemõõtmisprotokolliülevaatus', 'once', (now() at time zone 'Europe/Tallinn')::date + 3, '{14}') returning id;`);
+    sql(`select private.generate_activity_reminders(null, '${activity}');`);
+    await login(page, org.users.owner, `/o/${org.slug}`);
+    await page.setViewportSize({ width: 375, height: 800 });
+    for (const path of ["/konto", "/teavitused?koik=1", "/otsing?q=objekt", `/o/${org.slug}/seaded/liikmed`, `/o/${org.slug}/seaded`]) {
+      await page.goto(path);
+      await page.locator("h1").first().waitFor();
+      await page.evaluate(() => (document.documentElement.style.fontSize = "200%"));
+      await checkEdges(page);
+    }
+  });
 });

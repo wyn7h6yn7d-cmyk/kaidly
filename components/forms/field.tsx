@@ -20,7 +20,7 @@ export function Field({
 }) {
   const t = useT();
   return (
-    <div className="grid gap-2">
+    <div className="grid grid-cols-[minmax(0,1fr)] content-start gap-2">
       <Label htmlFor={id}>
         {label}
         {optional && <span className="ml-1.5 font-normal text-k-muted">({t.app.optional})</span>}

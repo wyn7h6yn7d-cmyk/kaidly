@@ -25,18 +25,18 @@ export function MemberRoleForm({
   const [state, action, pending, value] = useFormAction(changeMemberRole);
   const selectId = id(`role-${memberId}`);
   return (
-    <form action={action} className="flex flex-col gap-2">
+    <form action={action} className="flex min-w-0 flex-col gap-2">
       <input type="hidden" name="memberId" value={memberId} />
       <label htmlFor={selectId} className="sr-only">
         {label}
       </label>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Select
           key={value("role", current)}
           id={selectId}
           name="role"
           defaultValue={value("role", current)}
-          className="h-11 min-w-40 text-[15px] sm:h-9"
+          className="h-11 min-w-0 flex-1 basis-40 text-[15px] sm:h-9"
         >
           {options.map((role) => (
             <option key={role} value={role}>
