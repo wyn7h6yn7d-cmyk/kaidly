@@ -6,7 +6,7 @@ import { PlainPage } from "@/components/app/plain-page";
 import { LoadingBlock } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/lib/auth/session";
-import { SEARCH_GROUPS, searchKaidly, type SearchResults } from "@/lib/data/search";
+import { SEARCH_GROUPS, SEARCH_PER_GROUP, searchKaidly, type SearchResults } from "@/lib/data/search";
 import type { T } from "@/lib/i18n";
 import { getT } from "@/lib/i18n/server";
 
@@ -107,6 +107,7 @@ async function Grouped({ q, t }: { q: string; t: T }) {
     <div>
       <p role="status" className="mb-6 text-sm text-k-muted">
         {t.search.count(total)}
+        {SEARCH_GROUPS.some((g) => grouped[g].length >= SEARCH_PER_GROUP) && <> · {t.search.capped(SEARCH_PER_GROUP)}</>}
       </p>
       {SEARCH_GROUPS.filter((g) => grouped[g].length > 0).map((g) => (
         <section key={g} aria-labelledby={`search-${g}`} className="mb-8">

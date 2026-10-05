@@ -100,6 +100,8 @@ test.describe("Aruanded", () => {
       await expect(preview.getByRole("heading", { name: s, exact: true })).toBeVisible();
     }
     await expect(preview.getByText("Hilinenud mõõtmine")).toBeVisible();
+    // A summary has no filters: empty sections say so plainly.
+    await expect(preview.getByText("Valitud filtritega kirjeid ei leitud.")).toHaveCount(0);
     const pdf = await page.request.get(`/o/${org.slug}/aruanded/installation/eksport?paigaldis=${installation}&format=pdf`);
     expect(fileName(pdf)).toMatch(/^KAIDLY_Paigaldise-kokkuvote_PK-01-Peajaotuskilp_/);
     expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");

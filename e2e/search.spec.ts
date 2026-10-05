@@ -93,4 +93,16 @@ test.describe("Otsing", () => {
     await page.reload();
     await expect(page.getByRole("heading", { name: "Электроустановки" })).toBeVisible();
   });
+  test("a full group says only the first results are shown", async ({ page }) => {
+    const org = await createOrg();
+    const site = await createSite(org, "Objekt");
+    const installation = await createInstallation(org, site, "Kilp");
+    for (let n = 1; n <= 7; n++) {
+      sql(`insert into public.log_entries (organisation_id, site_id, electrical_installation_id, entry_type, description, created_by)
+           values ('${org.id}', '${site}', '${installation}', 'other', 'Korduvotsing number ${n}', '${org.users.operator.id}');`);
+    }
+    await login(page, org.users.viewer, "/otsing");
+    await page.goto(`/otsing?q=${encodeURIComponent("Korduvotsing")}`);
+    await expect(page.getByRole("status").filter({ hasText: "6 tulemust" })).toContainText("Igas rühmas näidatakse kuni 6 tulemust");
+  });
 });

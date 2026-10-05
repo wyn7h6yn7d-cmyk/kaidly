@@ -56,3 +56,10 @@ test("titles come from the filename without the extension", () => {
   assert.equal(titleFromFilename("PJK-1_mõõteprotokoll.pdf"), "PJK-1 mõõteprotokoll");
   assert.equal(titleFromFilename("foto.jpg"), "foto");
 });
+
+test("title suggestion never ends in a space after the 200-character cap", () => {
+  const name = `${"a".repeat(199)} b.pdf`;
+  const title = titleFromFilename(name);
+  assert.ok(title.length <= 200);
+  assert.equal(title, title.trim());
+});

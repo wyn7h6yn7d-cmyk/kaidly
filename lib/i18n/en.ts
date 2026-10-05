@@ -67,6 +67,7 @@ export const en: Messages = {
     hint: "Type at least 2 characters.",
     none: (q: string) => `Nothing found for “${q}”.`,
     count: (n: number) => (n === 1 ? "1 result" : `${n} results`),
+    capped: (n: number) => `Each group shows up to ${n} results. Refine the search to find the right record.`,
     groups: {
       companies: "Organisations",
       sites: "Sites",
@@ -118,6 +119,7 @@ export const en: Messages = {
     exportPdf: "Export PDF",
     exportCsv: "Export CSV",
     empty: "No records match the selected filters.",
+    emptySection: "None.",
     generated: (date: string) => `Generated ${date}`,
     period: "Period",
     allTime: "All time",

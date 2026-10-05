@@ -63,6 +63,7 @@ export const et = {
     hint: "Sisesta vähemalt 2 tähemärki.",
     none: (q: string) => `„${q}“ kohta ei leitud midagi.`,
     count: (n: number) => (n === 1 ? "1 tulemus" : `${n} tulemust`),
+    capped: (n: number) => `Igas rühmas näidatakse kuni ${n} tulemust. Täpsusta otsingut, et leida õige kirje.`,
     groups: {
       companies: "Ettevõtted",
       sites: "Objektid",
@@ -114,6 +115,7 @@ export const et = {
     exportPdf: "Ekspordi PDF",
     exportCsv: "Ekspordi CSV",
     empty: "Valitud filtritega kirjeid ei leitud.",
+    emptySection: "Kirjeid ei ole.",
     generated: (date: string) => `Koostatud ${date}`,
     period: "Periood",
     allTime: "Kogu aeg",

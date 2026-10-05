@@ -50,7 +50,12 @@ export default async function OverviewPage({
           return i ? installationLabel(i) : null;
         };
 
-        const showAttention = counts.installations > 0;
+        // A new company working through the guide has nothing to attend to yet: show the
+        // attention panel once there is something in it, or once the guide is done/hidden.
+        const hasOperationalData =
+          dashboard.hasAnyEntry || dashboard.overdue.total + dashboard.dueSoon.total + dashboard.serious.total > 0;
+        const guideOpen = !onboarding.complete && !onboarding.hidden;
+        const showAttention = counts.installations > 0 && (hasOperationalData || !guideOpen);
         const attentionCount = dashboard.overdue.total + dashboard.serious.total;
 
         return (
@@ -228,7 +233,7 @@ export default async function OverviewPage({
               </section>
             )}
 
-            {showAttention && (
+            {showAttention && (dashboard.sites.length > 0 || !guideOpen) && (
               <section aria-labelledby="attention-sites" className="mb-12">
                 <h2 id="attention-sites" className="mb-3 text-xl font-bold">
                   {copy.sites}

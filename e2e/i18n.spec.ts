@@ -69,7 +69,8 @@ test.describe("Keeled · Languages · Языки", () => {
     const other = await browser.newContext();
     const fresh = await other.newPage();
     await login(fresh, org.users.operator, `/o/${org.slug}`);
-    await expect(fresh.getByRole("heading", { name: "Что требует внимания" })).toBeVisible();
+    // (A fresh company without data shows the getting-started guide, not the attention panel.)
+    await expect(fresh.getByRole("heading", { name: "Руководство по началу работы" })).toBeVisible();
     await other.close();
   });
 

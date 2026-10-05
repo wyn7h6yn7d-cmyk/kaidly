@@ -534,7 +534,7 @@ function activityTable(t: T, title: string, rows: ActivityRow[], today: string, 
     title,
     columns,
     total: rows.length,
-    empty: t.reports.empty,
+    empty: t.reports.emptySection,
     rows: rows.map((a) => {
       const cd = countdown(a.next_due_on, today);
       return {
@@ -557,7 +557,7 @@ function deficiencyTable(t: T, rows: DeficiencyRow[], inst: Map<string, Place>, 
     kind: "table",
     title: t.reports.sections.openDeficiencies,
     total: rows.length,
-    empty: t.reports.empty,
+    empty: t.reports.emptySection,
     columns: [
       { key: "title", label: c.title, width: 2.2 },
       ...(withInstallation ? [{ key: "installation", label: c.installation, width: 1.6 }] : []),
@@ -585,7 +585,7 @@ function logTable(t: T, rows: LogRow[], inst: Map<string, Place>, withInstallati
     kind: "table",
     title: t.reports.sections.recentLog,
     total: rows.length,
-    empty: t.reports.empty,
+    empty: t.reports.emptySection,
     columns: [
       { key: "date", label: c.date, width: 1.1 },
       { key: "type", label: c.type, width: 0.9 },
@@ -650,7 +650,7 @@ async function siteReport(ctx: OrgContext, t: T, f: ReportFilters): Promise<Repo
         kind: "table",
         title: t.reports.sections.installations,
         total: installations.data?.length ?? 0,
-        empty: t.reports.empty,
+        empty: t.reports.emptySection,
         columns: [
           { key: "identifier", label: c.identifier, width: 0.9 },
           { key: "name", label: c.name, width: 2 },
@@ -734,7 +734,7 @@ async function installationReport(ctx: OrgContext, t: T, f: ReportFilters): Prom
         kind: "table",
         title: t.reports.sections.documents,
         total: docs.count ?? 0,
-        empty: t.reports.empty,
+        empty: t.reports.emptySection,
         columns: [
           { key: "title", label: c.title, width: 2.5 },
           { key: "category", label: c.category, width: 1.2 },

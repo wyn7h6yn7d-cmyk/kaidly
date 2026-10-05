@@ -80,6 +80,7 @@ export const ru: Messages = {
     hint: "Введите не менее 2 символов.",
     none: (q: string) => `По запросу «${q}» ничего не найдено.`,
     count: (n: number) => count(n, "результат", "результата", "результатов"),
+    capped: (n: number) => `В каждой группе показано не более ${n} результатов. Уточните запрос, чтобы найти нужную запись.`,
     groups: {
       companies: "Организации",
       sites: "Объекты",
@@ -131,6 +132,7 @@ export const ru: Messages = {
     exportPdf: "Экспорт PDF",
     exportCsv: "Экспорт CSV",
     empty: "По выбранным фильтрам записей нет.",
+    emptySection: "Записей нет.",
     generated: (date: string) => `Составлено ${date}`,
     period: "Период",
     allTime: "За всё время",
