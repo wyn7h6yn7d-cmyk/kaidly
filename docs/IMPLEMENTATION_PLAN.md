@@ -223,6 +223,9 @@ demand or a decision exists.
 | T | Mobile/PWA/offline workflow | sites without signal | proven field demand | later |
 | U | API / integrations | customer systems | validated core usage | later |
 | V | Full company export package (one archive: company, sites, installations, log, plan, deficiencies, document register; v1 has per-report CSV/PDF) | lock-in avoidance, GDPR portability | — | v1.1 |
+| AA | Search the recorder's name (`created_by_name`) as well as the performer field; today a colleague's name finds only entries where it was typed as performer (needs a search-function migration + trigram index) | find "everything Toomas recorded" | migration | v1.1 |
+| AB | Search "show more" per group (today each group shows up to 6 results and says so) | long result lists | — | later |
+| AC | Suggest the document category from the file name (e.g. "Mõõteprotokoll…" → measurement protocol) | faster uploads | — | later |
 | X | Instant navigation: Suspense boundaries / `instant` exports for authenticated routes (Next 16 dev reports "runtime data during prerendering" — advisory, every page is correct and dynamic) | faster perceived navigation | — | later |
 | Y | Unsaved-change warning (beforeunload) on long forms; today tab drafts cover log entries and deficiencies | fewer lost edits | — | later |
 | Z | Not-found pages inside the app answer HTTP 200 (streamed after the shell); `noindex` anyway | correct status codes for monitoring | Next.js streaming | later |
