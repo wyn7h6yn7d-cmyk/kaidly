@@ -134,5 +134,25 @@ export async function expectNoHorizontalScroll(page: Page) {
   expect(fits, "page scrolls horizontally").toBe(true);
 }
 
-export const test = base;
+/**
+ * Every page hides the Next.js development overlay (<nextjs-portal>): in `next dev` its issue
+ * badge sits bottom-left over the sidebar account button and intercepts clicks. It does
+ * not exist in production builds, so hiding it changes nothing the tests assert.
+ */
+export const test = base.extend({
+  page: async ({ page }, provide) => {
+    await page.addInitScript(() => {
+      const hide = () => {
+        if (document.getElementById("e2e-hide-next-dev-overlay")) return;
+        const style = document.createElement("style");
+        style.id = "e2e-hide-next-dev-overlay";
+        style.textContent = "nextjs-portal{display:none!important}";
+        document.documentElement.appendChild(style);
+      };
+      if (document.documentElement) hide();
+      else document.addEventListener("DOMContentLoaded", hide);
+    });
+    await provide(page);
+  },
+});
 export { expect };
