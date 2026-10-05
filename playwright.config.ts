@@ -44,6 +44,15 @@ export default defineConfig({
       grep: /@responsive/,
       use: { ...devices["Pixel 7"], viewport: { width: 375, height: 812 } },
     },
+    // `npm run test:e2e:browsers`: the @cross-browser workflows also in Firefox, desktop WebKit
+    // (Safari's engine) and mobile WebKit. Off by default (CI installs Chromium only).
+    ...(process.env.E2E_BROWSERS === "all"
+      ? [
+          { name: "firefox", grep: /@cross-browser/, use: { ...devices["Desktop Firefox"], viewport: { width: 1440, height: 900 } } },
+          { name: "webkit", grep: /@cross-browser/, use: { ...devices["Desktop Safari"], viewport: { width: 1440, height: 900 } } },
+          { name: "mobile-webkit", grep: /@cross-browser/, use: { ...devices["iPhone 13"] } },
+        ]
+      : []),
   ],
   webServer: {
     command: `node scripts/dev-local.mjs ${PORT}`,
