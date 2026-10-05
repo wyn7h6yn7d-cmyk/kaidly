@@ -25,13 +25,19 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const linkClass = "font-semibold text-k-green underline underline-offset-4";
 
-export default async function DocumentPage({ params }: { params: Promise<{ org: string; document: string }> }) {
+export default async function DocumentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ org: string; document: string }>;
+  searchParams: Promise<{ fail?: string }>;
+}) {
   const t = await getT();
   return (
     <OrgPage
       params={params}
       render={async ({ org, role }) => {
-        const { document: id } = await params;
+        const [{ document: id }, query] = await Promise.all([params, searchParams]);
         const doc = await getDocument(org.id, id);
         if (!doc) notFound();
         const [placement, installation] = await Promise.all([
@@ -80,6 +86,11 @@ export default async function DocumentPage({ params }: { params: Promise<{ org: 
               }
             />
 
+            {query.fail === "puudub" && (
+              <p role="alert" className="mb-6 border-l-4 border-k-danger bg-k-surface px-4 py-3">
+                {copy.fileUnavailable}
+              </p>
+            )}
             {doc.archivedAt && (
               <p className="mb-6 inline-flex items-center gap-2 font-semibold">
                 <span aria-hidden="true" className="size-2.5 bg-k-grey" />

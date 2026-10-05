@@ -921,6 +921,7 @@ export const en: Messages = {
       open: "Open",
       download: "Download",
       openFile: (name: string) => `Open file ${name}`,
+      fileUnavailable: "The file couldn't be opened right now. The document's details are kept; try again later or tell your company's administrator.",
       archive: "Archive",
       archiveConfirm: "An archived document disappears from the list, but it is kept and can be restored.",
       restore: "Restore",

@@ -315,7 +315,10 @@ test.describe("Turvalisus API tasemel", () => {
     await login(page, A.org.users.owner, `/o/${A.org.slug}`);
     const status = async (path: string) => (await page.request.get(path, { maxRedirects: 0 })).status();
     expect(await status(`/o/${B.org.slug}/dokumendid/${B.document}/ava`)).toBe(404);
-    expect(await status(`/o/${A.org.slug}/dokumendid/${B.document}/ava`)).toBe(404);
+    // Own company URL + foreign id: sent to the own document page, which is "not found" for it.
+    expect(await status(`/o/${A.org.slug}/dokumendid/${B.document}/ava`)).toBe(303);
+    await page.goto(`/o/${A.org.slug}/dokumendid/${B.document}/ava`);
+    await expect(page.locator("main")).not.toContainText(B.marker);
     expect(await status(`/o/${A.org.slug}/dokumendid/${A.document}/ava`)).toBe(302);
     expect(await status(`/o/${B.org.slug}/aruanded/log/eksport?format=csv`)).toBe(404);
     expect(await status(`/o/${deactivated.org.slug}/aruanded/log/eksport?format=csv`)).toBe(404);

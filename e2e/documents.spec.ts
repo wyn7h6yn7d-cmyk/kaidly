@@ -151,10 +151,29 @@ test.describe("Dokumendid ja fotod", () => {
       returning id;`);
     // B's admin (member of B only) tries A's document through both organisations' URLs.
     await login(page, b.users.admin, `/o/${b.slug}/dokumendid`);
-    expect((await page.request.get(`/o/${b.slug}/dokumendid/${doc}/ava`, { maxRedirects: 0 })).status()).toBe(404);
+    // Through B's own URL the route sends B to its document page, which is "not found" for A's id.
+    const viaB = await page.request.get(`/o/${b.slug}/dokumendid/${doc}/ava`, { maxRedirects: 0 });
+    expect(viaB.status()).toBe(303);
+    expect(viaB.headers()["location"]).toContain(`/o/${b.slug}/dokumendid/${doc}?fail=puudub`);
     expect((await page.request.get(`/o/${a.slug}/dokumendid/${doc}/ava`, { maxRedirects: 0 })).status()).toBe(404);
-    await page.goto(`/o/${b.slug}/dokumendid/${doc}`);
+    await page.goto(`/o/${b.slug}/dokumendid/${doc}/ava`);
     await expect(page.getByRole("heading", { name: "Lehte ei leitud" })).toBeVisible();
+    await expect(page.locator("main")).not.toContainText("A audit");
+  });
+
+  test("a document whose file is missing in Storage opens a clear notice, not an error", async ({ page }) => {
+    const org = await createOrg();
+    const site = await createSite(org, "Objekt");
+    const installation = await createInstallation(org, site, "Kilp");
+    // Metadata without an object (e.g. after a database-only restore).
+    const doc = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title,
+                       original_filename, mime_type, size_bytes, status, ready_at, uploaded_by)
+                     values ('${org.id}', '${site}', '${installation}', 'manual', 'Kadunud fail', 'k.pdf', 'application/pdf', 10, 'ready', now(), '${org.users.admin.id}')
+                     returning id;`);
+    await login(page, org.users.viewer, `/o/${org.slug}/dokumendid`);
+    await page.goto(`/o/${org.slug}/dokumendid/${doc}/ava`);
+    await expect(page.getByRole("heading", { name: "Kadunud fail" })).toBeVisible();
+    await expect(page.locator("main").getByRole("alert")).toContainText("Faili ei õnnestunud praegu avada");
   });
 
   test("photos can be added to an open deficiency", async ({ page }) => {

@@ -921,6 +921,7 @@ export const et = {
       open: "Ava",
       download: "Laadi alla",
       openFile: (name: string) => `Ava fail ${name}`,
+      fileUnavailable: "Faili ei õnnestunud praegu avada. Dokumendi andmed on alles; proovi hiljem uuesti või anna teada ettevõtte administraatorile.",
       archive: "Arhiveeri",
       archiveConfirm: "Arhiveeritud dokument kaob nimekirjast, aga jääb alles ja selle saab taastada.",
       restore: "Taasta",
