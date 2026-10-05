@@ -285,6 +285,11 @@ and refused ones not; inactive admins refused. Mutation-tested (inactive flag ig
 owner treated as admin, audit removed, bootstrap granted to users). pgTAP
 `125_company_settings` (11) covers the company-settings role matrix (mutation-tested).
 
+**Deadline list bound (migration `admin_deadlines_limit`, 2026-10-05):** `admin_deadlines`
+returns at most the 500 most urgent rows (due date, severity, title) plus `total` and
+`limit`; all filters, the site filter included, run in the database. pgTAP
+`190_admin_deadlines_limit`.
+
 ## 5c. Deadline reminders and notifications (migration `activity_reminders`)
 
 **Thresholds** live on the activity: `scheduled_activities.reminder_days smallint[]`
@@ -411,6 +416,11 @@ pgTAP `160_global_search` (20): every entity and field, localised entry types, l
 wildcards, unfinished uploads excluded, minimum length, other tenants and outsiders find
 nothing, expired searchable, deactivated left out, multi-company. Mutation-tested
 (SECURITY DEFINER makes the isolation tests fail).
+
+**Search performance (migration `search_log_topn`, 2026-10-05):** the log-entry group selects
+the newest matching entries first and joins installation/site/company names only for those
+rows (common words matched ~25,000 entries on the scale fixture and were joined row by row
+before the limit). Same results and SECURITY INVOKER.
 
 ## 5f. Release hardening (migration `release_hardening`)
 
