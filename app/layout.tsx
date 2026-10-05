@@ -33,17 +33,19 @@ export const viewport: Viewport = {
   themeColor: "#0F3D32",
 };
 
+// Fonts: only the basic Latin subset is preloaded (covers Estonian õ ä ö ü); Latin Extended
+// (š ž) and Cyrillic stay declared via unicode-range and download only on pages that use
+// them. Manrope is loaded as one variable font instead of three static weights.
 const inter = Inter({
   variable: "--font-inter",
   display: "swap",
-  subsets: ["latin", "latin-ext", "cyrillic"],
+  subsets: ["latin"],
 });
 
 const manrope = Manrope({
   variable: "--font-manrope",
   display: "swap",
-  subsets: ["latin", "latin-ext", "cyrillic"],
-  weight: ["600", "700", "800"],
+  subsets: ["latin"],
 });
 
 // The language comes from a cookie. Reading it here would block every route, so <html lang>

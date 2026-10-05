@@ -48,7 +48,7 @@ function structuredData(t: Awaited<ReturnType<typeof getT>>) {
 }
 
 // The one handwritten note on the page; the font loads on this page only.
-const hand = Caveat({ variable: "--font-hand", subsets: ["latin", "latin-ext", "cyrillic"], weight: ["600"] });
+const hand = Caveat({ variable: "--font-hand", subsets: ["latin"], weight: ["600"] });
 
 /**
  * Public landing page. Every section sits on the same container (.k-container) and the
