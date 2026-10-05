@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // LOCAL ONLY: loads fictional QA companies (supabase/qa/qa_fixtures.sql) into the local
-// Supabase stack; `--perf` also loads the large performance company (qa_perf.sql).
+// Supabase stack; `--perf` also loads the large performance company (qa_perf.sql) and
+// `--scale` the 100-company / 50,000-entry scale dataset (qa_scale.sql).
 // Hard guard (scripts/qa-guard.mjs): aborts when the production ref appears anywhere in the
 // environment or the CLI link, or when the target isn't localhost. Rows are written as the
 // local postgres user inside the local DB container — never through a hosted project.
@@ -22,7 +23,11 @@ assertQaTarget({ env: process.env, linkedRef, targetUrl: "http://127.0.0.1" });
 const env = localSupabaseEnv(); // refuses anything that isn't localhost
 assertQaTarget({ env: process.env, linkedRef, targetUrl: env.API_URL });
 
-const files = ["qa_fixtures.sql", ...(process.argv.includes("--perf") ? ["qa_perf.sql"] : [])];
+const files = [
+  "qa_fixtures.sql",
+  ...(process.argv.includes("--perf") ? ["qa_perf.sql"] : []),
+  ...(process.argv.includes("--scale") ? ["qa_scale.sql"] : []),
+];
 for (const file of files) {
   const sql = readFileSync(new URL(`../supabase/qa/${file}`, import.meta.url), "utf8");
   const started = Date.now();
