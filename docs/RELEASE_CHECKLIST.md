@@ -44,7 +44,7 @@ decision is resolved.**
 | GREEN | Error pages (translated `error.tsx`, trilingual `global-error.tsx`, 404); no SQL, stack traces, keys or provider messages to users |
 | GREEN | Upload abuse limits (database-enforced), user-facing message ET/EN/RU |
 | GREEN | Account deletion request on /konto (validated mailto; plain text when no usable address) |
-| GREEN | Landing: final hero background (static SVG, decorative, masked behind text), title `KAIDLY \| Elektripaigaldise käit lihtsalt`, favicon set |
+| GREEN | Landing: final hero background (static SVG, decorative, masked behind text), title `KAIDLY \| Elektripaigaldise digitaalne käidupäevik`, favicon set |
 
 ## DATABASE
 | Status | Item |

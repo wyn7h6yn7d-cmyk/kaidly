@@ -10,7 +10,7 @@ export const et = {
   },
   meta: {
     description:
-      "KAIDLY on digitaalne käidupäevik elektripaigaldistele: käidupäevik, käidukava, puudused ja dokumendid ühes kohas.",
+      "KAIDLY koondab elektripaigaldise käidupäeviku, käidukava, puudused, dokumentatsiooni ja tähtajad ühte kohta — käidukorraldajale ja elektriettevõttele.",
   },
   countdown: {
     left: (days: number) => (days === 1 ? "1 päev jäänud" : `${days} päeva jäänud`),
@@ -231,7 +231,7 @@ export const et = {
       note: "Teavitused on KAIDLYs, kellukese all.",
     },
     legal: { privacy: "Privaatsus", terms: "Kasutustingimused", label: "Õiguslik teave" },
-    metaTitle: "KAIDLY | Elektripaigaldise käit lihtsalt",
+    metaTitle: "KAIDLY | Elektripaigaldise digitaalne käidupäevik",
     nav: {
       label: "Põhimenüü",
       howItWorks: "Kuidas töötab",
@@ -241,7 +241,7 @@ export const et = {
       eyebrow: "Digitaalne käidupäevik elektripaigaldistele",
       lineOne: "Elektripaigaldise käit.",
       lineTwo: "Lihtsalt.",
-      lead: "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas, inimestele, kes hoiavad elektripaigaldised töös.",
+      lead: "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas — käidukorraldajatele ja elektriettevõtetele, kes hoiavad elektripaigaldised töös.",
       primary: "Loo konto",
       secondary: "Vaata, kuidas töötab",
       note: "kõik kirjas, mitte kellegi peas",

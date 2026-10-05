@@ -14,10 +14,37 @@ import { SiteHeader } from "@/components/marketing/site-header";
 import { SystemDiagram } from "@/components/marketing/system-diagram";
 import { Button } from "@/components/ui/button";
 import { getT } from "@/lib/i18n/server";
+import { siteUrl } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return { title: { absolute: t.landing.metaTitle }, alternates: { canonical: "/" } };
+}
+
+/**
+ * Structured data for search engines, in the page's language (Estonian for every visitor
+ * without a language cookie, i.e. crawlers). Only facts about the product — no operator
+ * address, registry code or ratings (operator details are not final). Static dictionary
+ * text, with "<" escaped so the JSON can never close the script element.
+ */
+function structuredData(t: Awaited<ReturnType<typeof getT>>) {
+  const url = siteUrl().origin;
+  const data = {
+    "@context": "https://schema.org",
+    "@graph": [
+      { "@type": "WebSite", name: "KAIDLY", url, inLanguage: t.locale },
+      {
+        "@type": "SoftwareApplication",
+        name: "KAIDLY",
+        url,
+        inLanguage: t.locale,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description: t.meta.description,
+      },
+    ],
+  };
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 // The one handwritten note on the page; the font loads on this page only.
@@ -36,6 +63,7 @@ export default async function Home() {
     <div className={`${hand.variable} flex min-h-svh flex-col bg-k-paper text-k-ink`}>
       <SiteHeader />
 
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData(t) }} />
       <main className="flex-1">
         {/* Hero */}
         <section className="k-grain relative isolate overflow-hidden">
