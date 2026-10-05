@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createActivity, updateActivity } from "@/lib/actions/schedule";
 import type { Activity } from "@/lib/data/schedule";
 import { cn } from "@/lib/utils";
-import { DEFAULT_REMINDER_DAYS, FREQUENCIES, INTERVAL_UNITS, PRIORITIES, REMINDER_PRESETS } from "@/lib/validation/schedule";
+import { DEFAULT_REMINDER_DAYS, FREQUENCIES, INTERVAL_UNITS, PRIORITIES, REMINDER_PRESETS } from "@/lib/validation/constants";
 import { useT } from "@/lib/i18n/client";
 
 type InstallationChoice = { id: string; label: string };

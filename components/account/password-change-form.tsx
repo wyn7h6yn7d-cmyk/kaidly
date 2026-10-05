@@ -10,7 +10,7 @@ import { PasswordInput } from "@/components/auth/password-input";
 import { changePassword } from "@/lib/actions/account";
 import { initialState } from "@/lib/actions/state";
 import { useT } from "@/lib/i18n/client";
-import { MIN_PASSWORD_LENGTH } from "@/lib/validation/account";
+import { MIN_PASSWORD_LENGTH } from "@/lib/validation/constants";
 
 /**
  * Password change with the current password. Plain useActionState (not useFormAction):

@@ -1,6 +1,6 @@
+// Type-only zod import: this module is used by client components and must not bundle zod.
 import type { ZodError } from "zod";
 import type { ErrorCode } from "@/lib/i18n";
-import { fieldErrors } from "@/lib/validation/common";
 
 /** Result of a form Server Action, consumed with React's useActionState. */
 export type ActionState<T = undefined> = {
@@ -29,7 +29,9 @@ export function invalidInput(error: ZodError, messages: Record<string, ErrorCode
   return {
     ok: false,
     errorCode: special ? messages[special] : "invalid_input",
-    fields: fieldErrors(error),
+    fields: Object.fromEntries(
+      error.issues.filter((issue) => typeof issue.path[0] === "string").map((issue) => [issue.path[0] as string, true as const]),
+    ),
   };
 }
 

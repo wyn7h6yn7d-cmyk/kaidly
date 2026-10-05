@@ -1,11 +1,9 @@
 import { z } from "zod";
 import { optionalText, requiredText, uuid } from "./common.ts"; // explicit extensions: also loaded by node --test
 import { occurredAt } from "./log.ts";
-
-export const SEVERITIES = ["low", "medium", "high", "critical"] as const;
-export const DEFICIENCY_STATUSES = ["open", "in_progress", "resolved"] as const;
-export type Severity = (typeof SEVERITIES)[number];
-export type DeficiencyStatus = (typeof DEFICIENCY_STATUSES)[number];
+import { SEVERITIES } from "./constants.ts";
+export { SEVERITIES, DEFICIENCY_STATUSES } from "./constants.ts";
+export type { Severity, DeficiencyStatus } from "./constants.ts";
 
 const optionalDate = z
   .string()

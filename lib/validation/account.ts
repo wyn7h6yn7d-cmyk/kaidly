@@ -1,6 +1,6 @@
 import { z } from "zod";
-
-export const MIN_PASSWORD_LENGTH = 10;
+import { MIN_PASSWORD_LENGTH } from "./constants.ts";
+export { MIN_PASSWORD_LENGTH } from "./constants.ts";
 
 /** Passwords are never trimmed or transformed: they go to Supabase Auth exactly as typed. */
 export const passwordChangeSchema = z

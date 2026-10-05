@@ -1,20 +1,8 @@
 import { z } from "zod";
 import { optionalText, requiredText, uuid } from "./common.ts"; // explicit extension: also loaded by node --test
-
-export const INSTALLATION_TYPES = [
-  "building",
-  "switchboard",
-  "substation",
-  "solar",
-  "storage",
-  "charging",
-  "industrial",
-  "other",
-] as const;
-export type InstallationType = (typeof INSTALLATION_TYPES)[number];
-
-export const INSTALLATION_STATUSES = ["in_service", "out_of_service"] as const;
-export type InstallationStatus = (typeof INSTALLATION_STATUSES)[number];
+import { INSTALLATION_TYPES, INSTALLATION_STATUSES } from "./constants.ts";
+export { INSTALLATION_TYPES, INSTALLATION_STATUSES } from "./constants.ts";
+export type { InstallationType, InstallationStatus } from "./constants.ts";
 
 export const siteSchema = z.object({
   name: requiredText(200),

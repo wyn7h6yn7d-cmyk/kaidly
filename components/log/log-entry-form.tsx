@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { correctLogEntry, createLogEntry } from "@/lib/actions/log";
-import type { LogEntryType } from "@/lib/validation/log";
+import type { LogEntryType } from "@/lib/validation/constants";
 import { EntryTypeField } from "./entry-type-field";
 import { useT } from "@/lib/i18n/client";
 

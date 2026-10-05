@@ -1,17 +1,9 @@
 import { z } from "zod";
 import { localInputToIso } from "../time.ts"; // explicit extensions: also loaded by node --test
 import { optionalText, requiredText, uuid } from "./common.ts";
-
-export const LOG_ENTRY_TYPES = [
-  "inspection",
-  "maintenance",
-  "switching",
-  "fault",
-  "repair",
-  "measurement",
-  "other",
-] as const;
-export type LogEntryType = (typeof LOG_ENTRY_TYPES)[number];
+import { LOG_ENTRY_TYPES } from "./constants.ts";
+export { LOG_ENTRY_TYPES } from "./constants.ts";
+export type { LogEntryType } from "./constants.ts";
 
 /** Tallinn wall-clock "YYYY-MM-DDTHH:mm" → ISO; not in the future (5 min clock skew allowed). */
 export const occurredAt = z

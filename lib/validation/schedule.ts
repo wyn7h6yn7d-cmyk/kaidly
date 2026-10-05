@@ -1,16 +1,8 @@
 import { z } from "zod";
 import { optionalText, requiredText, uuid } from "./common.ts"; // explicit extension: also loaded by node --test
-
-export const FREQUENCIES = ["once", "recurring"] as const;
-export const INTERVAL_UNITS = ["day", "week", "month", "year"] as const;
-export const PRIORITIES = ["low", "normal", "high"] as const;
-export type Frequency = (typeof FREQUENCIES)[number];
-export type IntervalUnit = (typeof INTERVAL_UNITS)[number];
-export type Priority = (typeof PRIORITIES)[number];
-
-/** Reminder thresholds offered as checkboxes; any other 0–365 can be added as "custom". */
-export const REMINDER_PRESETS = [30, 14, 7, 1] as const;
-export const DEFAULT_REMINDER_DAYS = [14];
+import { FREQUENCIES, INTERVAL_UNITS, PRIORITIES } from "./constants.ts";
+export { FREQUENCIES, INTERVAL_UNITS, PRIORITIES, REMINDER_PRESETS, DEFAULT_REMINDER_DAYS } from "./constants.ts";
+export type { Frequency, IntervalUnit, Priority } from "./constants.ts";
 
 /** Checked presets plus an optional custom value → distinct days, largest first. */
 export function parseReminderDays(checked: string[], custom: string | undefined): number[] | null {

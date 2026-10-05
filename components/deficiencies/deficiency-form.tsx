@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createDeficiency, updateDeficiency } from "@/lib/actions/deficiencies";
 import type { Deficiency } from "@/lib/data/deficiencies";
 import { toLocalInput } from "@/lib/time";
-import { SEVERITIES } from "@/lib/validation/deficiencies";
+import { SEVERITIES } from "@/lib/validation/constants";
 import { useT } from "@/lib/i18n/client";
 
 type Choice = { id: string; label: string };

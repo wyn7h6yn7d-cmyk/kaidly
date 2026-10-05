@@ -10,7 +10,7 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { createInstallation, updateInstallation } from "@/lib/actions/sites";
 import type { Installation } from "@/lib/data/sites";
-import { INSTALLATION_STATUSES, INSTALLATION_TYPES } from "@/lib/validation/sites";
+import { INSTALLATION_STATUSES, INSTALLATION_TYPES } from "@/lib/validation/constants";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { useT } from "@/lib/i18n/client";
 

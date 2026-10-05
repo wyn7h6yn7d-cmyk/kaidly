@@ -2,7 +2,7 @@
 
 
 import { cn } from "@/lib/utils";
-import { LOG_ENTRY_TYPES, type LogEntryType } from "@/lib/validation/log";
+import { LOG_ENTRY_TYPES, type LogEntryType } from "@/lib/validation/constants";
 import { useT } from "@/lib/i18n/client";
 
 /**
