@@ -155,7 +155,7 @@ export const adminCompanies = (search: string | undefined, page: number, size = 
   });
 export const adminCompany = (id: string) => call<AdminCompanyDetail>("admin_company", { p_org: id });
 export const adminDeadlines = (f: AdminDeadlineFilters) =>
-  call<{ today: string; rows: AdminDeadline[] }>("admin_deadlines", {
+  call<{ today: string; rows: AdminDeadline[]; total: number; limit: number }>("admin_deadlines", {
     p_company: f.company ?? null,
     p_kind: f.kind ?? null,
     p_severity: f.severity ?? null,

@@ -30,10 +30,17 @@ const select = "min-h-11 w-full rounded-sm border border-k-line bg-k-surface px-
 
 async function Deadlines({ searchParams }: { searchParams: Search }) {
   const f = parseFilters(await searchParams);
-  // The site list comes from the company's own deadlines, so the site filter is applied here.
-  const [{ rows: all }, companies] = await Promise.all([adminDeadlines({ ...f, site: undefined }), adminCompanyOptions()]);
-  const rows = f.site ? all.filter((r) => r.site_id === f.site) : all;
-  const sites = f.company ? [...new Map(all.map((r) => [r.site_id, r.site])).entries()] : [];
+  // At most the 500 most urgent rows come back (with the true total). Filters, the site
+  // filter included, are applied in the database; the site list (shown once a company is
+  // chosen) comes from that company's own deadlines.
+  const [result, companyRows, companies] = await Promise.all([
+    adminDeadlines(f),
+    f.company && f.site ? adminDeadlines({ ...f, site: undefined }) : null,
+    adminCompanyOptions(),
+  ]);
+  const rows = result.rows;
+  const siteSource = companyRows?.rows ?? rows;
+  const sites = f.company ? [...new Map(siteSource.map((r) => [r.site_id, r.site])).entries()] : [];
   const s = ADMIN.deadlines;
   return (
     <>
@@ -109,7 +116,9 @@ async function Deadlines({ searchParams }: { searchParams: Search }) {
         </div>
       </form>
 
-      <p className="mb-3 text-sm text-k-muted">{s.count(rows.length)}</p>
+      <p className="mb-3 text-sm text-k-muted">
+        {result.total > rows.length ? s.capped(rows.length, result.total) : s.count(rows.length)}
+      </p>
       {rows.length === 0 ? (
         <p>{s.none}</p>
       ) : (

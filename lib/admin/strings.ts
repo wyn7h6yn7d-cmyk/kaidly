@@ -154,6 +154,8 @@ export const ADMIN = {
     noDue: "Tähtaeg puudub",
     none: "Selliseid tähtaegu pole.",
     count: (n: number) => `${n} rida`,
+    capped: (shown: number, total: number) =>
+      `Näidatakse ${shown} kõige pakilisemat ${total}-st. Kitsenda ettevõtte, liigi, seisu või kuupäevaga.`,
     site: "Objekt",
     allSites: "Kõik objektid",
   },
