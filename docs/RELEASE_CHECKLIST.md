@@ -64,7 +64,7 @@ decision is resolved.**
 | GREEN | App redirect allowlist and open-redirect tests |
 | GREEN | Flows covered by E2E: sign-up/confirm, login, logout, forgot/reset, password change, email change, invitation, direct URL, disabled account, session revocation, ET/EN/RU |
 | GREEN | Revoked sessions / disabled accounts: no company reads or writes from the next request on; cannot create or join companies either. What remains until the access token expires (≤ `jwt_expiry`, default 1 h): the signed-in frame and the user's own profile row |
-| PRE-LAUNCH MANUAL | Paste `supabase/templates/{confirmation,recovery,email_change}.html` into Production → Authentication → Emails → Templates (validated by unit tests; installation not verifiable from here) |
+| PRE-LAUNCH MANUAL | Install the KAIDLY auth templates and security notifications in Production — mapping and test steps in docs/EMAIL_TEMPLATES.md §6 (validated by unit tests and locally against real Supabase Auth; installation not verifiable from here) |
 | GREEN | Production account kennethalto95@gmail.com exists and is confirmed — the only production user, exactly one match (verified 2026-10-03) |
 
 ## EMAIL

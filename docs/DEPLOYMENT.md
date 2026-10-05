@@ -79,8 +79,8 @@ production ref, then delete the file.
    - JWT expiry: default 3600 s is acceptable — data access is revoked immediately in the
      database (DATABASE.md §5f); the expiry only bounds how long an already signed-out
      device still *shows* an (empty) signed-in frame.
-   - Email templates: paste `supabase/templates/confirmation.html`, `recovery.html`,
-     `email_change.html` (token_hash links → work across browsers).
+   - Email templates and security notifications: docs/EMAIL_TEMPLATES.md §6 (file → template
+     mapping, subjects, which notifications to enable).
    - SMTP: see §5.
 6. Vercel → Settings → Environment Variables → **Production** scope: replace both
    `NEXT_PUBLIC_SUPABASE_*` with the production values; add `KAIDLY_SITE_URL` and
