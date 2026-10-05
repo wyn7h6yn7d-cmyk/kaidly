@@ -55,7 +55,7 @@ export function SignUpForm() {
         password,
         options: {
           // Read by the profiles trigger (supabase/migrations/*_foundation.sql).
-          data: { full_name: fullName.trim() },
+          data: { full_name: fullName.trim(), locale: t.locale }, // locale: e-mail language
           emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}`,
         },
       });

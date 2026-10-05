@@ -18,6 +18,18 @@ async function writeCookie(locale: Locale) {
 }
 
 /**
+ * Saves the language for a signed-in user: the profile (RLS: own row, column grant) and the
+ * Auth user metadata key `locale`, which the Supabase e-mail templates read to choose
+ * ET/EN/RU (docs/EMAIL_TEMPLATES.md). Only et/en/ru ever reach either place.
+ */
+async function saveForUser(userId: string, locale: Locale, profile: boolean) {
+  const supabase = await createClient();
+  if (profile) await supabase.from("profiles").update({ preferred_locale: locale }).eq("id", userId);
+  const { data } = await supabase.auth.getClaims();
+  if (data?.claims?.user_metadata?.locale !== locale) await supabase.auth.updateUser({ data: { locale } });
+}
+
+/**
  * Switches the UI language: always the cookie; for a signed-in user also their profile
  * (RLS: own row only, column grant: this column only). Routes, organisation and session
  * are untouched; the client refreshes to re-render in the new language.
@@ -26,10 +38,7 @@ export async function setLocale(locale: string): Promise<{ ok: boolean }> {
   if (!isLocale(locale)) return { ok: false };
   await writeCookie(locale);
   const user = await getCurrentUser();
-  if (user) {
-    const supabase = await createClient();
-    await supabase.from("profiles").update({ preferred_locale: locale }).eq("id", user.id);
-  }
+  if (user) await saveForUser(user.id, locale, true);
   return { ok: true };
 }
 
@@ -42,13 +51,12 @@ export async function syncLocale(): Promise<{ changed: boolean }> {
   const user = await getCurrentUser();
   if (!user) return { changed: false };
   const current = await getLocale();
-  if (user.preferredLocale && user.preferredLocale !== current) {
+  if (user.preferredLocale) {
+    await saveForUser(user.id, user.preferredLocale, false); // e-mail language for older accounts
+    if (user.preferredLocale === current) return { changed: false };
     await writeCookie(user.preferredLocale);
     return { changed: true };
   }
-  if (!user.preferredLocale && (await cookies()).get(LOCALE_COOKIE)) {
-    const supabase = await createClient();
-    await supabase.from("profiles").update({ preferred_locale: current }).eq("id", user.id);
-  }
+  if ((await cookies()).get(LOCALE_COOKIE)) await saveForUser(user.id, current, true);
   return { changed: false };
 }

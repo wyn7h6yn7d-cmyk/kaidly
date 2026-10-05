@@ -1,19 +1,31 @@
 import { createOrg, createUser, expect, field, login, test, uniqueId } from "./support/fixtures";
 
-/** Latest email to `to` in the local Mailpit inbox. */
-async function confirmationLink(to: string): Promise<string> {
+type Mail = { Subject: string; HTML: string; Text: string };
+
+/** Latest email to `to` in the local Mailpit inbox (optionally: whose subject matches). */
+async function latestMail(to: string, subject?: RegExp): Promise<Mail> {
   const mailpit = process.env.E2E_MAILPIT_URL;
   if (!mailpit) throw new Error("Mailpit URL missing");
   for (let i = 0; i < 40; i++) {
     const search = await (await fetch(`${mailpit}/api/v1/search?query=${encodeURIComponent(`to:${to}`)}`)).json();
-    if (search.messages?.length) {
-      const message = await (await fetch(`${mailpit}/api/v1/message/${search.messages[0].ID}`)).json();
-      const link = /https?:\/\/[^"'\s<>]+\/auth\/v1\/verify[^"'\s<>]+/.exec(message.HTML ?? message.Text)?.[0];
-      if (link) return link.replaceAll("&amp;", "&");
-    }
+    const hit = search.messages?.find((m: { Subject: string }) => !subject || subject.test(m.Subject));
+    if (hit) return (await fetch(`${mailpit}/api/v1/message/${hit.ID}`)).json();
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  throw new Error(`no confirmation email for ${to}`);
+  throw new Error(`no email for ${to}`);
+}
+
+/**
+ * The KAIDLY link in the email (supabase/templates: {{ .SiteURL }}/auth/confirm?token_hash=…).
+ * The local Site URL is the :3000 dev server; the test server runs elsewhere, so keep only
+ * the path and query.
+ */
+async function confirmationLink(to: string): Promise<string> {
+  const mail = await latestMail(to);
+  const link = /https?:\/\/[^"'\s<>]+\/auth\/confirm\?token_hash=[^"'\s<>]+/.exec(mail.HTML)?.[0];
+  if (!link) throw new Error(`no KAIDLY confirmation link for ${to}`);
+  const url = new URL(link.replaceAll("&amp;", "&"));
+  return url.pathname + url.search;
 }
 
 test.describe("Autentimine", () => {
@@ -31,6 +43,24 @@ test.describe("Autentimine", () => {
     await page.goto(await confirmationLink(email));
     await expect(page).toHaveURL(/\/o(\?.*)?$/);
     await expect(page.getByText("Sul pole aktiivset ettevõtet")).toBeVisible();
+  });
+
+  test("the confirmation email follows the language chosen at sign-up", async ({ page }) => {
+    const email = `${uniqueId("signup-en")}@example.ee`;
+    await page.context().addCookies([{ name: "kaidly_locale", value: "en", url: "http://localhost:3100" }]);
+    await page.goto("/auth/sign-up");
+    await field(page, "fullName").fill("New User");
+    await field(page, "email").fill(email);
+    await field(page, "password").fill("Long-password-123");
+    await field(page, "repeatPassword").fill("Long-password-123");
+    await page.getByRole("button", { name: "Create account" }).click();
+
+    const mail = await latestMail(email);
+    expect(mail.Subject).toBe("Confirm your KAIDLY account");
+    expect(mail.HTML).toContain("Confirm email");
+    expect(mail.HTML).not.toContain("Kinnita e-post");
+    await page.goto(await confirmationLink(email));
+    await expect(page).toHaveURL(/\/o(\?.*)?$/);
   });
 
   test("short password and mismatched passwords are caught before sign-up", async ({ page }) => {
