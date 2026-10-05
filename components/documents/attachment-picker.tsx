@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Camera, CircleAlert, CircleCheck, FileText, X } from "lucide-react";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { ACCEPT_ATTRIBUTE } from "@/lib/documents/rules";
@@ -29,6 +30,18 @@ export function AttachmentPicker({
   const t = useT();
   const id = useFieldId();
   const copy = t.app.attachments;
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // A file chosen before the page became interactive (slow connection) fires no React
+  // onChange: pick it up once on mount instead of silently ignoring it.
+  useEffect(() => {
+    const input = inputRef.current;
+    if (input?.files?.length) {
+      void queue.add(input.files);
+      input.value = "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, for a pre-hydration choice
+  }, []);
 
   return (
     <div className="grid gap-3">
@@ -44,6 +57,7 @@ export function AttachmentPicker({
           <Camera className="size-[18px]" aria-hidden="true" />
           {label ?? t.app.attachments.addFiles}
           <input
+            ref={inputRef}
             id={id("files")}
             type="file"
             className="sr-only"
