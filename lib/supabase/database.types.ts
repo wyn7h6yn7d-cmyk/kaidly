@@ -510,6 +510,32 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          email_deadline_reminders: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          email_deadline_reminders?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          email_deadline_reminders?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           channel: string

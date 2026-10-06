@@ -393,3 +393,39 @@ test.describe("Turvalisus API tasemel", () => {
     }
   });
 });
+
+test.describe("E-mail channel is not reachable through the API", () => {
+  test("no access to pg_net, the outbox or another user's e-mail preference", async () => {
+    const [a, b] = [await createUser("Saatja Ründaja"), await createUser("Teine Kasutaja")];
+    const attacker = await as(a);
+    const { data: session } = await attacker.auth.getSession();
+    const headers = (profile: string) => ({
+      apikey: KEY(),
+      Authorization: `Bearer ${session.session!.access_token}`,
+      "Accept-Profile": profile,
+      "Content-Profile": profile,
+      "Content-Type": "application/json",
+    });
+
+    // pg_net's queue (would hold the provider key briefly) and its http_post function.
+    const queue = await fetch(`${API()}/rest/v1/http_request_queue?select=*`, { headers: headers("net") });
+    expect(queue.status).toBe(406);
+    const post = await fetch(`${API()}/rest/v1/rpc/http_post`, {
+      method: "POST",
+      headers: headers("net"),
+      body: JSON.stringify({ url: "https://example.com", body: { to: "victim@example.com" } }),
+    });
+    expect(post.status).toBe(406);
+    // The outbox lives in private: not an API schema.
+    const outbox = await fetch(`${API()}/rest/v1/email_outbox?select=*`, { headers: headers("private") });
+    expect(outbox.status).toBe(406);
+
+    // Preferences: own row only.
+    await (await as(b)).from("notification_preferences").insert({ user_id: b.id, email_deadline_reminders: true });
+    expect((await attacker.from("notification_preferences").select("user_id").eq("user_id", b.id)).data).toEqual([]);
+    expect((await attacker.from("notification_preferences").insert({ user_id: b.id, email_deadline_reminders: false })).error?.code).toBe("42501");
+    await attacker.from("notification_preferences").update({ email_deadline_reminders: false }).eq("user_id", b.id);
+    expect(sql(`select email_deadline_reminders from public.notification_preferences where user_id = '${b.id}'`)).toBe("t");
+    expect((await anon().from("notification_preferences").select("user_id")).error).not.toBeNull();
+  });
+});

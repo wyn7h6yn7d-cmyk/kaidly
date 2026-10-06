@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(20);
+select plan(21);
 
 -- Every table in the API-exposed schema has RLS enabled.
 select is_empty(
@@ -156,7 +156,7 @@ select results_eq(
         and c.relname <> '__default_privileges_probe' -- created earlier in this file
       order by c.relname::text collate "C" $$,
   $$ values ('activity_history'), ('deficiencies'), ('documents'), ('electrical_installations'), ('log_entries'),
-            ('notifications'), ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
+            ('notification_preferences'), ('notifications'), ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
             ('scheduled_activities'), ('sites') $$,
   'public tables are exactly the reviewed set'
 );
@@ -200,10 +200,13 @@ select results_eq(
        ('private.admin_audit(text,text,text,jsonb)'),
        ('private.bootstrap_platform_admin(text)'),
        ('private.can_company_write(uuid)'),
+       ('private.cancel_reminder_emails_on_opt_out()'),
        ('private.co_member_ids()'),
        ('private.deficiency_before_insert()'),
        ('private.document_before_insert()'),
        ('private.document_upload_limits()'),
+       ('private.email_block_reason(uuid)'),
+       ('private.enqueue_reminder_emails()'),
        ('private.ensure_site_active()'),
        ('private.generate_activity_reminders(date,uuid)'),
        ('private.handle_new_user()'),
@@ -217,6 +220,7 @@ select results_eq(
        ('private.organisation_access_on_create()'),
        ('private.organisation_access_state(uuid,timestamp with time zone)'),
        ('private.organisation_member_before_insert()'),
+       ('private.process_email_outbox()'),
        ('private.protect_last_owner()'),
        ('private.record_history()'),
        ('private.require_access_row(uuid)'),
@@ -276,6 +280,16 @@ select ok(
   and not has_column_privilege('authenticated', 'public.scheduled_activities', 'anchor_on', 'update')
   and not has_column_privilege('authenticated', 'public.organisations', 'slug', 'update'),
   'server-owned columns are not client-writable'
+);
+
+-- The e-mail outbox, its settings and templates are unreachable for API roles (no
+-- forged sends, no reading who gets mail); the sender runs only from pg_cron.
+select is_empty(
+  $$ select r || ' ' || t from unnest(array['anon', 'authenticated']) r,
+            unnest(array['private.email_outbox', 'private.email_outbox_items', 'private.email_settings', 'private.email_templates']) t
+      where has_table_privilege(r, t, 'select') or has_table_privilege(r, t, 'insert')
+         or has_table_privilege(r, t, 'update') or has_table_privilege(r, t, 'delete') $$,
+  'API roles have no access to the e-mail outbox, settings or templates'
 );
 
 -- Storage: one private bucket, exactly the reviewed object policies, nothing public.

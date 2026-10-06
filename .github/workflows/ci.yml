@@ -55,7 +55,7 @@ jobs:
       # Applies every migration and the seed from scratch. Storage stays on: it owns the
       # storage schema that the documents tests exercise.
       - run: npx supabase start -x studio,edge-runtime,logflare,vector,supavisor,imgproxy,realtime
-      - run: npx supabase test db
+      - run: npm run test:db
       - name: Generated types match the migrations
         run: |
           npx supabase gen types typescript --local > "$RUNNER_TEMP/database.types.ts"
