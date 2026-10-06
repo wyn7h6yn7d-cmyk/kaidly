@@ -48,3 +48,6 @@ next-env.d.ts
 
 # local e-mail template previews (fake values)
 /.email-preview/
+
+# Production/Development backups (customer data) — never commit
+/backups/

@@ -33,6 +33,7 @@ npx supabase db push
 ## 4. Production database (only after all tests are green)
 
 ```bash
+scripts/backup-database.sh       # backup BEFORE every Production migration (docs/PRODUCTION_BACKUP_RECOVERY.md)
 echo "PRODUCTION = xakpbtmksxvjmsbipwmj"
 npx supabase link --project-ref xakpbtmksxvjmsbipwmj
 cat supabase/.temp/project-ref   # must be exactly xakpbtmksxvjmsbipwmj — otherwise STOP

@@ -85,8 +85,10 @@ CLI mistakes, pre-customer requirements), MANUAL_SMOKE_TEST.md (~15 min checklis
 
 ## 11. Before the first real customer (not complete)
 
-- [ ] Production backups (paid plan with daily backups) — or written risk acceptance
-- [ ] Storage file backup and a tested file restore
+- [ ] Production backups: first manual database + Storage backup taken and stored encrypted
+      off-site (tooling and local restore rehearsal done 2026-10-06 — PRODUCTION_BACKUP_RECOVERY.md);
+      weekly routine agreed; or a paid plan with daily backups
+- [x] Storage file backup and a tested file restore (rehearsed locally)
 - [ ] Custom SMTP (sign-up confirmation, password reset, e-mail change for customers)
 - [ ] Working contact mailbox behind `KAIDLY_CONTACT_EMAIL`
 - [ ] Legal operator details; final privacy policy and terms (reviewed)

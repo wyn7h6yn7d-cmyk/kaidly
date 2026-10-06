@@ -1,8 +1,9 @@
 # KAIDLY — Recovery runbook
 
-Read with BACKUP_RECOVERY.md. **Production has no restorable backups today** (PITR off, no
-plan with daily backups) and **Storage files are not in any backup**. Nothing below pretends
-otherwise. Do not put real customer data into Production before §5 is resolved.
+Read with BACKUP_RECOVERY.md and **PRODUCTION_BACKUP_RECOVERY.md** (how to make and restore
+backups). Supabase keeps **no** backups of Production (PITR off, plan without daily backups);
+protection is the manual weekly database + Storage backup (`scripts/backup-database.sh`,
+`scripts/backup-storage.mjs`), stored encrypted off-site.
 
 ## 1. What lives where
 
@@ -11,7 +12,7 @@ otherwise. Do not put real customer data into Production before §5 is resolved.
 | Accounts (users, identities) | Postgres `auth` | database backup / dump |
 | Companies, sites, installations, log, plan, deficiencies, document **metadata**, notifications, history | Postgres `public` | database backup / dump |
 | Access/trial state, platform admins, admin audit, upload counters, import batches | Postgres `private` | database backup / dump |
-| Document and photo **files** | Supabase Storage bucket `documents` | **nothing yet** — needs a separate file backup |
+| Document and photo **files** | Supabase Storage bucket `documents` | `scripts/backup-storage.mjs` mirror (manual, weekly) |
 | Sessions | Postgres `auth` | not needed — users sign in again |
 | Reminder e-mail outbox, e-mail settings/templates | Postgres `private` (key: Vault) | database backup; after a restore, set `private.email_settings.enabled = false` first — the processor drops anything older than 2 days, so no stale reminder mail is sent (EMAIL_NOTIFICATIONS.md) |
 | Schema, policies, functions, cron jobs, bucket definition | `supabase/migrations` (git) | rebuild from zero (`db push` / `db reset`) |

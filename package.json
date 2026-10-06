@@ -22,7 +22,9 @@
     "test:e2e": "playwright test",
     "test:e2e:browsers": "E2E_BROWSERS=all playwright test --grep @cross-browser",
     "db:target": "node scripts/db-target.mjs",
-    "qa:fixtures": "node scripts/qa-fixtures.mjs"
+    "qa:fixtures": "node scripts/qa-fixtures.mjs",
+    "backup:db": "scripts/backup-database.sh",
+    "backup:storage": "node scripts/backup-storage.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "2.1.24",
