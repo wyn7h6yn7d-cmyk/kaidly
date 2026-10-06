@@ -247,7 +247,6 @@ export const en: Messages = {
       title: "Simple pricing. Everything you need is in every plan.",
       body: "Every plan includes the operating log, operating plan, deficiencies, documents, notifications, reports and search. Plans differ only by team size and the number of active electrical installations.",
       trial: "14 days free",
-      noCard: "No credit card required",
       trialBody: "Try every KAIDLY feature for 14 days: the trial includes 1 user and up to 5 active electrical installations. Then choose the plan that fits — we invoice by email.",
       perMonth: "€ / month + VAT",
       users: (n: number) => (n === 1 ? "1 user" : `${n} users`),

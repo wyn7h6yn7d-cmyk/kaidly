@@ -34,14 +34,6 @@ export async function SiteHeader() {
           >
             {t.common.signIn}
           </Link>
-          {/* The free trial, said once where people decide to sign up. */}
-          <Link
-            href="/#hinnad"
-            className="hidden h-11 items-center gap-2 whitespace-nowrap rounded-sm px-2 text-[15px] font-semibold text-k-green hover:underline xl:inline-flex"
-          >
-            <span aria-hidden="true" className="size-2 bg-k-volt" />
-            {t.landing.nav.trial}
-          </Link>
           <Button asChild className="hidden md:inline-flex lg:min-h-12 lg:px-6 lg:text-[17px]">
             <Link href="/auth/sign-up">{t.common.signUp}</Link>
           </Button>

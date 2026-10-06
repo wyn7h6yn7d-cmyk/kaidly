@@ -14,7 +14,6 @@ test.describe("Hinnad (avalik leht)", () => {
 
     // The free trial is visible near the top on every width.
     await expect(page.getByText("14 päeva tasuta").filter({ visible: true }).first()).toBeInViewport();
-    await expect(page.getByText("Krediitkaarti pole vaja").filter({ visible: true }).first()).toBeVisible();
 
     // "Hinnad" goes to the pricing section (from the header on tablet/desktop, the footer on phones).
     const width = page.viewportSize()?.width ?? 0;
@@ -41,7 +40,9 @@ test.describe("Hinnad (avalik leht)", () => {
     await expect(pricing.getByText("Kõige populaarsem")).toHaveCount(1);
     await expect(pricing.getByRole("heading", { name: "Vajad rohkem?" })).toBeVisible();
     await expect(pricing.getByText("14 päeva tasuta")).toBeVisible();
-    await expect(pricing.getByText("Krediitkaarti pole vaja")).toBeVisible();
+    // The trial is stated without any payment-card wording; it is not a header item.
+    await expect(page.locator("body")).not.toContainText(/krediitkaart|credit card|банковская карта/i);
+    await expect(page.getByRole("banner").getByText("14 päeva tasuta")).toHaveCount(0);
     // Every plan has every feature: one shared list, no per-plan feature gating.
     await expect(pricing.getByRole("heading", { name: "Igas paketis", exact: true })).toBeVisible();
     await expect(pricing.getByText("Käidupäevik", { exact: true })).toBeVisible();
@@ -56,7 +57,8 @@ test.describe("Hinnad (avalik leht)", () => {
     await page.goto("/#hinnad");
     await expect(page.getByRole("navigation", { name: "Main menu" }).getByRole("link", { name: "Pricing" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Simple pricing. Everything you need is in every plan." })).toBeVisible();
-    await expect(page.getByText("No credit card required").filter({ visible: true }).first()).toBeVisible();
+    await expect(page.getByText("14 days free").filter({ visible: true }).first()).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/credit card/i);
     await expect(page.getByText("Most popular")).toBeVisible();
     await expect(page.getByText("15 users")).toBeVisible();
 
@@ -66,6 +68,8 @@ test.describe("Hinnad (avalik leht)", () => {
     await expect(page.getByRole("heading", { name: "Простые тарифы. Всё необходимое — в каждом из них." })).toBeVisible();
     await expect(page.getByText("Самый популярный")).toBeVisible();
     await expect(page.getByText("15 пользователей")).toBeVisible();
+    await expect(page.getByText("14 дней бесплатно").filter({ visible: true }).first()).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/банковская карта/i);
     await expect(page.getByText("100 активных электроустановок")).toBeVisible();
   });
 });

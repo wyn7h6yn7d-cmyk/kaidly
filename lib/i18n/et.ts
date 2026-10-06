@@ -243,7 +243,6 @@ export const et = {
       title: "Lihtne hinnastus. Kõik vajalik on igas paketis.",
       body: "Igas paketis on käidupäevik, käidukava, puudused, dokumendid, teavitused, aruanded ja otsing. Paketid erinevad ainult meeskonna suuruse ja aktiivsete elektripaigaldiste arvu poolest.",
       trial: "14 päeva tasuta",
-      noCard: "Krediitkaarti pole vaja",
       trialBody: "Proovi KAIDLYt 14 päeva kõigi funktsioonidega: prooviperioodil 1 kasutaja ja kuni 5 aktiivset elektripaigaldist. Seejärel vali sobiv pakett — arve saadame e-postiga.",
       perMonth: "€ / kuu + KM",
       users: (n: number) => (n === 1 ? "1 kasutaja" : `${n} kasutajat`),

@@ -110,8 +110,6 @@ export default async function Home() {
               <p className="mt-4 flex flex-wrap items-center gap-x-2 text-[15px] font-semibold text-k-green">
                 <span aria-hidden="true" className="size-2 bg-k-volt" />
                 {l.pricing.trial}
-                <span aria-hidden="true" className="text-k-muted">·</span>
-                <span className="text-k-muted">{l.pricing.noCard}</span>
               </p>
               <p className="mt-10 flex font-hand text-[28px] leading-tight text-k-green lg:text-[32px]">
                 <span className="inline-block min-w-0 -rotate-2">{l.hero.note}</span>

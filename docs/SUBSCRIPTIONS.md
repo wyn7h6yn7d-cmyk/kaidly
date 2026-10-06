@@ -11,7 +11,7 @@ existing access row `private.organisation_access` — there is no second access 
 
 | Concept | Where |
 |---|---|
-| Trial (14 days, every feature, no card; 1 user, 5 active installations) | `trial_started_at`, `trial_ends_at` (unchanged); limits set at creation |
+| Trial (14 days, every feature; 1 user, 5 active installations) | `trial_started_at`, `trial_ends_at` (unchanged); limits set at creation |
 | Paid period | `full_access_from` … `full_access_until` (unchanged meaning) |
 | Plan | `plan` (`start`, `team`, `pro`, `business`, `custom`), `plan_label` (Custom) |
 | Agreed price (EUR / month, VAT excl.) | `monthly_price` — admin only |

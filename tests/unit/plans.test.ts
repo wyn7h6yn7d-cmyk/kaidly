@@ -36,8 +36,12 @@ test("pricing copy: exact Estonian wording and natural plural forms", () => {
   assert.equal(et.landing.nav.pricing, "Hinnad");
   assert.equal(p.title, "Lihtne hinnastus. Kõik vajalik on igas paketis.");
   assert.equal(p.trial, "14 päeva tasuta");
-  assert.equal(p.noCard, "Krediitkaarti pole vaja");
-  assert.equal(p.popular, "Kõige populaarsem");
+  // No payment-card wording anywhere in the public copy (owner decision).
+  for (const messages of [et, en, ru]) {
+    assert.doesNotMatch(JSON.stringify(messages), /krediitkaart|credit card|банковск\S* карт/i);
+  }
+  assert.equal(en.landing.pricing.trial, "14 days free");
+  assert.equal(ru.landing.pricing.trial, "14 дней бесплатно");  assert.equal(p.popular, "Kõige populaarsem");
   assert.equal(p.perMonth, "€ / kuu + KM");
   assert.deepEqual([1, 3, 5, 15].map(p.users), ["1 kasutaja", "3 kasutajat", "5 kasutajat", "15 kasutajat"]);
   assert.equal(p.installations(25), "25 aktiivset elektripaigaldist");

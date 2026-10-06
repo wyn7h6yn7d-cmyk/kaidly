@@ -29,7 +29,6 @@ export async function Pricing() {
           </div>
           <div className="min-w-0 border-l-4 border-k-volt pl-5 lg:col-span-5 lg:self-end">
             <p className="font-display text-display-3 font-extrabold text-k-green">{p.trial}</p>
-            <p className="mt-1 text-lg font-semibold">{p.noCard}</p>
             <p className="mt-3 max-w-md text-k-muted">{p.trialBody}</p>
             <Button asChild size="lg" className="mt-5">
               <Link href="/auth/sign-up">
