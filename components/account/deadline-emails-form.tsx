@@ -1,7 +1,7 @@
 "use client";
 
 import { unstable_rethrow } from "next/navigation";
-import { startTransition, useActionState, useOptimistic } from "react";
+import { startTransition, useActionState, useOptimistic, useSyncExternalStore } from "react";
 import { FormMessage } from "@/components/forms/form-message";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { setDeadlineEmails } from "@/lib/actions/account";
@@ -27,6 +27,13 @@ export function DeadlineEmailsForm({ enabled }: { enabled: boolean }) {
       return { ok: false, errorCode: "network", data: { enabled: formData.get("previous") !== "false" } };
     }
   }, {});
+  // Until React is interactive a click would only flip the native checkbox (nothing saved),
+  // so the switch is disabled in the server-rendered HTML and enabled once hydrated.
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const saved = state.data?.enabled ?? enabled;
   const [shown, setShown] = useOptimistic(saved);
 
@@ -49,7 +56,7 @@ export function DeadlineEmailsForm({ enabled }: { enabled: boolean }) {
           role="switch"
           name="deadlineEmails"
           checked={shown}
-          disabled={pending}
+          disabled={pending || !hydrated}
           aria-describedby={`${id("deadlineEmails")}-body ${id("deadlineEmails")}-status`}
           onChange={(event) => change(event.currentTarget.checked)}
           className="mt-0.5 size-6 shrink-0 cursor-pointer accent-k-green disabled:cursor-wait"

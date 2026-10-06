@@ -1,6 +1,6 @@
 "use client";
 
-import { startTransition, useActionState, useEffect, useRef, useState } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { FormMessage } from "@/components/forms/form-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +94,12 @@ export function SubscriptionForm({
   }, {});
   const shown = preview.preview && previewFor === values ? preview.preview : null;
   const dialog = useRef<HTMLDialogElement>(null);
+  // No native (pre-hydration) submit: method="post" and the buttons wait for hydration.
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (applied.ok) dialog.current?.close();
@@ -109,6 +115,7 @@ export function SubscriptionForm({
       <form
         // onSubmit, not a form action: React resets a form after an action, which would
         // show different plan/period values than the ones in the summary.
+        method="post"
         onSubmit={(event) => {
           event.preventDefault();
           const formData = new FormData(event.currentTarget);
@@ -193,7 +200,7 @@ export function SubscriptionForm({
         )}
         <FormMessage error={preview.error ? ADMIN.errors[preview.error] : undefined} />
         <div>
-          <Button type="submit" variant="outline" disabled={previewing}>
+          <Button type="submit" variant="outline" disabled={previewing || !hydrated}>
             {s.review}
           </Button>
         </div>
@@ -222,6 +229,7 @@ export function SubscriptionForm({
         className="w-[min(32rem,calc(100vw-2rem))] rounded-sm border border-k-line bg-k-surface p-0 text-k-ink backdrop:bg-k-ink/50"
       >
         <form
+          method="post"
           onSubmit={(event) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
@@ -238,7 +246,7 @@ export function SubscriptionForm({
           {shown && <Summary p={shown} />}
           <FormMessage error={applied.error ? ADMIN.errors[applied.error] : undefined} />
           <div className="flex flex-wrap gap-3">
-            <Button type="submit" variant="dark" disabled={applying || !shown}>
+            <Button type="submit" variant="dark" disabled={applying || !shown || !hydrated}>
               {s.apply}
             </Button>
             <Button type="button" variant="outline" onClick={() => dialog.current?.close()}>

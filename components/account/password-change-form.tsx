@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
-import { startTransition, useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { Field } from "@/components/forms/field";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { FormMessage } from "@/components/forms/form-message";
@@ -43,6 +43,13 @@ export function PasswordChangeForm() {
       return { ok: false, errorCode: "network", data: previous.data, sentAt: previous.sentAt };
     }
   }, {});
+  // Before React is interactive the form must never submit natively (that would put the
+  // passwords into a URL): method="post" and the buttons stay disabled until hydrated.
+  const hydrated = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [cancelled, setCancelled] = useState<State | null>(null);
   const reauth = Boolean(state.data?.reauth) && cancelled !== state;
 
@@ -87,7 +94,7 @@ export function PasswordChangeForm() {
 
 
   return (
-    <form ref={form} onSubmit={submit} className="flex max-w-lg flex-col gap-5">
+    <form ref={form} method="post" onSubmit={submit} className="flex max-w-lg flex-col gap-5">
       <Field id={id("currentPassword")} label={copy.currentPassword}>
         <PasswordInput
           id={id("currentPassword")}
@@ -152,7 +159,7 @@ export function PasswordChangeForm() {
             success={resent?.ok ? copy.reauthResent : undefined}
           />
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending || !hydrated}>
               {pending ? t.app.saving : copy.reauthSubmit}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={sendNewCode} disabled={resending || pending || wait > 0}>
@@ -172,7 +179,7 @@ export function PasswordChangeForm() {
         <>
           <FormMessage code={state.errorCode} success={state.ok ? copy.passwordChanged : undefined} />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Button type="submit" variant="outline" disabled={pending}>
+            <Button type="submit" variant="outline" disabled={pending || !hydrated}>
               {pending ? t.app.saving : copy.passwordSubmit}
             </Button>
             <Link href="/auth/forgot-password" className="text-sm font-semibold text-k-green underline underline-offset-4">

@@ -83,7 +83,7 @@ export function DocumentUploadForm({
   }
 
   return (
-    <form onSubmit={submit} className="flex max-w-2xl flex-col gap-5" noValidate>
+    <form method="post" onSubmit={submit} className="flex max-w-2xl flex-col gap-5" noValidate>
       <div>
         <p className="mb-2 text-[15px] font-semibold">{copy.fields.file}</p>
         <AttachmentPicker
