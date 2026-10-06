@@ -9,7 +9,7 @@ create extension if not exists pgtap with schema extensions;
 \ir helpers/fixture.psql
 \ir helpers/sites.psql
 
-select plan(111);
+select plan(122);
 
 insert into test_users (name, id, email) values ('platform', 'c0000000-0000-4000-8000-0000000000ad', 'platvorm@example.ee');
 insert into auth.users (id, email, email_confirmed_at, aud, role)
@@ -70,11 +70,60 @@ grant execute on function pg_temp.install(uuid, text) to authenticated;
 -- Defaults: trials and existing companies have no limits
 -- ===========================================================================
 
-select is(pg_temp.status(pg_temp.org('c')), 'trial', 'a new company is on its 14-day trial');
-select is((select trial_ends_at - trial_started_at from private.organisation_access where organisation_id = pg_temp.org('c')),
-  interval '14 days', 'the trial lasts 14 days');
+-- Companies created by the database owner (seed, fixtures, companies that existed before
+-- the plans): no limits.
 select ok((pg_temp.access(pg_temp.org('c'))).plan is null and (pg_temp.access(pg_temp.org('c'))).user_limit is null
-          and (pg_temp.access(pg_temp.org('c'))).installation_limit is null, 'trial: no plan and no limits (full normal access)');
+          and (pg_temp.access(pg_temp.org('c'))).installation_limit is null, 'owner-created / existing companies: no plan and no limits');
+
+-- ===========================================================================
+-- Trial: a company created by a user has every feature, 1 user and 5 active installations
+-- ===========================================================================
+
+select pg_temp.login('outsider');
+create temporary table trial_org as select public.create_organisation('Proovi OÜ') as slug;
+select pg_temp.root();
+grant select on trial_org to authenticated;
+create function pg_temp.t() returns uuid language sql stable as $$
+  select o.id from public.organisations o join trial_org t on t.slug = o.slug $$;
+grant execute on function pg_temp.t() to authenticated;
+select is(pg_temp.status(pg_temp.t()), 'trial', 'a new company starts its trial');
+select is((select trial_ends_at - trial_started_at from private.organisation_access where organisation_id = pg_temp.t()),
+  interval '14 days', 'the trial lasts 14 days');
+select is(array[(pg_temp.access(pg_temp.t())).user_limit, (pg_temp.access(pg_temp.t())).installation_limit], array[1, 5],
+  'trial limits: 1 user, 5 active installations');
+select is((pg_temp.access(pg_temp.t())).plan, null, 'no plan during the trial');
+select is(private.seats_used(pg_temp.t()), 1, 'the owner is the one user');
+select pg_temp.login('outsider');
+select throws_ok($$ select public.create_invitation(pg_temp.t(), 'kolleeg@example.ee', 'operator') $$, 'P0001', 'plan_user_limit',
+  'trial: no second user can be invited');
+insert into public.sites (organisation_id, name) values (pg_temp.t(), 'Proovi objekt');
+create function pg_temp.trial_install(p_name text) returns uuid language sql as $$
+  insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
+  select pg_temp.t(), s.id, p_name, 'switchboard' from public.sites s where s.organisation_id = pg_temp.t() limit 1
+  returning id $$;
+grant execute on function pg_temp.trial_install(text) to authenticated;
+select lives_ok($$ select pg_temp.trial_install('P1'); select pg_temp.trial_install('P2'); select pg_temp.trial_install('P3');
+                   select pg_temp.trial_install('P4'); select pg_temp.trial_install('P5') $$, 'trial: 5 active installations');
+select throws_ok($$ select pg_temp.trial_install('P6') $$, 'P0001', 'plan_installation_limit', 'trial: the 6th is refused');
+update public.electrical_installations set archived_at = now() where organisation_id = pg_temp.t() and name = 'P1';
+select lives_ok($$ select pg_temp.trial_install('P6') $$, 'trial: archiving frees a slot');
+-- Every feature works in the trial (here: operating log, plan, deficiency).
+select lives_ok($$
+  insert into public.log_entries (organisation_id, site_id, electrical_installation_id, entry_type, description)
+  select pg_temp.t(), site_id, id, 'inspection', 'Proovi sissekanne' from public.electrical_installations where organisation_id = pg_temp.t() and archived_at is null limit 1;
+  insert into public.scheduled_activities (organisation_id, site_id, electrical_installation_id, title, frequency_type, next_due_on)
+  select pg_temp.t(), site_id, id, 'Proovi kontroll', 'once', current_date + 30 from public.electrical_installations where organisation_id = pg_temp.t() and archived_at is null limit 1;
+  insert into public.deficiencies (organisation_id, site_id, electrical_installation_id, title, description, severity)
+  select pg_temp.t(), site_id, id, 'Proovi puudus', 'Kirjeldus', 'low' from public.electrical_installations where organisation_id = pg_temp.t() and archived_at is null limit 1
+$$, 'trial: log, plan and deficiencies all work (no feature gating)');
+select pg_temp.root();
+select pg_temp.sub(pg_temp.t(), 'team');
+select is(array[(pg_temp.access(pg_temp.t())).user_limit, (pg_temp.access(pg_temp.t())).installation_limit], array[3, 10],
+  'assigning a plan replaces the trial limits');
+select is(pg_temp.status(pg_temp.t()), 'trial', '(the trial period itself is unchanged by a plan-only change)');
+select pg_temp.login('outsider');
+select lives_ok($$ select public.create_invitation(pg_temp.t(), 'kolleeg@example.ee', 'operator') $$, 'after the plan change a colleague can be invited');
+select pg_temp.root();
 
 -- ===========================================================================
 -- Fixed plans: the database sets price and limits, whatever the request says

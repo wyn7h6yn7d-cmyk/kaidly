@@ -6,9 +6,10 @@
 --   (full_access_from / full_access_until); read-only expiry, trial and deactivation are
 --   unchanged and still derived by private.organisation_access_state().
 -- * Plans differ only by limits: total users (members of every role + pending
---   invitations) and active (not archived) electrical installations. A null limit means
---   "no limit": trials (14 days, full normal access) and every company that existed before
---   this migration keep working exactly as before until a platform admin assigns a plan.
+--   invitations) and active (not archived) electrical installations — never by features.
+--   The 14-day trial has every feature with trial limits of 1 user (the owner) and 5 active
+--   installations. A null limit means "no limit": every company that existed before this
+--   migration keeps working exactly as before until a platform admin assigns a plan.
 -- * Limits are enforced in the database (BEFORE triggers, serialised per company by a row
 --   lock on its access row), so no client, forged request or race can exceed them. Only
 --   actions that would exceed a limit are refused; nothing existing is touched.
@@ -47,6 +48,29 @@ comment on column private.organisation_access.user_limit is
   'Total users (members of every role + pending invitations); null = no limit (trial, legacy).';
 comment on column private.organisation_access.installation_limit is
   'Active (not archived) electrical installations; null = no limit (trial, legacy).';
+
+-- ---------------------------------------------------------------------------
+-- Trial limits for new companies
+-- ---------------------------------------------------------------------------
+
+-- A company created by a signed-in user (create_organisation) starts its 14-day trial with
+-- 1 user and 5 active installations; assigning any plan replaces these limits. Companies
+-- created by the database owner (seed, test fixtures, support) get no limits.
+create or replace function private.organisation_access_on_create()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into private.organisation_access (organisation_id, trial_started_at, trial_ends_at, user_limit, installation_limit)
+  values (new.id, now(), now() + interval '14 days',
+          case when auth.uid() is not null then 1 end,
+          case when auth.uid() is not null then 5 end)
+  on conflict (organisation_id) do nothing;
+  return null;
+end;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Usage

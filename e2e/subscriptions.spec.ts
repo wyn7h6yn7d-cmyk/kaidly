@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Page } from "@playwright/test";
-import { createOrg, createUser, expect, login, sql, test, uniqueId, type TestUser } from "./support/fixtures";
+import { createOrg, createUser, expect, field, login, sql, test, uniqueId, type TestUser } from "./support/fixtures";
 
 // Platform Admin → Tellimused, the customer's plan view, plan limits in the app, and that
 // nobody else can read or change subscriptions (docs/SUBSCRIPTIONS.md).
@@ -141,6 +141,56 @@ test.describe("Tellimused (platvormi admin)", () => {
     await expect(owner.getByText("Lehte ei leitud")).toBeVisible();
     await owner.goto("/admin/tellimused");
     await expect(owner.getByText("Lehte ei leitud")).toBeVisible();
+  });
+});
+
+test.describe("Prooviperiood", () => {
+  test("a company created in the app: 14 days, every feature, 1 user and 5 active installations @responsive", async ({ page }) => {
+    const user = await createUser("Proovi Omanik");
+    await login(page, user);
+    await page.getByRole("link", { name: "Loo ettevõte" }).first().click();
+    const name = `Proovi ${uniqueId("t")} OÜ`;
+    await field(page, "name").fill(name);
+    await page.getByRole("button", { name: "Loo ettevõte" }).click();
+    await expect(page).toHaveURL(/\/o\/proovi-/);
+    const slug = new URL(page.url()).pathname.split("/")[2];
+    const orgId = sql(`select id from public.organisations where slug = '${slug}'`);
+    expect(sql(`select extract(day from trial_ends_at - trial_started_at) from private.organisation_access where organisation_id = '${orgId}'`)).toBe("14");
+
+    // Settings → Pakett: trial, the owner is the one user, 0 / 5 installations.
+    await page.goto(`/o/${slug}/seaded`);
+    const plan = page.getByRole("region", { name: "Pakett" });
+    await expect(plan).toContainText("Prooviperiood");
+    await expect(plan).toContainText("1 / 1");
+    await expect(plan).toContainText("0 / 5");
+
+    // No second user during the trial.
+    await page.goto(`/o/${slug}/seaded/liikmed`);
+    await expect(page.getByText("Prooviperioodil kasutab KAIDLYt üks kasutaja")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Loo kutse link" })).toHaveCount(0);
+
+    // Five installations, then the sixth is refused; archiving frees a slot.
+    const site = sql(`insert into public.sites (organisation_id, name) values ('${orgId}', 'Proovi objekt') returning id;`);
+    sql(`insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
+         select '${orgId}', '${site}', 'Kilp ' || g, 'switchboard' from generate_series(1, 5) g;`);
+    await page.goto(`/o/${slug}/paigaldised/uus`);
+    await expect(page.getByText("Prooviperioodil saab olla kuni 5 aktiivset elektripaigaldist")).toBeVisible();
+    expect(() =>
+      sql(`insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
+           values ('${orgId}', '${site}', 'Kuues', 'switchboard');`),
+    ).toThrow(/plan_installation_limit/);
+    sql(`update public.electrical_installations set archived_at = now() where organisation_id = '${orgId}' and name = 'Kilp 1';`);
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Lisa paigaldis" })).toBeVisible();
+
+    // Every feature is available: a log entry through the normal form.
+    const installation = sql(`select id from public.electrical_installations where organisation_id = '${orgId}' and archived_at is null limit 1`);
+    await page.goto(`/o/${slug}/paigaldised/${installation}/paevik/uus`);
+    await page.getByText("Kontroll", { exact: true }).click();
+    await field(page, "description").fill("Proovi ülevaatus");
+    await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
+    await expect(page.getByText("Sissekanne salvestatud.")).toBeVisible();
+    expect(sql(`select count(*) from public.log_entries where organisation_id = '${orgId}'`)).toBe("1");
   });
 });
 

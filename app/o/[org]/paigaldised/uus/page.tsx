@@ -40,7 +40,7 @@ export default async function NewInstallationPage({
           <>
             <PageHeader eyebrow={org.name} title={t.app.installations.new} back={back} />
             {installationsFull(plan) ? (
-              <PlanLimitNotice kind="installations" orgName={org.name} />
+              <PlanLimitNotice kind="installations" orgName={org.name} trial={plan.status === "trial" && !plan.plan} />
             ) : sites.length === 0 ? (
               <GuidedEmptyState
                 title={t.app.emptyStates.installations.title}

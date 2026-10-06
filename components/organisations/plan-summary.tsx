@@ -71,13 +71,26 @@ export async function PlanSummary({ orgId, orgName }: { orgId: string; orgName: 
 }
 
 /** Shown instead of an action that would exceed the plan (the database refuses it anyway). */
-export async function PlanLimitNotice({ kind, orgName }: { kind: "seats" | "installations"; orgName: string }) {
+export async function PlanLimitNotice({
+  kind,
+  orgName,
+  trial = false,
+}: {
+  kind: "seats" | "installations";
+  orgName: string;
+  /** During the free trial (no plan yet) the notice explains the trial limits. */
+  trial?: boolean;
+}) {
   const t = await getT();
   const c = t.app.plan;
+  const [title, body] =
+    kind === "seats"
+      ? trial ? [c.trialSeatsFull, c.trialSeatsFullBody] : [c.seatsFull, c.seatsFullBody]
+      : trial ? [c.trialInstallationsFull, c.trialInstallationsFullBody] : [c.installationsFull, c.installationsFullBody];
   return (
     <div role="status" className="max-w-2xl border-l-4 border-k-warn bg-k-surface px-4 py-3">
-      <p className="font-bold">{kind === "seats" ? c.seatsFull : c.installationsFull}</p>
-      <p className="mt-1 text-sm text-k-muted">{kind === "seats" ? c.seatsFullBody : c.installationsFullBody}</p>
+      <p className="font-bold">{title}</p>
+      <p className="mt-1 text-sm text-k-muted">{body}</p>
       <PlanLinks orgName={orgName} />
     </div>
   );

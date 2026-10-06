@@ -105,7 +105,7 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
                     <p className="mb-4 text-sm font-semibold tabular-nums">{t.app.plan.seatsUsage(plan.seatsUsed, plan.userLimit)}</p>
                   )}
                   {seatsFull(plan) ? (
-                    <PlanLimitNotice kind="seats" orgName={org.name} />
+                    <PlanLimitNotice kind="seats" orgName={org.name} trial={plan.status === "trial" && !plan.plan} />
                   ) : (
                     <InviteForm organisationId={org.id} roles={assignableRoles(role)} />
                   )}

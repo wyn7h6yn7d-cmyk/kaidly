@@ -11,7 +11,7 @@ existing access row `private.organisation_access` — there is no second access 
 
 | Concept | Where |
 |---|---|
-| Trial (14 days, full normal access, no card) | `trial_started_at`, `trial_ends_at` (unchanged) |
+| Trial (14 days, every feature, no card; 1 user, 5 active installations) | `trial_started_at`, `trial_ends_at` (unchanged); limits set at creation |
 | Paid period | `full_access_from` … `full_access_until` (unchanged meaning) |
 | Plan | `plan` (`start`, `team`, `pro`, `business`, `custom`), `plan_label` (Custom) |
 | Agreed price (EUR / month, VAT excl.) | `monthly_price` — admin only |
@@ -53,7 +53,12 @@ Every plan has every feature; plans differ only by the two limits.
 
 ## 3. Defaults and existing companies
 
-- **New companies:** 14-day trial, no plan, **no limits** (full normal access, as before).
+- **New companies** (created by a user in the app): 14-day trial with every feature and the
+  trial limits **1 user** (the owner) and **5 active installations** — set by
+  `private.organisation_access_on_create` when a signed-in user creates the company. No
+  invitations during the trial (the owner is the one user); assigning any plan replaces the
+  trial limits with the plan's. Companies created by the database owner (seed, fixtures,
+  support) get no limits.
 - **Companies that existed before the migration:** unchanged — no plan, no limits, their
   current trial/full access untouched. Nothing became read-only. Assign plans in
   Platform Admin → Tellimused when invoicing starts.
