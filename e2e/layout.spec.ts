@@ -57,17 +57,44 @@ async function checkEdges(page: Page) {
 }
 
 test.describe("Paigutus", () => {
-  test("public and app pages hold their layout from 320 to 1440 px", async ({ page }, testInfo) => {
-    test.setTimeout(480_000);
+  // Three tests rather than one: each finishes well inside its limit even on a busy machine,
+  // and they run in parallel (one long sequential test used to hit its timeout under load).
+  async function layoutFixture() {
     const org = await createOrg();
     const site = await createSite(org, "Väga pika nimega logistika- ja tootmiskeskus Näidisküla tööstuspargis");
     const installation = await createInstallation(org, site, "Peajaotuskilp hoone põhjatiivas", "PJK-1-PÕHJA");
     sql(`insert into public.deficiencies (organisation_id, site_id, electrical_installation_id, title, description, severity, created_by)
          values ('${org.id}', '${site}', '${installation}', 'Pikk puuduse pealkiri: lahtine klemm X3 ja ülekuumenemise jäljed isolatsioonil',
                  'Kirjeldus', 'critical', '${org.users.operator.id}');`);
-    await page.goto("/");
-    const publicPages = ["/", "/auth/login", "/auth/sign-up", "/auth/forgot-password", "/privaatsus", "/kasutustingimused"];
-    const base = `/o/${org.slug}`;
+    return { org, site, installation, base: `/o/${org.slug}` };
+  }
+
+  async function checkPages(page: Page, paths: string[], heading: string, widths: readonly number[] = WIDTHS) {
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const path of paths) {
+        await page.goto(path);
+        await page.locator(heading).first().waitFor();
+        await checkEdges(page);
+      }
+    }
+  }
+
+  test("public pages hold their layout from 320 to 1440 px", async ({ page }) => {
+    test.setTimeout(240_000);
+    await checkPages(page, ["/", "/#hinnad", "/auth/login", "/auth/sign-up", "/auth/forgot-password", "/privaatsus", "/kasutustingimused"], "h1");
+  });
+
+  for (const [label, widths] of [
+    ["narrow (≤ 768 px)", WIDTHS.filter((w) => w <= 768)],
+    ["wide (> 768 px)", WIDTHS.filter((w) => w > 768)],
+  ] as const) {
+  test(`company pages hold their layout: ${label}`, async ({ page }, testInfo) => {
+    test.setTimeout(480_000);
+    const { org, site, installation, base } = await layoutFixture();
+    // An empty organisation: checklist and module empty states.
+    const empty = await createOrg("Tühi OÜ");
+    sql(`insert into public.organisation_members (organisation_id, user_id, role) values ('${empty.id}', '${org.users.owner.id}', 'owner');`);
     const appPages = [
       base,
       `${base}/objektid/${site}`,
@@ -81,53 +108,56 @@ test.describe("Paigutus", () => {
       `${base}/abi`,
       `${base}/seaded/kustuta`,
       `${base}/seaded`,
+      `${base}/seaded/liikmed`,
       "/konto",
       "/teavitused",
       "/otsing?q=kilp",
       `${base}/aruanded`,
       `${base}/aruanded/log`,
       `${base}/aruanded/installation?paigaldis=${installation}`,
-      "/admin",
-      "/admin/users",
-      `/admin/users/${org.users.viewer.id}`,
-      "/admin/companies",
-      `/admin/companies/${org.id}`,
-      "/admin/deadlines",
-      "/admin/system",
-      "/admin/audit",
+      `/o/${empty.slug}`,
+      `/o/${empty.slug}/objektid`,
+      `/o/${empty.slug}/paevik`,
+      `/o/${empty.slug}/kaidukava`,
+      `/o/${empty.slug}/paigaldised/uus`,
     ];
-    sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
-    // An empty organisation: checklist and module empty states.
-    const empty = await createOrg("Tühi OÜ");
-    sql(`insert into public.organisation_members (organisation_id, user_id, role) values ('${empty.id}', '${org.users.owner.id}', 'owner');`);
-    appPages.push(`/o/${empty.slug}`, `/o/${empty.slug}/objektid`, `/o/${empty.slug}/paevik`, `/o/${empty.slug}/kaidukava`, `/o/${empty.slug}/paigaldised/uus`);
-    for (const width of WIDTHS) {
-      await page.setViewportSize({ width, height: 900 });
-      for (const path of publicPages) {
-        await page.goto(path);
-        await page.locator("h1").first().waitFor();
-        await checkEdges(page);
-      }
-    }
     await login(page, org.users.owner, base);
-    for (const width of WIDTHS) {
+    await checkPages(page, appPages, "main h1", widths);
+    for (const width of [375, 1440].filter((w) => widths.includes(w))) {
       await page.setViewportSize({ width, height: 900 });
-      for (const path of appPages) {
+      for (const path of [base, `${base}/paigaldised/${installation}/paevik/uus`]) {
         await page.goto(path);
         await page.locator("main h1").first().waitFor();
-        await checkEdges(page);
-      }
-      if (width === 375 || width === 1440) {
-        for (const path of [base, `${base}/paigaldised/${installation}/paevik/uus`]) {
-          await page.goto(path);
-          await page.locator("main h1").first().waitFor();
-          await testInfo.attach(`${path.split("/").pop() || "dashboard"}-${width}`, {
-            body: await page.screenshot({ fullPage: true }),
-            contentType: "image/png",
-          });
-        }
+        await testInfo.attach(`${path.split("/").pop() || "dashboard"}-${width}`, {
+          body: await page.screenshot({ fullPage: true }),
+          contentType: "image/png",
+        });
       }
     }
+  });
+  }
+
+  test("platform admin pages hold their layout from 320 to 1440 px", async ({ page }) => {
+    test.setTimeout(240_000);
+    const { org } = await layoutFixture();
+    sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
+    await login(page, org.users.owner, "/admin");
+    await checkPages(
+      page,
+      [
+        "/admin",
+        "/admin/users",
+        `/admin/users/${org.users.viewer.id}`,
+        "/admin/companies",
+        `/admin/companies/${org.id}`,
+        "/admin/tellimused",
+        `/admin/tellimused/${org.id}`,
+        "/admin/deadlines",
+        "/admin/system",
+        "/admin/audit",
+      ],
+      "main h1",
+    );
   });
 
   test("larger text (125 % and 200 %) does not break pages", async ({ page }) => {

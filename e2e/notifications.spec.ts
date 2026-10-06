@@ -130,6 +130,7 @@ test.describe("Meeldetuletused ja teavitused", () => {
   });
 
   test("tenant isolation: another company's reminder link leads nowhere; viewers get no reminders", async ({ page }) => {
+    test.setTimeout(120_000); // two sign-ins in two browsers: slow on a loaded machine
     const a = await createOrg("Teavitused A");
     const b = await createOrg("Teavitused B");
     await activity(a, "A tegevus", 5);

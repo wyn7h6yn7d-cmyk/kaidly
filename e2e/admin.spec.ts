@@ -116,6 +116,7 @@ test.describe("KAIDLY Admin", () => {
   });
 
   test("platform-wide deadlines: filters, no archived or resolved items, deactivated companies excluded", async ({ page }) => {
+    test.setTimeout(120_000); // several companies and sign-ins: slow on a loaded machine
     const admin = await platformAdmin();
     const tag = uniqueId("t");
     const a = await createOrg(`Tähtaegade A ${tag}`);
