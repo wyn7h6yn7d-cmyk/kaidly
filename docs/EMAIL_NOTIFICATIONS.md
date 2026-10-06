@@ -100,7 +100,8 @@ Sending is **off** after the migration: `private.email_settings.enabled = false`
    ```sql
    update private.email_settings set enabled = true;
    ```
-4. Test with your own account only: turn your preference on, give yourself an activity due
+4. Test with your own account only (complete, validated SQL: `docs/PRODUCTION_EMAIL_TEST.sql`;
+   done 2026-10-06 — delivered, outbox `sent` with a provider message id, kept as evidence): turn your preference on, give yourself an activity due
    within its first threshold in the test company (e.g. due in 3 days, reminder 7) — the
    in-app reminder appears immediately and the e-mail within 5 minutes. Check:
    ```sql

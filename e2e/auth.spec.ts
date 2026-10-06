@@ -6,7 +6,7 @@ type Mail = { Subject: string; HTML: string; Text: string };
 async function latestMail(to: string, subject?: RegExp): Promise<Mail> {
   const mailpit = process.env.E2E_MAILPIT_URL;
   if (!mailpit) throw new Error("Mailpit URL missing");
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 120; i++) { // up to 30 s: Mailpit is slower under parallel load
     const search = await (await fetch(`${mailpit}/api/v1/search?query=${encodeURIComponent(`to:${to}`)}`)).json();
     const hit = search.messages?.find((m: { Subject: string }) => !subject || subject.test(m.Subject));
     if (hit) return (await fetch(`${mailpit}/api/v1/message/${hit.ID}`)).json();
