@@ -1132,9 +1132,47 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_set_subscription: {
+        Args: {
+          p_installation_limit: number
+          p_label: string
+          p_months: number
+          p_org: string
+          p_paid_until: string
+          p_plan: string
+          p_price: number
+          p_start: string
+          p_user_limit: number
+        }
+        Returns: Json
+      }
       admin_set_user_disabled: {
         Args: { p_disabled: boolean; p_user: string }
         Returns: undefined
+      }
+      admin_subscription: { Args: { p_org: string }; Returns: Json }
+      admin_subscription_preview: {
+        Args: {
+          p_installation_limit: number
+          p_label: string
+          p_months: number
+          p_org: string
+          p_paid_until: string
+          p_plan: string
+          p_price: number
+          p_start: string
+          p_user_limit: number
+        }
+        Returns: Json
+      }
+      admin_subscriptions: {
+        Args: {
+          p_filter?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
+        Returns: Json
       }
       admin_system: { Args: never; Returns: Json }
       admin_user: { Args: { p_user: string }; Returns: Json }
@@ -1193,6 +1231,7 @@ export type Database = {
         Returns: Json
       }
       organisation_access: { Args: { p_org: string }; Returns: Json }
+      organisation_plan: { Args: { p_org: string }; Returns: Json }
       reactivate_organisation: {
         Args: { p_organisation_id: string }
         Returns: undefined

@@ -515,6 +515,28 @@ Operations, flow and rationale: docs/EMAIL_NOTIFICATIONS.md.
 - Nothing here is callable or readable by `anon`/`authenticated` except the user's own
   preference row (000_security_baseline, 200_email_reminders, e2e security-api).
 
+## 5i. Plans and limits (migration `subscription_plans`)
+
+Model, rules and admin workflow: docs/SUBSCRIPTIONS.md.
+
+- `private.subscription_plans` (start/team/pro/business: monthly price, user limit, active
+  installation limit). `private.organisation_access` gains `plan`, `plan_label`,
+  `monthly_price`, `user_limit`, `installation_limit` (null limit = no limit; trials and
+  pre-existing companies).
+- Usage: `private.seats_used(org)` (members of every role + live invitations),
+  `private.installations_active(org)` (not archived).
+- Enforcement: triggers `invitation_seat_limit` (organisation_invitations, before insert),
+  `organisation_member_before_insert` (now also the member limit) and
+  `installation_plan_limit` (electrical_installations, before insert / un-archive; members
+  only, before any limit message). All lock the company's access row
+  (`private.lock_company_limits`) → no race can exceed a limit. Errors `plan_user_limit`,
+  `plan_installation_limit`.
+- Dates: `private.add_months` (month-end stays month-end), `private.until_from_day` /
+  `private.day_from_until` (Tallinn end of day).
+- RPCs: platform admin only — `admin_subscription_preview`, `admin_set_subscription`
+  (audited `subscription_set`), `admin_subscriptions`, `admin_subscription` (with history);
+  members — `organisation_plan(org)` (plan, limits, usage, expiry; no price or notes).
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger

@@ -89,6 +89,12 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   from the app, never store URLs in them, and keep them user-scoped (platform admins don't
   read them). Reminder e-mails hang off these rows (`private.email_outbox`); never compute
   deadlines a second time for e-mail.
+- Plans (docs/SUBSCRIPTIONS.md) belong to the company and live on `private.organisation_access`;
+  they differ only by limits (total users incl. pending invitations; active installations) —
+  never gate a feature by plan. Limits are enforced by locking BEFORE triggers in the
+  database; new member / invitation / installation paths must keep going through them. Only
+  platform-admin RPCs change plans, limits, prices or paid periods; customers see
+  `organisation_plan()` (no price, no notes).
 - Bulk data enters only through `import_company_data` (sites, installations; owner/admin of a
   writable company; all rows or none; idempotent per token). Never import operating history
   (log, deficiency resolutions, documents) without a designed provenance model.
