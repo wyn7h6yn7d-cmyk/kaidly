@@ -29,6 +29,13 @@ async function reauthCode(to: string, previous?: string): Promise<{ id: string; 
   return { id: mail.ID, code };
 }
 
+/** Submits the code step and waits for the server action's answer (not just for any text). */
+async function submitCode(page: Page) {
+  const answered = page.waitForResponse((r) => r.request().method() === "POST" && new URL(r.url()).pathname === "/konto");
+  await page.getByRole("button", { name: "Kinnita" }).click();
+  await answered;
+}
+
 /** Secure password change asks for a code once the session is older than 24 hours. */
 function ageSessions(user: TestUser) {
   sql(`update auth.sessions set created_at = now() - interval '25 hours' where user_id = '${user.id}'`);
@@ -67,13 +74,14 @@ test.describe("Parooli muutmine kinnituskoodiga", () => {
     // Wrong code.
     const wrong = first.code === "000000" ? "111111" : "000000";
     await field(page, "nonce").fill(wrong);
-    await page.getByRole("button", { name: "Kinnita" }).click();
+    await submitCode(page);
     await expect(page.getByText("Kood on vale või aegunud. Kontrolli koodi või küsi uus kood.")).toBeVisible();
 
     // Expired code (sent more than the OTP lifetime ago).
     sql(`update auth.users set reauthentication_sent_at = now() - interval '2 hours' where id = '${user.id}'`);
     await field(page, "nonce").fill(first.code);
-    await page.getByRole("button", { name: "Kinnita" }).click();
+    // The same message is already on screen from the wrong code: wait for this submit's answer.
+    await submitCode(page);
     await expect(page.getByText("Kood on vale või aegunud. Kontrolli koodi või küsi uus kood.")).toBeVisible();
     expect(await newPasswordWorks(user, newPassword)).toBe(false);
 

@@ -155,7 +155,7 @@ export function PasswordChangeForm() {
             <Button type="submit" disabled={pending}>
               {pending ? t.app.saving : copy.reauthSubmit}
             </Button>
-            <Button type="button" variant="outline" size="sm" onClick={sendNewCode} disabled={resending || wait > 0}>
+            <Button type="button" variant="outline" size="sm" onClick={sendNewCode} disabled={resending || pending || wait > 0}>
               {copy.reauthResend}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setCancelled(state)}>
