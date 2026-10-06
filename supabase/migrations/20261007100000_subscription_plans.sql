@@ -7,9 +7,11 @@
 --   unchanged and still derived by private.organisation_access_state().
 -- * Plans differ only by limits: total users (members of every role + pending
 --   invitations) and active (not archived) electrical installations — never by features.
---   The 14-day trial has every feature with trial limits of 1 user (the owner) and 5 active
---   installations. A null limit means "no limit": every company that existed before this
---   migration keeps working exactly as before until a platform admin assigns a plan.
+--   The 14-day trial is personal (one per user, started by creating their first company,
+--   never reset by deleting or re-creating companies) and has every feature with trial
+--   limits of 1 user (the owner) and 5 active installations. A null limit means "no limit":
+--   every company that existed before this migration keeps working exactly as before until
+--   a platform admin assigns a plan.
 -- * Limits are enforced in the database (BEFORE triggers, serialised per company by a row
 --   lock on its access row), so no client, forged request or race can exceed them. Only
 --   actions that would exceed a limit are refused; nothing existing is touched.
@@ -50,27 +52,87 @@ comment on column private.organisation_access.installation_limit is
   'Active (not archived) electrical installations; null = no limit (trial, legacy).';
 
 -- ---------------------------------------------------------------------------
--- Trial limits for new companies
+-- Personal trial (per user) and trial limits for new companies
 -- ---------------------------------------------------------------------------
 
--- A company created by a signed-in user (create_organisation) starts its 14-day trial with
--- 1 user and 5 active installations; assigning any plan replaces these limits. Companies
--- created by the database owner (seed, test fixtures, support) get no limits.
+-- The 14-day trial belongs to the USER who creates companies, not to a company: it starts
+-- when they create their first company and is never granted again. Deleting a company
+-- keeps it (first_organisation_id is set null); being invited to someone else's company
+-- does not create or use it; ownership changes never touch it.
+create table private.user_trials (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  started_at timestamptz not null,
+  ends_at timestamptz not null,
+  first_organisation_id uuid references public.organisations (id) on delete set null,
+  created_at timestamptz not null default now(),
+  check (ends_at > started_at)
+);
+revoke all on table private.user_trials from public, anon, authenticated;
+
+comment on table private.user_trials is
+  'One personal 14-day trial per user, started by creating their first company. Server-side only.';
+
+-- Users who already created companies have had their trial: it is dated from their earliest
+-- company. Existing companies themselves are not touched (dates, access, no limits).
+insert into private.user_trials (user_id, started_at, ends_at, first_organisation_id)
+select distinct on (o.created_by) o.created_by, a.trial_started_at, a.trial_started_at + interval '14 days', o.id
+  from public.organisations o
+  join private.organisation_access a on a.organisation_id = o.id
+ where o.created_by is not null
+   and exists (select 1 from auth.users u where u.id = o.created_by)
+ order by o.created_by, a.trial_started_at, o.id
+on conflict (user_id) do nothing;
+
+-- A company created by a signed-in user (create_organisation) gets the creator's personal
+-- trial: the first company starts it (14 days); any later company shares the same end —
+-- only the remaining time, or none (read-only until a paid plan) once it has ended. Trial
+-- limits: 1 user (the owner) and 5 active installations; any plan replaces them. The row
+-- lock on the personal trial serialises concurrent company creation by the same user.
+-- Companies created by the database owner (seed, fixtures, support) keep a company-level
+-- 14-day trial without limits, as before.
 create or replace function private.organisation_access_on_create()
 returns trigger
 language plpgsql
 security definer
 set search_path = ''
 as $$
+declare
+  v_user uuid := auth.uid();
+  v_trial private.user_trials;
 begin
+  if v_user is null then
+    insert into private.organisation_access (organisation_id, trial_started_at, trial_ends_at)
+    values (new.id, now(), now() + interval '14 days')
+    on conflict (organisation_id) do nothing;
+    return null;
+  end if;
+
+  insert into private.user_trials (user_id, started_at, ends_at, first_organisation_id)
+  values (v_user, now(), now() + interval '14 days', new.id)
+  on conflict (user_id) do nothing;
+  select * into v_trial from private.user_trials where user_id = v_user for update;
+
   insert into private.organisation_access (organisation_id, trial_started_at, trial_ends_at, user_limit, installation_limit)
-  values (new.id, now(), now() + interval '14 days',
-          case when auth.uid() is not null then 1 end,
-          case when auth.uid() is not null then 5 end)
+  values (new.id, v_trial.started_at, v_trial.ends_at, 1, 5)
   on conflict (organisation_id) do nothing;
   return null;
 end;
 $$;
+
+-- The caller's own personal trial (for the "new company" page); null if never started.
+create function public.my_trial()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object('started_at', t.started_at, 'ends_at', t.ends_at, 'active', t.ends_at > now())
+    from private.user_trials t
+   where t.user_id = (select auth.uid())
+$$;
+revoke all on function public.my_trial() from public;
+grant execute on function public.my_trial() to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- Usage

@@ -523,6 +523,10 @@ Model, rules and admin workflow: docs/SUBSCRIPTIONS.md.
   installation limit). `private.organisation_access` gains `plan`, `plan_label`,
   `monthly_price`, `user_limit`, `installation_limit` (null limit = no limit; trials and
   pre-existing companies).
+- Personal trial: `private.user_trials` (user → started_at, ends_at, first_organisation_id;
+  backfilled from each existing creator's earliest company). `private.organisation_access_on_create`
+  copies it (locked) into a user-created company with limits 1 user / 5 installations;
+  `public.my_trial()` returns the caller's own trial.
 - Usage: `private.seats_used(org)` (members of every role + live invitations),
   `private.installations_active(org)` (not archived).
 - Enforcement: triggers `invitation_seat_limit` (organisation_invitations, before insert),

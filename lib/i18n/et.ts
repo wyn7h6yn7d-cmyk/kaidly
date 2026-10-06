@@ -565,6 +565,9 @@ export const et = {
       registryCode: "Registrikood",
       submit: "Loo ettevõte",
       submitting: "Loon…",
+      trialNew: "Uuel ettevõttel on 14 päeva tasuta prooviperiood kõigi funktsioonidega (1 kasutaja, kuni 5 aktiivset elektripaigaldist).",
+      trialShared: (date: string) => `Sinu tasuta prooviperiood kehtib kuni ${date}. Uus ettevõte kasutab sama prooviperioodi.`,
+      trialUsed: "Sinu tasuta prooviperiood on kasutatud. Uus ettevõte on ainult vaatamiseks, kuni KAIDLY aktiveerib paketi — võta ühendust.",
     },
     settings: {
       title: "Seaded",

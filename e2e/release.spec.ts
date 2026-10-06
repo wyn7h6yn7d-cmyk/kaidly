@@ -32,6 +32,38 @@ test.describe("Väljalase", () => {
     expect(JSON.stringify(body)).not.toMatch(/supabase|http|key|eyJ|sb_/i);
   });
 
+  test("unknown public URLs are a real 404; app URLs still lead to login", async ({ page, request }) => {
+    const missing = await request.get("/see-lehte-pole-olemas", { maxRedirects: 0 });
+    expect(missing.status()).toBe(404);
+    const body = await missing.text();
+    expect(body).not.toMatch(/at .*\.(ts|js):\d+|stack|supabase\.co|sb_secret|service_role/i);
+    await page.goto("/see-lehte-pole-olemas");
+    await expect(page.getByText("Lehte ei leitud")).toBeVisible();
+    for (const path of ["/o", "/konto", "/admin", "/teavitused", "/otsing"]) {
+      const protectedPage = await request.get(path, { maxRedirects: 0 });
+      expect(protectedPage.status(), path).toBe(307);
+      expect(protectedPage.headers().location, path).toContain("/auth/login?next=");
+    }
+  });
+
+  test("sharing metadata: Open Graph and Twitter card with the static brand image", async ({ page, request }) => {
+    await page.goto("/");
+    const meta = (selector: string) => page.locator(selector).first().getAttribute("content");
+    expect(await meta('meta[property="og:image"]')).toMatch(/\/og-kaidly\.png$/);
+    expect(await meta('meta[property="og:url"]')).toMatch(/^https?:\/\/[^/]+\/?$/); // the site root
+    expect(await meta('meta[property="og:type"]')).toBe("website");
+    expect(await meta('meta[name="twitter:card"]')).toBe("summary_large_image");
+    expect(await meta('meta[name="twitter:image"]')).toMatch(/\/og-kaidly\.png$/);
+    const image = await request.get("/og-kaidly.png");
+    expect(image.status()).toBe(200);
+    expect(image.headers()["content-type"]).toBe("image/png");
+    // Structured data parses and makes no claims about a company, reviews or ratings.
+    const ld = JSON.parse((await page.locator('script[type="application/ld+json"]').first().textContent()) ?? "{}");
+    const types = (ld["@graph"] as { "@type": string }[]).map((n) => n["@type"]).sort();
+    expect(types).toEqual(["SoftwareApplication", "WebSite"]);
+    expect(JSON.stringify(ld)).not.toMatch(/aggregateRating|review|Organization|address|telephone/i);
+  });
+
   test("legal pages are reachable, clearly pre-launch drafts, and not indexed", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("contentinfo").getByRole("link", { name: "Privaatsus" }).click();

@@ -19,7 +19,20 @@ import { siteUrl } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  return { title: { absolute: t.landing.metaTitle }, alternates: { canonical: "/" } };
+  return {
+    title: { absolute: t.landing.metaTitle },
+    alternates: { canonical: "/" },
+    // The page's own Open Graph set (Next.js replaces, not merges, the object per page).
+    openGraph: {
+      title: t.landing.metaTitle,
+      description: t.meta.description,
+      siteName: t.brand.name,
+      type: "website",
+      url: "/",
+      locale: { et: "et_EE", en: "en_GB", ru: "ru_RU" }[t.locale],
+      images: [{ url: "/og-kaidly.png", width: 1200, height: 630, alt: t.landing.metaTitle }],
+    },
+  };
 }
 
 /**

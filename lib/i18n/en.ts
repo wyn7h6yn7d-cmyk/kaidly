@@ -566,6 +566,9 @@ export const en: Messages = {
       registryCode: "Registry code",
       submit: "Create organisation",
       submitting: "Creating…",
+      trialNew: "The new company gets a 14-day free trial with every feature (1 user, up to 5 active electrical installations).",
+      trialShared: (date: string) => `Your free trial is valid until ${date}. The new company uses the same trial.`,
+      trialUsed: "Your free trial has been used. The new company is read-only until KAIDLY activates a plan — please get in touch.",
     },
     settings: {
       title: "Settings",

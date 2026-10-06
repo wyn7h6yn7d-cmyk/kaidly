@@ -23,6 +23,13 @@ const PUBLIC_PATHS = new Set([
   "/api/health",
 ]);
 
+/**
+ * Top-level segments of the application's own routes. A signed-out request below one of
+ * them (and not public) goes to login as before; any other path is not a KAIDLY page and
+ * gets the ordinary 404 instead of a login redirect.
+ */
+const APP_ROOTS = new Set(["o", "konto", "teavitused", "otsing", "admin", "invite", "auth", "api"]);
+
 /** Public routes a signed-in user has no reason to see. */
 const SIGNED_IN_REDIRECT_PATHS = new Set(["/auth/login", "/auth/sign-up"]);
 
@@ -76,7 +83,8 @@ export async function updateSession(request: NextRequest) {
   const signedIn = Boolean(data?.claims);
   const { pathname } = request.nextUrl;
 
-  if (!signedIn && !PUBLIC_PATHS.has(pathname)) {
+  const root = pathname.split("/")[1] ?? "";
+  if (!signedIn && !PUBLIC_PATHS.has(pathname) && APP_ROOTS.has(root)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     url.search = "";

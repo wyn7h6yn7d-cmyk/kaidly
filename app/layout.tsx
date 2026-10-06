@@ -25,6 +25,14 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: t.brand.name,
       type: "website",
       locale: { et: "et_EE", en: "en_GB", ru: "ru_RU" }[t.locale],
+      // Static brand image (scripts/generate-og-image.mjs).
+      images: [{ url: "/og-kaidly.png", width: 1200, height: 630, alt: t.landing.metaTitle }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t.landing.metaTitle,
+      description: t.meta.description,
+      images: ["/og-kaidly.png"],
     },
   };
 }

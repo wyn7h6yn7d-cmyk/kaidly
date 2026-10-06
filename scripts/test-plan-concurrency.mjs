@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Plan limits under real concurrency (LOCAL stack only): two database sessions try to take
-// the last free installation slot / user seat at the same time; exactly one may succeed.
+// the last free installation slot / user seat at the same time; exactly one may succeed. And
+// one user creating two companies at once gets one personal trial with one end date.
 // pgTAP runs in a single session and cannot show this. A throw-away company is committed
 // for the test and removed again afterwards.
 import { spawn, execFileSync } from "node:child_process";
@@ -29,9 +30,11 @@ function cleanup() {
     delete from public.organisation_invitations where organisation_id = '${ORG}';
     delete from public.electrical_installations where organisation_id = '${ORG}';
     delete from public.sites where organisation_id = '${ORG}';
-    delete from public.organisation_members where organisation_id = '${ORG}';
-    delete from private.organisation_access where organisation_id = '${ORG}';
-    delete from public.organisations where id = '${ORG}';
+    delete from public.organisation_members where organisation_id = '${ORG}' or user_id = '${USER}';
+    delete from private.organisation_access where organisation_id = '${ORG}'
+      or organisation_id in (select id from public.organisations where created_by = '${USER}');
+    delete from public.organisations where id = '${ORG}' or created_by = '${USER}';
+    delete from private.user_trials where user_id = '${USER}';
     delete from public.profiles where id = '${USER}';
     delete from auth.users where id = '${USER}';`);
 }
@@ -73,6 +76,23 @@ try {
   const passS = invitations === "1" && refusedS === 1;
   ok &&= passS;
   console.log(`${passS ? "ok" : "not ok"} - concurrent invitations for the last seat: ${invitations} stored, ${refusedS} refused`);
+
+  // Personal trial: the same user creates two companies at the same moment — one trial,
+  // one shared end date (no doubled trial time).
+  const create = (name) =>
+    session(`begin;
+      select set_config('request.jwt.claims', json_build_object('sub', '${USER}', 'role', 'authenticated')::text, true);
+      set local role authenticated;
+      select public.create_organisation('${name}');
+      select pg_sleep(1);
+      commit;`);
+  await Promise.all([create("Race trial A"), create("Race trial B")]);
+  const trials = psql(`select count(*) from private.user_trials where user_id = '${USER}'`);
+  const ends = psql(`select count(distinct a.trial_ends_at) || '/' || count(*) from public.organisations o
+    join private.organisation_access a on a.organisation_id = o.id where o.created_by = '${USER}'`);
+  const passT = trials === "1" && ends === "1/2";
+  ok &&= passT;
+  console.log(`${passT ? "ok" : "not ok"} - concurrent company creation by one user: ${trials} personal trial, companies with distinct trial ends/total ${ends}`);
 } finally {
   cleanup();
 }

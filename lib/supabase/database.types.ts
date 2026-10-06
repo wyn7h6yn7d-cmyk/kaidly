@@ -1230,6 +1230,7 @@ export type Database = {
         Args: { p_limit?: number; p_offset?: number; p_unread_only?: boolean }
         Returns: Json
       }
+      my_trial: { Args: never; Returns: Json }
       organisation_access: { Args: { p_org: string }; Returns: Json }
       organisation_plan: { Args: { p_org: string }; Returns: Json }
       reactivate_organisation: {

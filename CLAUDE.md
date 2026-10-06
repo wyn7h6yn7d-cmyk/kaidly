@@ -94,7 +94,8 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   never gate a feature by plan. Limits are enforced by locking BEFORE triggers in the
   database; new member / invitation / installation paths must keep going through them. Only
   platform-admin RPCs change plans, limits, prices or paid periods; customers see
-  `organisation_plan()` (no price, no notes).
+  `organisation_plan()` (no price, no notes). The 14-day trial is personal
+  (`private.user_trials`, one per user, never reset by deleting/re-creating companies).
 - Bulk data enters only through `import_company_data` (sites, installations; owner/admin of a
   writable company; all rows or none; idempotent per token). Never import operating history
   (log, deficiency resolutions, documents) without a designed provenance model.

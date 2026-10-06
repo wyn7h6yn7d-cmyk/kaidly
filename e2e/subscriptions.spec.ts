@@ -194,6 +194,39 @@ test.describe("Prooviperiood", () => {
   });
 });
 
+test.describe("Isiklik prooviperiood", () => {
+  test("one 14-day trial per user: a second company shares it, after it ends a new company is read-only", async ({ page }) => {
+    test.setTimeout(120_000);
+    const user = await createUser("Isikliku Proovi Kasutaja");
+    await login(page, user, "/o/uus");
+    await expect(page.getByTestId("trial-note")).toContainText("14 päeva tasuta prooviperiood");
+    await field(page, "name").fill(`Esimene ${uniqueId("p")} OÜ`);
+    await page.getByRole("button", { name: "Loo ettevõte" }).click();
+    await expect(page).toHaveURL(/\/o\/esimene-/);
+    const ends = sql(`select to_char(ends_at at time zone 'Europe/Tallinn', 'DD.MM.YYYY') from private.user_trials where user_id = '${user.id}'`);
+
+    // Second company: the same personal trial, not a new 14 days.
+    await page.goto("/o/uus");
+    await expect(page.getByTestId("trial-note")).toContainText("Uus ettevõte kasutab sama prooviperioodi");
+    await field(page, "name").fill(`Teine ${uniqueId("p")} OÜ`);
+    await page.getByRole("button", { name: "Loo ettevõte" }).click();
+    await expect(page).toHaveURL(/\/o\/teine-/);
+    expect(sql(`select count(distinct a.trial_ends_at) from public.organisations o join private.organisation_access a on a.organisation_id = o.id
+                where o.created_by = '${user.id}'`)).toBe("1");
+    expect(sql(`select count(*) from private.user_trials where user_id = '${user.id}'`)).toBe("1");
+    expect(ends).toMatch(/^\d\d\.\d\d\.\d{4}$/);
+
+    // After the personal trial: honest note, and the new company starts read-only.
+    sql(`update private.user_trials set started_at = now() - interval '20 days', ends_at = now() - interval '6 days' where user_id = '${user.id}'`);
+    await page.goto("/o/uus");
+    await expect(page.getByTestId("trial-note")).toContainText("Sinu tasuta prooviperiood on kasutatud");
+    await field(page, "name").fill(`Kolmas ${uniqueId("p")} OÜ`);
+    await page.getByRole("button", { name: "Loo ettevõte" }).click();
+    await expect(page).toHaveURL(/\/o\/kolmas-/);
+    await expect(page.getByTestId("access-banner")).toContainText("Prooviperiood on lõppenud");
+  });
+});
+
 test.describe("Paketi limiidid rakenduses", () => {
   test("full seats replace the invitation form; a full installation limit replaces the new-installation form", async ({ page }) => {
     const org = await createOrg(`Limiidid ${uniqueId("l")} OÜ`);

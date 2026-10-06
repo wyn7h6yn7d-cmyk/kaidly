@@ -53,12 +53,21 @@ Every plan has every feature; plans differ only by the two limits.
 
 ## 3. Defaults and existing companies
 
-- **New companies** (created by a user in the app): 14-day trial with every feature and the
-  trial limits **1 user** (the owner) and **5 active installations** — set by
-  `private.organisation_access_on_create` when a signed-in user creates the company. No
-  invitations during the trial (the owner is the one user); assigning any plan replaces the
-  trial limits with the plan's. Companies created by the database owner (seed, fixtures,
-  support) get no limits.
+- **The trial is personal** (`private.user_trials`, one row per user): it starts when a user
+  creates their **first** company and lasts 14 days. Every company that user creates gets
+  the same trial end — a second company only the remaining time; after the trial has ended a
+  new company starts **expired (read-only)** until a platform admin activates a plan; it is
+  never silently unlimited. Deleting a company does not reset the trial; being invited to
+  someone else's company never starts or uses it (an invited user still gets their own trial
+  when they create their first company); ownership changes never touch trial dates. The row
+  is locked while a company is created, so concurrent creation cannot produce two trials
+  (`scripts/test-plan-concurrency.mjs`). The client never supplies trial data; "Uus
+  ettevõte" shows what the new company will get (`my_trial()`).
+- **Trial limits:** every feature, **1 user** (the owner) and **5 active installations** —
+  no invitations during the trial; assigning any plan replaces the trial limits.
+- Companies created by the database owner (seed, fixtures, support) get a company trial
+  without limits. Users who created companies before this migration have their trial dated
+  from their earliest company (it only affects companies they create from now on).
 - **Companies that existed before the migration:** unchanged — no plan, no limits, their
   current trial/full access untouched. Nothing became read-only. Assign plans in
   Platform Admin → Tellimused when invoicing starts.
