@@ -116,6 +116,9 @@ test.describe("Parooli muutmine kinnituskoodiga", () => {
 
   test("code step in English and Russian", async ({ page, context }) => {
     const user = await createUser("Code Language");
+    // Profile language set before signing in: otherwise the app saves "en" to the profile
+    // after sign-in, which can land after the "ru" update below (race in the test, not the app).
+    sql(`update public.profiles set preferred_locale = 'en' where id = '${user.id}'`);
     await context.addCookies([{ name: "kaidly_locale", value: "en", url: "http://localhost:3100" }]);
     await login(page, user, "/konto");
     ageSessions(user);
@@ -183,6 +186,7 @@ test.describe("Tähtaegade e-posti teavitused", () => {
 
   test("labels in English and Russian", async ({ page, context }) => {
     const user = await createUser("Preference Language");
+    sql(`update public.profiles set preferred_locale = 'en' where id = '${user.id}'`); // see "code step in English and Russian"
     await context.addCookies([{ name: "kaidly_locale", value: "en", url: "http://localhost:3100" }]);
     await login(page, user, "/konto");
     await expect(page.getByRole("switch", { name: "Deadline email notifications" })).toBeChecked();
