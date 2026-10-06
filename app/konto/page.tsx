@@ -4,6 +4,7 @@ import { LanguageSelector } from "@/components/app/language-selector";
 import { PageHeader } from "@/components/app/page-header";
 import { PlainPage } from "@/components/app/plain-page";
 import { LoadingBlock } from "@/components/app/states";
+import { DeadlineEmailsForm } from "@/components/account/deadline-emails-form";
 import { EmailChangeForm } from "@/components/account/email-change-form";
 import { PasswordChangeForm } from "@/components/account/password-change-form";
 import { SignOutHere } from "@/components/account/sign-out-here";
@@ -30,6 +31,18 @@ async function Profile() {
 async function Email() {
   const user = await requireUser();
   return <EmailChangeForm currentEmail={user.email} />;
+}
+
+/** The user's own reminder e-mail preference (no row = on). */
+async function DeadlineEmails() {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("notification_preferences")
+    .select("email_deadline_reminders")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  return <DeadlineEmailsForm enabled={data?.email_deadline_reminders ?? true} />;
 }
 
 function Section({ id, title, body, children }: { id: string; title: string; body?: string; children: React.ReactNode }) {
@@ -80,6 +93,11 @@ export default async function AccountPage() {
       </Section>
       <Section id="language" title={t.common.language} body={t.app.account.languageHint}>
         <LanguageSelector className="-ml-2" />
+      </Section>
+      <Section id="teavitused" title={t.app.account.notificationsTitle}>
+        <Suspense fallback={<LoadingBlock lines={2} />}>
+          <DeadlineEmails />
+        </Suspense>
       </Section>
       <Section id="sessions" title={t.app.account.sessionsTitle} body={t.app.account.sessionsBody}>
         <div className="flex flex-wrap items-start gap-3">

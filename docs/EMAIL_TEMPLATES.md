@@ -119,7 +119,7 @@ no unrendered placeholders.
 | Mails | From |
 |---|---|
 | All Supabase Auth mails (templates + security notifications) | `KAIDLY <no-reply@kaidly.ee>` (Supabase SMTP settings: sender email `no-reply@kaidly.ee`, sender name `KAIDLY`) |
-| Future KAIDLY notifications (deadline reminders — **not built**) | `KAIDLY <notifications@kaidly.ee>` |
+| Deadline reminder e-mails (optional, per-user setting; sent by the database outbox through the Resend API — docs/EMAIL_NOTIFICATIONS.md) | `KAIDLY <notifications@kaidly.ee>` |
 
 Supabase has one sender per project, so the security notifications also come from
 `no-reply@`. SMTP credentials are entered only in the dashboard (DEPLOYMENT.md §5).
@@ -163,11 +163,33 @@ Production project **`xakpbtmksxvjmsbipwmj`** → Authentication → Emails:
 
 ### Secure password change
 
-Leave **Authentication → Providers → Email → Secure password change** OFF until the
-reauthentication mail has been received and the code worked in Production. KAIDLY's password
-form (`components/account/password-change-form.tsx`) does not yet ask for that code, so
-turning it on also needs a small app change first (reauthenticate → code field → `updateUser({
-password, nonce })`). Until then: **manual / not enabled**.
+The app supports it (2026-10-06): when Supabase answers a password change with
+`reauthentication_needed` (session older than 24 h), KAIDLY calls `reauthenticate()` —
+Supabase sends the **Reauthentication** mail with the code — and shows "Kinnita, et see oled
+sina" with a code field, "Saada uus kood" (60 s cooldown) and "Katkesta". The same form then
+submits `updateUser({ password, nonce })`; Supabase verifies the code. Wrong or expired codes
+show one neutral message; KAIDLY never stores or logs the code. Recent sessions (< 24 h) change
+the password directly, as before. E2E: `e2e/account-email.spec.ts` (local stack runs with the
+setting on).
+
+Enable in Production only after the Reauthentication template is pasted and one real code
+has worked:
+
+1. Sign in on kaidly.ee, Konto → change password once with the setting still **off** (works
+   directly) — confirms the form is deployed.
+2. **Authentication → Providers → Email → Secure password change → ON → Save.**
+3. Test with a session older than 24 h (or sign in on a device you used yesterday): Konto →
+   change password → "Kinnita, et see oled sina" → the code from the KAIDLY mail → "Parool
+   muudetud". If anything fails, switch it **off** again (nothing else depends on it).
+
+### Regression guard — release check
+
+Supabase hosted templates are **not** deployed from git: a new project, a dashboard reset or a
+`supabase config push` can silently bring back Supabase's default mails. Every release:
+**trigger one Production Auth e-mail (e.g. "Unustasid parooli?" for your own address) and
+visually confirm the KAIDLY template** (green block + KAIDLY wordmark, Estonian text, link to
+`https://kaidly.ee/auth/confirm?...`). Listed in RELEASE_CHECKLIST.md and
+MANUAL_SMOKE_TEST.md.
 
 ## 7. Local stack
 

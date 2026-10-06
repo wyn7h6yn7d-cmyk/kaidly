@@ -73,6 +73,10 @@ decision is resolved.**
 | PRE-LAUNCH MANUAL | **Custom SMTP intentionally postponed** (real-user readiness item, not a development blocker). Production uses Supabase's built-in sender, which only delivers to the project's team-member addresses and is rate-limited to a few emails per hour. Concretely: **sign-up confirmation** emails to customers will not arrive (customers can't confirm accounts — sign-up is effectively unavailable unless users are created/confirmed by an admin), **password reset** and **email change** emails to customers won't arrive. Invitations are unaffected (KAIDLY invitations are copyable links, no email). Fix: SMTP + verified sender (DEPLOYMENT.md §5) |
 | PRE-LAUNCH MANUAL | Mailbox behind `KAIDLY_CONTACT_EMAIL` (`info@kaidly.ee`) — not assumed to work; the app only builds a validated mailto link (safe fallback text without a usable address) |
 
+| RELEASE CHECK | Trigger a Production Auth e-mail and visually confirm the KAIDLY-branded template (docs/EMAIL_TEMPLATES.md "Regression guard") |
+| PRE-LAUNCH MANUAL | Deadline reminder e-mails: Vault secret `RESEND_API_KEY` + `update private.email_settings set enabled = true` (docs/EMAIL_NOTIFICATIONS.md §6); until then reminders are in-app only |
+| PRE-LAUNCH MANUAL | Secure password change ON after one real reauthentication code test (docs/EMAIL_TEMPLATES.md §6) |
+
 ## STORAGE
 | Status | Item |
 |---|---|

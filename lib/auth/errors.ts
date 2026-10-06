@@ -30,6 +30,8 @@ export function authErrorCode(error: unknown): ErrorCode {
       return "rate_limited";
     case "otp_expired":
       return "link_expired";
+    case "reauthentication_not_valid":
+      return "reauth_code_invalid";
     case "pkce_code_verifier_not_found":
       return "link_other_browser";
     case "flow_state_expired":

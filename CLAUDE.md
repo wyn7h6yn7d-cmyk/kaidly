@@ -87,7 +87,8 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   only by `private.generate_activity_reminders()` (pg_cron daily + activity trigger) with the
   unique identity (user, activity, due occurrence, threshold, channel); never insert them
   from the app, never store URLs in them, and keep them user-scoped (platform admins don't
-  read them).
+  read them). Reminder e-mails hang off these rows (`private.email_outbox`); never compute
+  deadlines a second time for e-mail.
 - Bulk data enters only through `import_company_data` (sites, installations; owner/admin of a
   writable company; all rows or none; idempotent per token). Never import operating history
   (log, deficiency resolutions, documents) without a designed provenance model.
@@ -139,7 +140,12 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Code identifiers in English; URL segments in Estonian.
 - Keep dependencies minimal — justify every new package. Versions are pinned exactly
   (`.npmrc` save-exact); don't upgrade without a concrete reason.
-- No AI features, payments, IoT, EAM/ERP integrations, email infrastructure or other out-of-scope functionality.
+- No AI features, payments, IoT, EAM/ERP integrations or other out-of-scope functionality.
+- E-mail: Auth mails are Supabase templates (`scripts/email-templates.mjs`, docs/EMAIL_TEMPLATES.md);
+  the only application e-mail is the optional, generic deadline reminder sent by the database
+  outbox (docs/EMAIL_NOTIFICATIONS.md). E-mails never contain operational data (no company,
+  site, installation, activity, date, person or id), no tracking, no remote images; recipients
+  come from `auth.users`, never from client input; the per-user preference is rechecked at send.
 
 **Design**
 - Follow `docs/DESIGN.md`. Restrained, industrial, light theme only.

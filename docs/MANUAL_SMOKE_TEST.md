@@ -13,6 +13,11 @@ Use your own account on https://kaidly.ee and the test company "KAIDLY Prelaunch
 - [ ] Log in (password reveal works); wrong password shows "Vale e-post või parool."
 - [ ] Log out; the back button then a reload sends you to the login page
 
+**E-mail (2 min)**
+- [ ] "Unustasid parooli?" with your own address → the mail shows the **KAIDLY template**
+      (green block + KAIDLY wordmark), not Supabase's default; the link opens kaidly.ee
+- [ ] Konto → Teavitused: "Tähtaegade e-posti teavitused" shows your setting
+
 **App (5 min)**
 - [ ] Overview shows the trial banner and real items
 - [ ] Open a site → installation → add a log entry with a photo from the phone
