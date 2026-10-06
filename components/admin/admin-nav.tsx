@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/admin", label: ADMIN.nav.overview, exact: true },
   { href: "/admin/users", label: ADMIN.nav.users },
   { href: "/admin/companies", label: ADMIN.nav.companies },
+  { href: "/admin/tellimused", label: ADMIN.nav.subscriptions },
   { href: "/admin/deadlines", label: ADMIN.nav.deadlines },
   { href: "/admin/system", label: ADMIN.nav.system },
   { href: "/admin/audit", label: ADMIN.nav.audit },

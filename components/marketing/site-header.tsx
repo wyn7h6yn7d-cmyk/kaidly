@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { LanguageSelector } from "@/components/app/language-selector";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 import { PUBLIC_LINKS } from "./public-nav";
 
@@ -19,7 +20,10 @@ export async function SiteHeader() {
             <Link
               key={link.key}
               href={link.href}
-              className="hidden h-11 items-center rounded-sm px-3 text-[15px] font-semibold text-k-ink hover:text-k-green lg:inline-flex lg:px-4 lg:text-[17px]"
+              className={cn(
+                "hidden h-11 items-center rounded-sm px-3 text-[15px] font-semibold text-k-ink hover:text-k-green lg:px-4 lg:text-[17px]",
+                link.from === "sm" ? "sm:inline-flex" : "lg:inline-flex",
+              )}
             >
               {t.landing.nav[link.key]}
             </Link>
@@ -29,6 +33,14 @@ export async function SiteHeader() {
             className="inline-flex h-11 items-center whitespace-nowrap rounded-sm px-3 text-[15px] font-semibold text-k-ink hover:text-k-green lg:px-4 lg:text-[17px]"
           >
             {t.common.signIn}
+          </Link>
+          {/* The free trial, said once where people decide to sign up. */}
+          <Link
+            href="/#hinnad"
+            className="hidden h-11 items-center gap-2 whitespace-nowrap rounded-sm px-2 text-[15px] font-semibold text-k-green hover:underline xl:inline-flex"
+          >
+            <span aria-hidden="true" className="size-2 bg-k-volt" />
+            {t.landing.nav.trial}
           </Link>
           <Button asChild className="hidden md:inline-flex lg:min-h-12 lg:px-6 lg:text-[17px]">
             <Link href="/auth/sign-up">{t.common.signUp}</Link>

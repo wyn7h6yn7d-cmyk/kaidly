@@ -15,6 +15,12 @@ export const fmtDateTime = (iso: string | null) =>
     ? new Intl.DateTimeFormat("et-EE", { dateStyle: "medium", timeStyle: "short", timeZone: TZ }).format(new Date(iso))
     : "—";
 
+/** A date-only value as 06.04.2027 (billing summaries). */
+export const fmtDayNumeric = (day: string | null) =>
+  day
+    ? new Intl.DateTimeFormat("et-EE", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`))
+    : "—";
+
 /** A date-only value (YYYY-MM-DD) without shifting it through a timezone. */
 export const fmtDay = (day: string | null) =>
   day ? new Intl.DateTimeFormat("et-EE", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${day}T00:00:00Z`)) : "—";

@@ -7,6 +7,7 @@ import { HeroVisual } from "@/components/marketing/hero-visual";
 import { TaglineConnector } from "@/components/marketing/tagline-connector";
 import { LogPreview } from "@/components/marketing/log-preview";
 import { PhonePreview } from "@/components/marketing/phone-preview";
+import { Pricing } from "@/components/marketing/pricing";
 import { ReminderExample } from "@/components/marketing/reminder-example";
 import { ScrollToTop } from "@/components/marketing/scroll-to-top";
 import { SiteFooter } from "@/components/marketing/site-footer";
@@ -93,6 +94,12 @@ export default async function Home() {
                   </Link>
                 </Button>
               </div>
+              <p className="mt-4 flex flex-wrap items-center gap-x-2 text-[15px] font-semibold text-k-green">
+                <span aria-hidden="true" className="size-2 bg-k-volt" />
+                {l.pricing.trial}
+                <span aria-hidden="true" className="text-k-muted">·</span>
+                <span className="text-k-muted">{l.pricing.noCard}</span>
+              </p>
               <p className="mt-10 flex font-hand text-[28px] leading-tight text-k-green lg:text-[32px]">
                 <span className="inline-block min-w-0 -rotate-2">{l.hero.note}</span>
                 <TaglineConnector />
@@ -218,6 +225,8 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        <Pricing />
 
         {/* Final call to action */}
         <section className="bg-k-volt text-k-ink">

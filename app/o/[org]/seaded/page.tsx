@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { OrganisationSettingsForm } from "@/components/organisations/organisation-settings-form";
 import { hasRole } from "@/lib/auth/roles";
 import { SettingsTabs } from "@/components/organisations/settings-tabs";
+import { PlanSummary } from "@/components/organisations/plan-summary";
 import { leaveOrganisation } from "@/lib/actions/organisations";
 import { getT } from "@/lib/i18n/server";
 
@@ -60,6 +61,14 @@ export default async function SettingsPage({ params }: { params: Promise<{ org: 
               <ReadOnlyRow label={t.app.settings.address} value={`/o/${org.slug}`} />
             </dl>
             <p className="mt-2 max-w-2xl text-sm text-k-muted">{t.app.settings.addressHint}</p>
+          </section>
+
+          <section aria-labelledby="pakett" className="mt-12 border-t border-k-line pt-8">
+            <h2 id="pakett" className="text-xl font-bold">
+              {t.app.plan.title}
+            </h2>
+            <p className="mb-4 mt-1 max-w-2xl text-sm text-k-muted">{t.app.plan.intro}</p>
+            <PlanSummary orgId={org.id} orgName={org.name} />
           </section>
 
           <section aria-labelledby="leave" className="mt-12 max-w-2xl border-t border-k-line pt-8">

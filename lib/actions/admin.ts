@@ -119,36 +119,6 @@ export async function adminSendPasswordReset(_prev: AdminActionState, formData: 
 
 const DAY = 86_400_000;
 
-/** "Aktiveeri täiskasutus": 1/3/6/12 months, indefinite, or a custom end date (Tallinn end of day). */
-export async function adminActivateAccess(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
-  await requirePlatformAdmin();
-  const org = uuid.safeParse(text(formData, "companyId"));
-  const period = text(formData, "period");
-  if (!org.success) return { error: "unknown" };
-  let until: string | null = null;
-  if (["1", "3", "6", "12"].includes(period)) {
-    const d = new Date();
-    d.setMonth(d.getMonth() + Number(period));
-    until = d.toISOString();
-  } else if (period === "custom") {
-    const day = text(formData, "until");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return { error: "invalid_date" };
-    until = endOfTallinnDay(day);
-  } else if (period !== "indefinite") {
-    return { error: "unknown" };
-  }
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("admin_set_full_access", {
-    p_org: org.data,
-    p_until: until as string,
-    p_invoice_reference: text(formData, "invoiceReference").slice(0, 200),
-    p_notes: text(formData, "notes").slice(0, 2000),
-  });
-  if (error) return { error: error.code === "22023" ? "invalid_date" : errorKey(error) };
-  refresh();
-  return { ok: true };
-}
-
 /** "Pikenda prooviperioodi": +7 / +14 / +30 days from the current end (or now), or a date. */
 export async function adminExtendTrial(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
   await requirePlatformAdmin();
@@ -206,4 +176,92 @@ export async function adminSetAccessReference(_prev: AdminActionState, formData:
 function endOfTallinnDay(day: string) {
   const iso = localInputToIso(`${day}T23:59`);
   return iso ? new Date(Date.parse(iso) + 59_000).toISOString() : `${day}T21:59:59Z`;
+}
+
+// ---------------------------------------------------------------------------
+// Subscriptions (Tellimused): preview first, then apply what was confirmed
+// ---------------------------------------------------------------------------
+
+export type SubscriptionPreview = {
+  mode: "activate" | "extend" | "set_until" | "plan_only";
+  plan: string;
+  plan_label: string | null;
+  monthly_price: number;
+  user_limit: number;
+  installation_limit: number;
+  months: number | null;
+  start: string | null;
+  paid_until: string | null;
+  previous_paid_until: string | null;
+  seats_used: number;
+  installations_active: number;
+};
+export type SubscriptionState = AdminActionState & { preview?: SubscriptionPreview; applied?: boolean };
+
+const SUB_PLANS = ["start", "team", "pro", "business", "custom"];
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+function subscriptionArgs(formData: FormData) {
+  const org = uuid.safeParse(text(formData, "companyId"));
+  const plan = text(formData, "plan");
+  const period = text(formData, "period");
+  if (!org.success || !SUB_PLANS.includes(plan) || !["none", "1", "3", "6", "12", "24", "date"].includes(period)) return null;
+  const until = text(formData, "paidUntil");
+  const start = text(formData, "start");
+  if (period === "date" && !DAY_PATTERN.test(until)) return null;
+  if (start && !DAY_PATTERN.test(start)) return null;
+  const number = (name: string) => {
+    const raw = text(formData, name).replace(",", ".");
+    return raw === "" ? null : Number(raw);
+  };
+  const custom = plan === "custom";
+  return {
+    p_org: org.data,
+    p_plan: plan,
+    p_label: custom ? text(formData, "label").slice(0, 60) || null : null,
+    p_price: custom ? number("price") : null,
+    p_user_limit: custom ? number("userLimit") : null,
+    p_installation_limit: custom ? number("installationLimit") : null,
+    p_months: ["1", "3", "6", "12", "24"].includes(period) ? Number(period) : null,
+    p_paid_until: period === "date" ? until : null,
+    p_start: start || null,
+  };
+}
+
+function subscriptionError(error: { code?: string; message?: string }): SubscriptionState {
+  if (error.code === "22023" || error.code === "22P02" || error.code === "23514") return { error: "invalid_subscription" };
+  return { error: errorKey(error) };
+}
+
+/** "Vaata üle": the database calculates the result without saving anything. */
+export async function adminPreviewSubscription(_prev: SubscriptionState, formData: FormData): Promise<SubscriptionState> {
+  await requirePlatformAdmin();
+  const args = subscriptionArgs(formData);
+  if (!args) return { error: "invalid_subscription" };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_subscription_preview", args as never);
+  if (error) return subscriptionError(error);
+  return { preview: data as SubscriptionPreview };
+}
+
+/**
+ * "Kinnita ja rakenda": saves exactly what was previewed. If the result would now differ
+ * (e.g. someone else changed the subscription meanwhile), nothing is saved.
+ */
+export async function adminApplySubscription(_prev: SubscriptionState, formData: FormData): Promise<SubscriptionState> {
+  await requirePlatformAdmin();
+  const args = subscriptionArgs(formData);
+  if (!args) return { error: "invalid_subscription" };
+  const supabase = await createClient();
+  const { data: check, error: checkError } = await supabase.rpc("admin_subscription_preview", args as never);
+  if (checkError) return subscriptionError(checkError);
+  const expected = text(formData, "expected");
+  const current = check as SubscriptionPreview;
+  if (expected !== `${current.mode}|${current.paid_until ?? ""}|${current.user_limit}|${current.installation_limit}`) {
+    return { error: "stale" };
+  }
+  const { error } = await supabase.rpc("admin_set_subscription", args as never);
+  if (error) return subscriptionError(error);
+  refresh();
+  return { ok: true, applied: true };
 }

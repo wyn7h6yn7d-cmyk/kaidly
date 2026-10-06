@@ -199,3 +199,64 @@ export const adminCompanyAccessList = (filter?: AccessFilter) =>
     "admin_company_access_list",
     { p_filter: filter ?? null },
   );
+
+// ---------------------------------------------------------------------------
+// Subscriptions (Tellimused)
+// ---------------------------------------------------------------------------
+
+export type AdminSubscriptionRow = {
+  id: string;
+  name: string;
+  slug: string;
+  status: "trial" | "active" | "expired" | "deactivated";
+  plan: string | null;
+  plan_label: string | null;
+  trial_ends_at: string | null;
+  paid_until: string | null;
+  indefinite: boolean;
+  seats_used: number;
+  user_limit: number | null;
+  installations_active: number;
+  installation_limit: number | null;
+};
+
+export const adminSubscriptions = (search: string | null, filter: string | null, limit: number, offset: number) =>
+  call<{ total: number; rows: AdminSubscriptionRow[] }>("admin_subscriptions", {
+    p_search: search,
+    p_filter: filter,
+    p_limit: limit,
+    p_offset: offset,
+  });
+
+export type AdminSubscriptionSnapshot = {
+  status: string | null;
+  plan: string | null;
+  plan_label: string | null;
+  monthly_price: number | null;
+  user_limit: number | null;
+  installation_limit: number | null;
+  paid_until: string | null;
+  invoice_reference: string | null;
+};
+
+export type AdminSubscriptionDetail = Omit<AdminSubscriptionRow, "trial_ends_at"> & {
+  ends_at: string | null;
+  monthly_price: number | null;
+  trial_started_at: string;
+  trial_ends_at: string;
+  full_access_from: string | null;
+  full_access_until: string | null;
+  invoice_reference: string | null;
+  admin_notes: string | null;
+  plans: { plan: string; monthly_price: number; user_limit: number; installation_limit: number }[];
+  history: {
+    action: string;
+    at: string;
+    by: string | null;
+    mode: string | null;
+    before: AdminSubscriptionSnapshot | null;
+    after: AdminSubscriptionSnapshot | null;
+  }[];
+};
+
+export const adminSubscription = cache((id: string) => call<AdminSubscriptionDetail>("admin_subscription", { p_org: id }));

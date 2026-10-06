@@ -4,11 +4,13 @@ import { PageHeader } from "@/components/app/page-header";
 import { RoleBadge } from "@/components/app/role-badge";
 import { ConfirmForm } from "@/components/forms/confirm-form";
 import { InviteForm } from "@/components/organisations/invite-form";
+import { PlanLimitNotice } from "@/components/organisations/plan-summary";
 import { MemberRoleForm } from "@/components/organisations/member-role-form";
 import { SettingsTabs } from "@/components/organisations/settings-tabs";
 import { removeMember, revokeInvitation } from "@/lib/actions/organisations";
 import { assignableRoles, canManageMember, hasRole } from "@/lib/auth/roles";
 import { listMembers, listPendingInvitations } from "@/lib/data/organisations";
+import { getOrgPlan, seatsFull } from "@/lib/data/plan";
 import { getT } from "@/lib/i18n/server";
 
 
@@ -24,9 +26,10 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
       params={params}
       render={async ({ org, role, memberRole, user }) => {
         const isAdmin = hasRole(role, "admin");
-        const [members, invitations] = await Promise.all([
+        const [members, invitations, plan] = await Promise.all([
           listMembers(org.id),
           isAdmin ? listPendingInvitations(org.id) : Promise.resolve([]),
+          getOrgPlan(org.id),
         ]);
         const copy = t.app.members;
 
@@ -98,7 +101,14 @@ export default async function MembersPage({ params }: { params: Promise<{ org: s
                     {t.app.invitations.title}
                   </h2>
                   <p className="mb-6 mt-1 max-w-2xl text-k-muted">{t.app.invitations.description}</p>
-                  <InviteForm organisationId={org.id} roles={assignableRoles(role)} />
+                  {plan.userLimit !== null && (
+                    <p className="mb-4 text-sm font-semibold tabular-nums">{t.app.plan.seatsUsage(plan.seatsUsed, plan.userLimit)}</p>
+                  )}
+                  {seatsFull(plan) ? (
+                    <PlanLimitNotice kind="seats" orgName={org.name} />
+                  ) : (
+                    <InviteForm organisationId={org.id} roles={assignableRoles(role)} />
+                  )}
                 </section>
 
                 <section aria-labelledby="pending" className="mt-12">

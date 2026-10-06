@@ -114,7 +114,7 @@ test.describe("Prooviperiood ja ligipääs", () => {
     await expect(page.getByRole("heading", { name: "Uus objekt" })).toBeVisible();
   });
 
-  test("platform admin: extend trial, activate full access, expire — audited", async ({ page, browser }) => {
+  test("platform admin: extend trial, activate a plan, expire — audited", async ({ page, browser }) => {
     test.setTimeout(120_000);
     const admin = await createUser(`Platvorm ${uniqueId("p")}`);
     sql(`select private.bootstrap_platform_admin('${admin.email}');`);
@@ -123,8 +123,10 @@ test.describe("Prooviperiood ja ligipääs", () => {
     expire(org);
 
     await login(page, admin, `/admin/companies/${org.id}`);
-    const section = page.getByRole("region", { name: "KAIDLY ligipääs" });
-    await expect(section.getByText("Aegunud", { exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "KAIDLY ligipääs" }).getByText("Aegunud", { exact: true })).toBeVisible();
+    // Trial extension, activation and expiry live in Tellimused.
+    await page.getByRole("link", { name: "Halda tellimust" }).click();
+    const section = page.getByRole("region", { name: "Praegune tellimus" });
     await page.locator("#access-extend").selectOption("14");
     await page.getByRole("button", { name: "Pikenda prooviperioodi" }).click();
     await expect(section.getByText("Prooviperiood", { exact: true })).toBeVisible();
@@ -133,10 +135,14 @@ test.describe("Prooviperiood ja ligipääs", () => {
     await login(owner, org.users.owner, `/o/${org.slug}`);
     await expect(owner.getByTestId("access-banner")).toContainText(/Prooviperioodi lõpuni (13|14) päeva/);
 
-    await page.locator("#access-period").selectOption("12");
-    await page.locator("#access-invoice").fill("ARV-2026-017");
-    await page.getByRole("button", { name: "Aktiveeri täiskasutus" }).click();
+    await page.locator("#sub-plan").selectOption("pro");
+    await page.locator("#sub-period").selectOption("12");
+    await page.getByRole("button", { name: "Vaata üle" }).click();
+    await page.getByRole("button", { name: "Kinnita ja rakenda" }).first().click();
+    await page.getByRole("dialog", { name: "Kinnita muudatus" }).getByRole("button", { name: "Kinnita ja rakenda" }).click();
     await expect(section.getByText("Täiskasutus", { exact: true })).toBeVisible();
+    await page.locator("#ref-invoice").fill("ARV-2026-017");
+    await page.getByRole("button", { name: "Salvesta" }).click();
     await expect(section.getByText("ARV-2026-017").first()).toBeVisible();
     await owner.reload();
     await expect(owner.getByTestId("access-banner")).toHaveCount(0);
@@ -153,7 +159,7 @@ test.describe("Prooviperiood ja ligipääs", () => {
     await page.goto("/admin/audit");
     const rows = page.getByRole("row").filter({ hasText: admin.fullName });
     await expect(rows.filter({ hasText: "Prooviperioodi pikendati" })).toHaveCount(1);
-    await expect(rows.filter({ hasText: "Täiskasutus aktiveeriti / muudeti" })).toHaveCount(1);
+    await expect(rows.filter({ hasText: "Tellimus muudeti" })).toHaveCount(1);
     await expect(rows.filter({ hasText: "Ligipääs lõpetati" })).toHaveCount(1);
   });
 

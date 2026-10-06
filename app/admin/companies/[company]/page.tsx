@@ -1,10 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { AccessForms } from "@/components/admin/access-forms";
-import { ConfirmAction } from "@/components/admin/confirm-action";
 import { RoleChange } from "@/components/admin/role-change";
-import { adminExpireAccess } from "@/lib/actions/admin";
 import { AdminTitle, Badge, Rows, Section, TableFrame, td, th } from "@/components/admin/ui";
 import { LoadingBlock } from "@/components/app/states";
 import { fmtBytes, fmtDate, fmtDateTime, fmtNumber } from "@/lib/admin/format";
@@ -65,28 +62,14 @@ async function CompanyDetail({ params }: { params: Params }) {
             [a.notes, access.admin_notes ?? "—"],
           ]}
         />
-        <div className="mt-6">
-          <AccessForms
-            companyId={company.id}
-            trialEndsAt={access.trial_ends_at}
-            status={access.status}
-            invoiceReference={access.invoice_reference}
-            notes={access.admin_notes}
-          />
-        </div>
-        {(access.status === "trial" || access.status === "active") && (
-          <div className="mt-6">
-            <ConfirmAction
-              action={adminExpireAccess}
-              fields={{ companyId: company.id }}
-              label={a.expire}
-              title={`${a.expire}: ${company.name}`}
-              body={a.expireBody}
-              confirmWord={company.name}
-              variant="destructive"
-            />
-          </div>
-        )}
+        <p className="mt-4">
+          <Link
+            href={`/admin/tellimused/${company.id}`}
+            className="inline-flex min-h-11 items-center font-semibold text-k-green underline underline-offset-4"
+          >
+            {ADMIN.subs.companyLink}
+          </Link>
+        </p>
       </Section>
 
       <Section id="counts" title={s.counts}>

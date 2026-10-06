@@ -4,6 +4,8 @@ import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 
 import { InstallationForm } from "@/components/sites/installation-form";
+import { PlanLimitNotice } from "@/components/organisations/plan-summary";
+import { getOrgPlan, installationsFull } from "@/lib/data/plan";
 
 import { listActiveSiteOptions } from "@/lib/data/sites";
 import { getT } from "@/lib/i18n/server";
@@ -27,7 +29,7 @@ export default async function NewInstallationPage({
       params={params}
       minRole="admin"
       render={async ({ org }) => {
-        const [{ objekt }, sites] = await Promise.all([searchParams, listActiveSiteOptions(org.id)]);
+        const [{ objekt }, sites, plan] = await Promise.all([searchParams, listActiveSiteOptions(org.id), getOrgPlan(org.id)]);
         // Only preselect a site that is one of this organisation's active sites.
         const preselected = sites.find((site) => site.id === objekt);
         const back = preselected
@@ -37,7 +39,9 @@ export default async function NewInstallationPage({
         return (
           <>
             <PageHeader eyebrow={org.name} title={t.app.installations.new} back={back} />
-            {sites.length === 0 ? (
+            {installationsFull(plan) ? (
+              <PlanLimitNotice kind="installations" orgName={org.name} />
+            ) : sites.length === 0 ? (
               <GuidedEmptyState
                 title={t.app.emptyStates.installations.title}
                 body={t.app.emptyStates.installations.body}

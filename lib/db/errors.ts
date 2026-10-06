@@ -39,6 +39,8 @@ const RAISED: Record<string, ErrorCode> = {
   session_required: "session_required",
   confirmation_mismatch: "confirmation_mismatch",
   company_read_only: "company_read_only",
+  plan_user_limit: "plan_user_limit",
+  plan_installation_limit: "plan_installation_limit",
   import_name_required: "import_name_required",
   import_site_missing: "import_site_missing",
   import_site_ambiguous: "import_site_ambiguous",
