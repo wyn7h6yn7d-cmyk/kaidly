@@ -93,6 +93,10 @@ CLI mistakes, pre-customer requirements), MANUAL_SMOKE_TEST.md (~15 min checklis
 - [ ] Supabase "Secure password change" enabled (needs SMTP)
 - [ ] Production manual smoke test (MANUAL_SMOKE_TEST.md) by Kenneth
 - [ ] Named responsibility for recovery
+- [ ] Reminder e-mails: Vault secret `RESEND_API_KEY`, `private.email_settings.enabled = true`,
+      one controlled real e-mail (EMAIL_NOTIFICATIONS.md §6) — until then reminders are in-app only
+- [ ] Hosted Auth templates pasted (EMAIL_TEMPLATES.md §6) and Secure password change ON after a
+      real reauthentication code test
 
 ## 12. Verification
 

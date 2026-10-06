@@ -13,6 +13,7 @@ otherwise. Do not put real customer data into Production before §5 is resolved.
 | Access/trial state, platform admins, admin audit, upload counters, import batches | Postgres `private` | database backup / dump |
 | Document and photo **files** | Supabase Storage bucket `documents` | **nothing yet** — needs a separate file backup |
 | Sessions | Postgres `auth` | not needed — users sign in again |
+| Reminder e-mail outbox, e-mail settings/templates | Postgres `private` (key: Vault) | database backup; after a restore, set `private.email_settings.enabled = false` first — the processor drops anything older than 2 days, so no stale reminder mail is sent (EMAIL_NOTIFICATIONS.md) |
 | Schema, policies, functions, cron jobs, bucket definition | `supabase/migrations` (git) | rebuild from zero (`db push` / `db reset`) |
 
 ## 2. Logical restore — rehearsed locally (2026-10-05)
