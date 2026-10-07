@@ -30,6 +30,7 @@ Desktop (≥ 1024 px):
 - [ ] Open `https://kaidly.ee/#hinnad` directly → lands on pricing, then the address bar shows `https://kaidly.ee/`
 - [ ] **Registreeru** → `/auth/sign-up` ("Loo konto" form); back; **Logi sisse** → `/auth/login`
 - [ ] Switch **EN** → "How does it work?", "Pricing", "Sign in", "Sign up"; **RU** → "Как это работает?", "Цены", "Войти", "Регистрация"; back to **ET**
+- [ ] Phone (or a window narrower than 1024 px) → header shows logo, ET and a menu button only; the menu lists "Kuidas töötab?", "Hinnakiri", "Logi sisse" and green "Registreeru"; **Hinnakiri** scrolls to pricing, closes the menu and leaves no `#…`; Escape closes it
 - [ ] Footer → "Kuidas töötab?", "Hinnakiri", "Logi sisse", "Registreeru", Privaatsus, Kasutustingimused, ET/EN/RU
 - [ ] Privaatsus / Kasutustingimused → visible pre-launch notice (draft until operator details exist)
 

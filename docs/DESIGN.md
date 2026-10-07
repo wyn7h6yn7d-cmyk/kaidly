@@ -219,9 +219,11 @@ rhythm (`.k-section`); nothing is positioned against the viewport. Sections:
 
 1. **Header** — two groups, pushed apart: left the logo with "Kuidas töötab?" and
    "Hinnakiri"; right "Logi sisse", "Registreeru" (primary) and the language selector, on the
-   same container as the hero. Below 1024 px the selector is a compact code select and
-   "Kuidas töötab?" moves to the footer/hero; below 768 px "Registreeru" lives in the hero
-   and footer, below 640 px "Hinnakiri" in the footer. Links come from
+   same container as the hero. Below 1024 px the bar holds the logo, the compact language
+   select and a menu button (`MobileNav`: a disclosure, `aria-expanded`/`aria-controls`, no
+   focus trap) whose panel under the header lists "Kuidas töötab?", "Hinnakiri", "Logi
+   sisse" and "Registreeru" (full-width primary); it closes on a chosen link, Escape (focus
+   back on the button) and a click outside. Links come from
    `components/marketing/public-nav.ts`; section links (`SectionLink`) scroll in place and
    never leave `#kuidas-toimib` / `#hinnad` in the address bar (an old `/#hinnad` URL lands
    on the section, then `replaceState` cleans it to `/`). "14 päeva tasuta" stays in the

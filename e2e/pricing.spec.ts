@@ -15,11 +15,10 @@ test.describe("Hinnakiri (avalik leht)", () => {
     // The free trial is visible near the top on every width.
     await expect(page.getByText("14 päeva tasuta").filter({ visible: true }).first()).toBeInViewport();
 
-    // "Hinnakiri" goes to the pricing section (from the header on tablet/desktop, the footer on
-    // phones); the URL stays clean (public-header.spec.ts covers the scrolling in detail).
-    const width = page.viewportSize()?.width ?? 0;
-    const pricingLink = width >= 640 ? nav.getByRole("link", { name: "Hinnakiri", exact: true }) : page.getByRole("contentinfo").getByRole("link", { name: "Hinnakiri" });
-    await pricingLink.click();
+    // "Hinnakiri" goes to the pricing section (header on desktop, the header menu below
+    // 1024 px); the URL stays clean (public-header.spec.ts covers the scrolling in detail).
+    if (!wide) await page.getByRole("button", { name: "Menüü" }).click();
+    await nav.getByRole("link", { name: "Hinnakiri", exact: true }).click();
     const pricing = page.getByRole("region", { name: "Lihtne hinnastus. Kõik vajalik on igas paketis." });
     await expect(pricing.getByRole("heading", { level: 2 })).toBeInViewport();
     await expect.poll(() => new URL(page.url()).hash).toBe("");

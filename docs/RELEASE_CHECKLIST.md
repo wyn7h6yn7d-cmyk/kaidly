@@ -31,7 +31,7 @@ blocks engineering, QA or Preview work.
 | GREEN | All modules: companies, sites, installations, käidupäevik, käidukava with reminders, puudused, documents/photos, notifications, search, PDF/CSV reports, CSV import, Platform Admin |
 | GREEN | Plans Start / Team / Pro / Business / Custom with database-enforced user and active-installation limits (SUBSCRIPTIONS.md); customers see plan and usage only |
 | GREEN | Personal 14-day trial (one per user; 1 user, 5 active installations; deleting a company never resets it) |
-| GREEN | Public header: left logo + "Kuidas töötab?" + "Hinnakiri", right "Logi sisse" + "Registreeru" + language; section links never leave `#…` in the URL |
+| GREEN | Public header: left logo + "Kuidas töötab?" + "Hinnakiri", right "Logi sisse" + "Registreeru" + language; below 1024 px logo + language + menu button with all four links; section links never leave `#…` in the URL |
 | GREEN | Error pages (translated `error.tsx`, trilingual `global-error.tsx`, 404 also for unknown public URLs); no SQL, stack traces, keys or provider messages to users |
 | GREEN | Upload abuse limits (database-enforced), messages ET/EN/RU |
 | GREEN | Account deletion request on /konto (validated mailto; plain text when no usable address) |
