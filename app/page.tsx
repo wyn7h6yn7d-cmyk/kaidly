@@ -10,6 +10,7 @@ import { PhonePreview } from "@/components/marketing/phone-preview";
 import { Pricing } from "@/components/marketing/pricing";
 import { ReminderExample } from "@/components/marketing/reminder-example";
 import { ScrollToTop } from "@/components/marketing/scroll-to-top";
+import { SectionHashCleanup, SectionLink } from "@/components/marketing/section-link";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SystemDiagram } from "@/components/marketing/system-diagram";
@@ -101,10 +102,10 @@ export default async function Home() {
                   </Link>
                 </Button>
                 <Button asChild size="xl" variant="outline">
-                  <Link href="#kuidas-toimib">
+                  <SectionLink section="kuidas-toimib">
                     {l.hero.secondary}
                     <ArrowDown aria-hidden="true" />
-                  </Link>
+                  </SectionLink>
                 </Button>
               </div>
               <p className="mt-4 flex flex-wrap items-center gap-x-2 text-[15px] font-semibold text-k-green">
@@ -171,7 +172,7 @@ export default async function Home() {
         </section>
 
         {/* System structure, drawn like an engineering sheet */}
-        <section id="kuidas-toimib" className="relative scroll-mt-4 border-y border-k-line bg-k-paper-2">
+        <section id="kuidas-toimib" tabIndex={-1} className="relative scroll-mt-4 outline-none border-y border-k-line bg-k-paper-2">
           <div aria-hidden="true" className="k-grid pointer-events-none absolute inset-0 text-k-ink/[0.045]" />
           <div className="k-container k-section relative">
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
@@ -263,6 +264,7 @@ export default async function Home() {
 
       <SiteFooter />
       <ScrollToTop />
+      <SectionHashCleanup />
     </div>
   );
 }

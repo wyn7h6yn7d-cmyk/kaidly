@@ -253,6 +253,7 @@ export const ru: Messages = {
       label: "Главное меню",
       howItWorks: "Как это работает?",
       pricing: "Цены",
+      signUp: "Регистрация",
       trial: "14 дней бесплатно",
     },
     pricing: {

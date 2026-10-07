@@ -36,8 +36,8 @@ test.describe("UX polish", () => {
   test("'Kuidas töötab' lands on the workflow, including in-app reminders", async ({ page }) => {
     await page.goto("/");
     await page.getByRole("banner").getByRole("link", { name: "Kuidas töötab" }).click();
-    await expect(page).toHaveURL(/#kuidas-toimib$/);
     await expect(page.getByRole("heading", { name: "Üks objekt. Kõik, mis selle käiduga juhtub." })).toBeInViewport();
+    await expect.poll(() => new URL(page.url()).hash).toBe("");
     await expect(page.getByRole("heading", { name: "KAIDLY tuletab ise meelde." })).toBeVisible();
     const example = page.getByRole("img", { name: "Näide KAIDLY teavitusest" });
     await expect(example).toBeVisible();

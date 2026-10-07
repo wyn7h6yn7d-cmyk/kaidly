@@ -5,7 +5,7 @@ async function setLanguage(context: BrowserContext, locale: "en" | "ru") {
   await context.addCookies([{ name: "kaidly_locale", value: locale, url: "http://localhost:3100" }]);
 }
 
-test.describe("Hinnad (avalik leht)", () => {
+test.describe("Hinnakiri (avalik leht)", () => {
   test("navigation, trial and the five plans in Estonian @responsive", async ({ page }) => {
     await page.goto("/");
     const nav = page.getByRole("navigation", { name: "Põhimenüü" });
@@ -15,13 +15,14 @@ test.describe("Hinnad (avalik leht)", () => {
     // The free trial is visible near the top on every width.
     await expect(page.getByText("14 päeva tasuta").filter({ visible: true }).first()).toBeInViewport();
 
-    // "Hinnad" goes to the pricing section (from the header on tablet/desktop, the footer on phones).
+    // "Hinnakiri" goes to the pricing section (from the header on tablet/desktop, the footer on
+    // phones); the URL stays clean (public-header.spec.ts covers the scrolling in detail).
     const width = page.viewportSize()?.width ?? 0;
-    const pricingLink = width >= 640 ? nav.getByRole("link", { name: "Hinnad", exact: true }) : page.getByRole("contentinfo").getByRole("link", { name: "Hinnad" });
+    const pricingLink = width >= 640 ? nav.getByRole("link", { name: "Hinnakiri", exact: true }) : page.getByRole("contentinfo").getByRole("link", { name: "Hinnakiri" });
     await pricingLink.click();
-    await expect(page).toHaveURL(/#hinnad$/);
     const pricing = page.getByRole("region", { name: "Lihtne hinnastus. Kõik vajalik on igas paketis." });
     await expect(pricing.getByRole("heading", { level: 2 })).toBeInViewport();
+    await expect.poll(() => new URL(page.url()).hash).toBe("");
 
     const plans = [
       ["Start", "19", "1 kasutaja", "5 aktiivset elektripaigaldist"],

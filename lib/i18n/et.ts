@@ -235,7 +235,8 @@ export const et = {
     nav: {
       label: "Põhimenüü",
       howItWorks: "Kuidas töötab?",
-      pricing: "Hinnad",
+      pricing: "Hinnakiri",
+      signUp: "Registreeru",
       trial: "14 päeva tasuta",
     },
     pricing: {

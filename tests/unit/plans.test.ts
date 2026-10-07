@@ -33,7 +33,10 @@ test("launch plans: Start 19/1/5, Team 29/3/10, Pro 39/5/25, Business 89/15/100;
 test("pricing copy: exact Estonian wording and natural plural forms", () => {
   const p = et.landing.pricing;
   assert.equal(et.landing.nav.howItWorks, "Kuidas töötab?");
-  assert.equal(et.landing.nav.pricing, "Hinnad");
+  // Header labels (owner decision): "Hinnakiri" and "Registreeru", never "Hinnad" / "Loo konto".
+  assert.equal(et.landing.nav.pricing, "Hinnakiri");
+  assert.equal(et.landing.nav.signUp, "Registreeru");
+  assert.equal(et.common.signIn, "Logi sisse");
   assert.equal(p.title, "Lihtne hinnastus. Kõik vajalik on igas paketis.");
   assert.equal(p.trial, "14 päeva tasuta");
   // No payment-card wording anywhere in the public copy (owner decision).

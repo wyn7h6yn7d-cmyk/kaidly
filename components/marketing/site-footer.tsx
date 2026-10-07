@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LanguageSelector } from "@/components/app/language-selector";
 import { getT } from "@/lib/i18n/server";
 import { PUBLIC_LINKS } from "./public-nav";
+import { SectionLink } from "./section-link";
 
 export async function SiteFooter() {
   const t = await getT();
@@ -23,15 +24,15 @@ export async function SiteFooter() {
         <div className="flex flex-col gap-4 sm:items-end">
           <nav aria-label={t.landing.footerNav} className="flex flex-wrap gap-x-6 gap-y-1 text-base lg:gap-x-8 lg:text-lg">
             {PUBLIC_LINKS.map((link) => (
-              <Link key={link.key} href={link.href} className="focus-on-dark inline-flex h-11 items-center hover:text-white">
+              <SectionLink key={link.key} section={link.section} className="focus-on-dark inline-flex h-11 items-center hover:text-white">
                 {t.landing.nav[link.key]}
-              </Link>
+              </SectionLink>
             ))}
             <Link href="/auth/login" className="focus-on-dark inline-flex h-11 items-center hover:text-white">
               {t.common.signIn}
             </Link>
             <Link href="/auth/sign-up" className="focus-on-dark inline-flex h-11 items-center hover:text-white">
-              {t.common.signUp}
+              {t.landing.nav.signUp}
             </Link>
           </nav>
           <LanguageSelector tone="light" large className="flex-wrap lg:-mr-2" />

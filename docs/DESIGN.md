@@ -217,10 +217,15 @@ order and palette are unchanged; mobile sizes are unchanged.
 Every section sits on the **same container** (`.k-container`, §9) and the same vertical
 rhythm (`.k-section`); nothing is positioned against the viewport. Sections:
 
-1. **Header** — logo left; "Kuidas töötab", "Logi sisse", "Loo konto" and the language
-   selector right, on the same container as the hero. Below 1024 px the selector is a
-   compact code select; below 768 px "Loo konto" lives in the hero only. Links come from
-   `components/marketing/public-nav.ts` (a future **Hinnad / Pricing** page is one entry).
+1. **Header** — two groups, pushed apart: left the logo with "Kuidas töötab?" and
+   "Hinnakiri"; right "Logi sisse", "Registreeru" (primary) and the language selector, on the
+   same container as the hero. Below 1024 px the selector is a compact code select and
+   "Kuidas töötab?" moves to the footer/hero; below 768 px "Registreeru" lives in the hero
+   and footer, below 640 px "Hinnakiri" in the footer. Links come from
+   `components/marketing/public-nav.ts`; section links (`SectionLink`) scroll in place and
+   never leave `#kuidas-toimib` / `#hinnad` in the address bar (an old `/#hinnad` URL lands
+   on the section, then `replaceState` cleans it to `/`). "14 päeva tasuta" stays in the
+   hero, never in the header.
 2. **Hero** (paper + grain) — 7/5 columns: eyebrow, "Elektripaigaldise käit. Lihtsalt."
    (`text-display-1`, max 80 px — one line from 1440 px up), lead, **Loo konto →** and **Vaata,
    kuidas töötab ↓**, and the one handwritten note "kõik kirjas, mitte kellegi peas".

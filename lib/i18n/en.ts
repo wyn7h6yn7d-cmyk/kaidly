@@ -240,6 +240,7 @@ export const en: Messages = {
       label: "Main menu",
       howItWorks: "How does it work?",
       pricing: "Pricing",
+      signUp: "Sign up",
       trial: "14 days free",
     },
     pricing: {
