@@ -20,8 +20,7 @@ Status: describes the implemented system (Phases 1–6).
 ### Dependency policy
 
 Keep the dependency list short. Before adding a package, check whether the platform
-already does it (`FormData`, `Intl.DateTimeFormat`, `<input capture>`, `canvas` for image
-resizing). Proposed additions for the whole MVP:
+already does it (`FormData`, `Intl.DateTimeFormat`). Proposed additions for the whole MVP:
 
 | Package | Why | Decision |
 |---|---|---|
@@ -128,7 +127,7 @@ lib/
   i18n/                        et.ts, en.ts, ru.ts (same keys), index.ts (types), server.ts (getT),
                                client.tsx (I18nProvider, useT), format.ts (dates/numbers), locales.ts
   history.ts                   activity_history rows → readable events (allowlisted fields)
-  documents/                   rules.ts (types, size, filenames — shared), upload-client.ts (browser: resize, XHR upload)
+  documents/                   rules.ts (types, size, filenames — shared), upload-client.ts (browser: XHR upload)
   schedule.ts, time.ts, labels.ts, env.ts
 scripts/                       local-supabase.mjs, dev-local.mjs, seed-files.mjs (local stack only)
 .github/workflows/ci.yml       CI: verify, database, e2e jobs
@@ -215,16 +214,21 @@ pass through the app server.
 1. `registerUpload` (Server Action) validates type, extension, size and filename, resolves
    the target (organisation, site, installation, log entry or deficiency) through RLS and
    inserts a `pending` documents row; the database generates the object path.
-2. The browser resizes photos (≤ 2048 px, JPEG ~0.82; PNG stays PNG; HEIC from Safari is
-   converted) and uploads with `XMLHttpRequest` for progress, `x-upsert: false`.
+2. The browser uploads with `XMLHttpRequest` for progress, `x-upsert: false`. Only PDF, DOCX
+   and XLSX are uploaded; images are refused in the picker, the action, the database and the
+   bucket — photos are linked instead (`photos_url`, DATABASE.md §5j).
 3. `finalizeUpload` → `finalize_document` checks the object and marks it `ready`.
-4. On any failure `discardUpload` removes the object and the pending row; the file stays in
-   the list with "Proovi uuesti".
-Log-entry photos: the form saves the entry first (the action returns its id instead of
+4. On any failure `discardUpload` removes the object (checking it is really gone) and the
+   pending row; the file stays in the list with "Proovi uuesti".
+Log-entry files: the form saves the entry first (the action returns its id instead of
 redirecting when files are queued), then uploads to it. If an upload fails the entry is
 already saved; the form keeps its values and offers retry or "continue without".
 Files are opened through `/o/[org]/dokumendid/[id]/ava`, which signs one 60-second URL on
-demand — nothing is pre-signed for lists, and thumbnails load lazily through the same route.
+demand — nothing is pre-signed for lists, and thumbnails of earlier images load lazily
+through the same route. **Deleting an earlier image** (`deleteDocumentImage`): RPC
+`delete_document_image` (tombstone, returns the path) → Storage remove with the user's session
+→ `confirm_document_image_removed`; a failure returns `image_delete_incomplete` and the same
+button finishes it later.
 
 **Authorisation layers**, from strongest to weakest:
 1. Postgres RLS + storage policies — the real boundary.
@@ -346,7 +350,7 @@ lõppenud…"), then a missing earlier step.
 - `useFormAction` catches a failed Server Action request (`unstable_rethrow` lets Next
   redirects through) and returns the `network` error with the typed values kept.
 - `useSaveThenUpload` (`components/documents/use-save-then-upload.tsx`) is the one
-  implementation for "save a record, then upload its photos" (log entries, corrections,
+  implementation for "save a record, then upload its files" (log entries, corrections,
   deficiencies): the action returns a `SavedRecord` when files follow; failed uploads leave
   the record saved and offer retry / continue.
 - `useSessionDraft` keeps unsaved field values in `sessionStorage` (this tab only; cleared
@@ -532,10 +536,10 @@ English column keys explained in the UI).
 
 - First load of a tenant page on 4G: usable < 2 s.
 - No client-side data-fetching libraries; Server Components render lists.
-- Client components only where interaction needs them (forms with photo upload, org switcher, filters).
-- Images: user photos are resized in the browser (canvas → JPEG, longest side 2048 px,
-  quality ~0.82) before upload. Saves data on site and storage cost. Thumbnails are the
-  resized originals (no image transformation service); fine for a handful per record.
+- Client components only where interaction needs them (forms with file upload, org switcher, filters).
+- Images: KAIDLY no longer stores photos (2026-10-08, Storage capacity); records keep an
+  external photo link. Images uploaded earlier are shown as lazy thumbnails of the stored
+  file and can be deleted.
 - Lists that grow are paginated (50, deterministic order, one extra row to detect more):
   log, documents, deficiencies, activities. Dashboard sections are `limit 5` + exact count;
   per-site counts come from one view. No N+1: labels come from one installation lookup.

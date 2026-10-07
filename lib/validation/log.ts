@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { localInputToIso } from "../time.ts"; // explicit extensions: also loaded by node --test
-import { optionalText, requiredText, uuid } from "./common.ts";
+import { optionalPhotosUrl, optionalText, requiredText, uuid } from "./common.ts";
 import { LOG_ENTRY_TYPES } from "./constants.ts";
 export { LOG_ENTRY_TYPES } from "./constants.ts";
 export type { LogEntryType } from "./constants.ts";
@@ -29,6 +29,7 @@ export const logEntrySchema = z.object({
   description: requiredText(5000),
   result: optionalText(2000),
   performedByName: optionalText(200),
+  photosUrl: optionalPhotosUrl,
 });
 
 export const correctionSchema = logEntrySchema.extend({

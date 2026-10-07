@@ -15,6 +15,7 @@ export function ConfirmForm({
   confirm,
   label,
   pendingLabel,
+  ariaLabel,
   variant = "outline",
   size = "sm",
 }: {
@@ -24,6 +25,8 @@ export function ConfirmForm({
   confirm?: string;
   label: string;
   pendingLabel?: string;
+  /** Accessible name when the visible label alone is ambiguous (e.g. one per image). */
+  ariaLabel?: string;
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
 }) {
@@ -39,7 +42,7 @@ export function ConfirmForm({
       {Object.entries(fields).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <Button type="submit" variant={variant} size={size} disabled={pending}>
+      <Button type="submit" variant={variant} size={size} disabled={pending} aria-label={ariaLabel}>
         {pending && pendingLabel ? pendingLabel : label}
       </Button>
       <FormMessage code={state.errorCode} />

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import type { UploadTarget } from "@/lib/actions/documents";
-import { DOCUMENT_CATEGORIES, type DocumentCategory, titleFromFilename } from "@/lib/documents/rules";
+import { titleFromFilename, UPLOAD_CATEGORIES, type UploadCategory } from "@/lib/documents/rules";
 import { AttachmentPicker } from "./attachment-picker";
 import { useUploadQueue } from "./use-upload-queue";
 import { useT } from "@/lib/i18n/client";
@@ -49,10 +49,10 @@ export function DocumentUploadForm({
   const router = useRouter();
   const id = useFieldId();
   const copy = t.app.documents;
-  const queue = useUploadQueue({ orgSlug, resizeImages: false });
+  const queue = useUploadQueue({ orgSlug });
   const [title, setTitle] = useState("");
   const [titleTouched, setTitleTouched] = useState(false);
-  const [category, setCategory] = useState<DocumentCategory>("other");
+  const [category, setCategory] = useState<UploadCategory>("other");
   const [scope, setScope] = useState(defaultScope);
   const [error, setError] = useState<string>();
   const [submitting, setSubmitting] = useState(false);
@@ -121,9 +121,9 @@ export function DocumentUploadForm({
           id={id("category")}
           name="category"
           value={category}
-          onChange={(event) => setCategory(event.target.value as DocumentCategory)}
+          onChange={(event) => setCategory(event.target.value as UploadCategory)}
         >
-          {DOCUMENT_CATEGORIES.map((value) => (
+          {UPLOAD_CATEGORIES.map((value) => (
             <option key={value} value={value}>
               {copy.categories[value]}
             </option>

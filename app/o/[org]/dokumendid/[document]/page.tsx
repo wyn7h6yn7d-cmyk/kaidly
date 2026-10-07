@@ -6,17 +6,16 @@ import { DetailList } from "@/components/app/detail-list";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 import { DocumentEditForm } from "@/components/documents/document-edit-form";
-import { openHref } from "@/components/documents/document-list";
+import { DeleteImageButton, openHref } from "@/components/documents/document-list";
+import { FormMessage } from "@/components/forms/form-message";
 import { ConfirmForm } from "@/components/forms/confirm-form";
 import { Button } from "@/components/ui/button";
 import { archiveDocument, restoreDocument } from "@/lib/actions/documents";
 import { hasRole } from "@/lib/auth/roles";
 import { getDocument, getDocumentPlacement } from "@/lib/data/documents";
 import { getInstallation } from "@/lib/data/sites";
+import { isImageType } from "@/lib/documents/rules";
 import { getT } from "@/lib/i18n/server";
-
-
-
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -30,7 +29,7 @@ export default async function DocumentPage({
   searchParams,
 }: {
   params: Promise<{ org: string; document: string }>;
-  searchParams: Promise<{ fail?: string }>;
+  searchParams: Promise<{ fail?: string; pilt?: string }>;
 }) {
   const t = await getT();
   return (
@@ -47,7 +46,11 @@ export default async function DocumentPage({
         const copy = t.app.documents;
         const f = copy.fields;
         const historical = Boolean(doc.logEntryId || doc.deficiencyId);
-        const canManage = hasRole(role, "admin") && !historical;
+        const deleted = Boolean(doc.deletedAt);
+        const canManage = hasRole(role, "admin") && !historical && !deleted;
+        // Images uploaded before photo links: whoever may add such a file may delete it.
+        const canDeleteImage = isImageType(doc.mimeType) && hasRole(role, historical ? "operator" : "admin");
+        const deleteCopy = t.app.imageDelete;
 
         const belongsTo = installation ? (
           <Link href={`/o/${org.slug}/paigaldised/${installation.id}/dokumendid`} className={linkClass}>
@@ -69,24 +72,38 @@ export default async function DocumentPage({
               title={doc.title}
               back={{ href: `/o/${org.slug}/dokumendid`, label: copy.title }}
               actions={
-                <>
-                  <Button asChild>
-                    <a href={openHref(org.slug, doc.id)} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink aria-hidden="true" />
-                      {copy.open}
-                    </a>
-                  </Button>
-                  <Button asChild variant="outline">
-                    <a href={openHref(org.slug, doc.id, true)}>
-                      <Download aria-hidden="true" />
-                      {copy.download}
-                    </a>
-                  </Button>
-                </>
+                deleted ? undefined : (
+                  <>
+                    <Button asChild>
+                      <a href={openHref(org.slug, doc.id)} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink aria-hidden="true" />
+                        {copy.open}
+                      </a>
+                    </Button>
+                    <Button asChild variant="outline">
+                      <a href={openHref(org.slug, doc.id, true)}>
+                        <Download aria-hidden="true" />
+                        {copy.download}
+                      </a>
+                    </Button>
+                  </>
+                )
               }
             />
 
-            {query.fail === "puudub" && (
+            {query.pilt === "kustutatud" && (
+              <div className="mb-6">
+                <FormMessage success={deleteCopy.done} />
+              </div>
+            )}
+            {deleted && (
+              <p className="mb-6 border-l-4 border-k-line bg-k-surface px-4 py-3">
+                <span className="font-semibold">{deleteCopy.deleted}</span>
+                {" — "}
+                {deleteCopy.deletedBy(doc.deletedByName ?? "", t.fmt.dateTime(doc.deletedAt ?? ""))}
+              </p>
+            )}
+            {query.fail === "puudub" && !deleted && (
               <p role="alert" className="mb-6 border-l-4 border-k-danger bg-k-surface px-4 py-3">
                 {copy.fileUnavailable}
               </p>
@@ -137,6 +154,21 @@ export default async function DocumentPage({
                 { label: f.uploadedAt, value: t.fmt.dateTime(doc.createdAt) },
               ]}
             />
+
+            {canDeleteImage && (!deleted || !doc.fileRemoved) && (
+              <section aria-labelledby="delete-image" className="mt-10 grid gap-3 border-t border-k-line pt-6">
+                <h2 id="delete-image" className="text-lg font-bold">
+                  {deleteCopy.button}
+                </h2>
+                <p className="max-w-xl text-sm text-k-muted">{deleteCopy.explain}</p>
+                <DeleteImageButton
+                  orgSlug={org.slug}
+                  doc={doc}
+                  back={`/o/${org.slug}/dokumendid/${doc.id}`}
+                  retry={deleted}
+                />
+              </section>
+            )}
 
             {canManage && (
               <section aria-labelledby="manage" className="mt-10 grid gap-6 border-t border-k-line pt-6">

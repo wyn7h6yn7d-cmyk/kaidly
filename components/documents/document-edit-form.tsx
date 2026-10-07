@@ -49,7 +49,8 @@ export function DocumentEditForm({
           name="category"
           defaultValue={value("category", category)}
         >
-          {DOCUMENT_CATEGORIES.map((c) => (
+          {/* "Foto" only for images uploaded before photo links. */}
+          {DOCUMENT_CATEGORIES.filter((c) => c !== "photo" || category === "photo").map((c) => (
             <option key={c} value={c}>
               {copy.categories[c]}
             </option>

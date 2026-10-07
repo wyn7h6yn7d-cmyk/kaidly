@@ -33,7 +33,7 @@ npm run db:start       # local Supabase (needs a running Docker-compatible runti
 npm run db:reset       # rebuild local DB from migrations + seed
 npm run test:db        # pgTAP database/RLS tests (supabase/tests)
 npm run db:types       # regenerate lib/supabase/database.types.ts from the local DB
-npm run db:seed-files  # sample documents/photos for the local demo org (after db:reset)
+npm run db:seed-files  # sample documents and a photo link for the local demo org (after db:reset)
 npm run build
 npm run test:e2e       # Playwright, local stack only (own dev server on :3100)
 npm run check          # lint, typecheck, unit, database tests, build
@@ -106,7 +106,11 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
 - Files: one private bucket; object paths come from the database; browsers upload only to
   their own registered pending path; files are read through short-lived signed URLs from
   the access-checked route. Attachments on log entries and deficiencies are never changed
-  or deleted. No `service_role` anywhere, including scripts that upload.
+  or deleted — the one exception (owner decision 2026-10-08) is an **image uploaded before
+  photo links**: `delete_document_image` + Storage remove + `confirm_document_image_removed`
+  delete its file and keep the row as a trace (DATABASE.md §5j). No new images are stored:
+  photos are external links (`photos_url`, https only); never re-open image uploads. No
+  `service_role` anywhere, including scripts that upload.
 
 **Environments**
 - Preview/feature branches → DEVELOPMENT Supabase `gdpzavhkblbcxivoaqax`; `main`/Production →

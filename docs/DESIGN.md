@@ -197,10 +197,13 @@ requests to Google).
   käidupäeviku sissekanne); done steps get a green check, the current step shows one
   button. Members who can't create sites see who does it. No tours, no modals.
 - **Documents and attachments**: documents are list rows (icon, title, category · date ·
-  size, context) with "Ava" at right. Photos on a record are square thumbnails in a grid
-  (3 per row on phones) under the heading "Fotod"; other files as rows. Historical files
+  size, context) with "Ava" at right. A record's section "Fotod ja failid" starts with its
+  **Fotode link** ("Ava link" + the host, never the raw URL; new tab, `noopener noreferrer`).
+  Images uploaded before photo links are square thumbnails (2 per row on phones) with an
+  outlined "Kustuta pilt" under each (confirmation says it is permanent); a deleted image
+  leaves a muted line "Pilt kustutatud — name, time". Other files as rows. Historical files
   carry a green-bordered note that they can't be changed. The upload control is an
-  outlined button with a camera icon ("Pildista või vali fotod"); each chosen file is a
+  outlined button with a paperclip icon ("Lisa failid" — PDF, DOCX, XLSX); each chosen file is a
   row with size, state (Ootel · Laadin üles… 40% · Üles laaditud · Üleslaadimine
   ebaõnnestus) and a 44 px remove button; a thin progress bar while uploading. Refused
   files are listed in an alert with the reason.
@@ -219,11 +222,12 @@ rhythm (`.k-section`); nothing is positioned against the viewport. Sections:
 
 1. **Header** — two groups, pushed apart: left the logo with "Kuidas töötab?" and
    "Hinnakiri"; right "Logi sisse", "Registreeru" (primary) and the language selector, on the
-   same container as the hero. Below 1024 px the bar holds the logo, the compact language
-   select and a menu button (`MobileNav`: a disclosure, `aria-expanded`/`aria-controls`, no
-   focus trap) whose panel under the header lists "Kuidas töötab?", "Hinnakiri", "Logi
-   sisse" and "Registreeru" (full-width primary); it closes on a chosen link, Escape (focus
-   back on the button) and a click outside. Links come from
+   same container as the hero. Below 1024 px the bar holds the logo, **"Logi sisse"** (always
+   visible), the compact language select and a menu button (`MobileNav`: a disclosure,
+   `aria-expanded`/`aria-controls`, no focus trap) whose panel under the header lists
+   "Kuidas töötab?", "Hinnakiri" and "Registreeru" (full-width primary); it closes on a
+   chosen link, Escape (focus back on the button) and a click outside. One row from 320 px
+   (below 360 px the wordmark and spacing tighten slightly; targets stay 44 px). Links come from
    `components/marketing/public-nav.ts`; section links (`SectionLink`) scroll in place and
    never leave `#kuidas-toimib` / `#hinnad` in the address bar (an old `/#hinnad` URL lands
    on the section, then `replaceState` cleans it to `/`). "14 päeva tasuta" stays in the
@@ -329,14 +333,15 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
   starts with sensible defaults (now, the user's name).
 - Measured: from the installation page, two taps (Lisa sissekanne → type chip) plus typing
   and Salvesta. From the overview: Lisa sissekanne → recently used installation → type chip.
-- **Photos** sit under the description: "Pildista või vali fotod" opens the camera or the
-  gallery; photos are resized on the phone and upload after the entry is saved, with
-  progress per file. If an upload fails, the saved entry stays on screen with "Proovi
-  uuesti" and "Jätka ilma nende failideta". More photos can be added from the entry page
-  for 24 hours (author only); later ones go on a correction.
+- **Photos** are linked, not uploaded: "Fotode link" sits under the description ("Lisa link
+  kaustale või albumile, kus fotod asuvad.", placeholder `https://...`, `type="url"`). Files
+  ("Lisa failid": PDF, DOCX, XLSX) upload after the entry is saved, with progress per file.
+  If an upload fails, the saved entry stays on screen with "Proovi uuesti" and "Jätka ilma
+  nende failideta". More files can be added from the entry page for 24 hours (author only);
+  later ones go on a correction, which also carries the photo link forward.
 
-- **Deficiencies** take photos in the creation form too (same flow: saved first, then
-  uploaded; failure keeps the deficiency and the typed text).
+- **Deficiencies** take a photo link (create and edit) and files in the creation form (same
+  flow: saved first, then uploaded; failure keeps the deficiency and the typed text).
 - **Drafts:** new entries, corrections and deficiencies keep unsaved text in this tab
   (sessionStorage) — a reload or lost connection doesn't cost it; "Taastasime … mustandi"
   with "Alusta tühjalt". A lost connection while saving shows the network error and keeps

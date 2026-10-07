@@ -28,10 +28,10 @@ blocks engineering, QA or Preview work.
 ## APPLICATION
 | Status | Item |
 |---|---|
-| GREEN | All modules: companies, sites, installations, käidupäevik, käidukava with reminders, puudused, documents/photos, notifications, search, PDF/CSV reports, CSV import, Platform Admin |
+| GREEN | All modules: companies, sites, installations, käidupäevik, käidukava with reminders, puudused, documents (photos as external links since 2026-10-08), notifications, search, PDF/CSV reports, CSV import, Platform Admin |
 | GREEN | Plans Start / Team / Pro / Business / Custom with database-enforced user and active-installation limits (SUBSCRIPTIONS.md); customers see plan and usage only |
 | GREEN | Personal 14-day trial (one per user; 1 user, 5 active installations; deleting a company never resets it) |
-| GREEN | Public header: left logo + "Kuidas töötab?" + "Hinnakiri", right "Logi sisse" + "Registreeru" + language; below 1024 px logo + language + menu button with all four links; section links never leave `#…` in the URL |
+| GREEN | Public header: left logo + "Kuidas töötab?" + "Hinnakiri", right "Logi sisse" + "Registreeru" + language; below 1024 px logo + "Logi sisse" + language + menu button (section links, Registreeru); section links never leave `#…` in the URL |
 | GREEN | Error pages (translated `error.tsx`, trilingual `global-error.tsx`, 404 also for unknown public URLs); no SQL, stack traces, keys or provider messages to users |
 | GREEN | Upload abuse limits (database-enforced), messages ET/EN/RU |
 | GREEN | Account deletion request on /konto (validated mailto; plain text when no usable address) |
@@ -40,7 +40,7 @@ blocks engineering, QA or Preview work.
 | Status | Item |
 |---|---|
 | GREEN | Separate Production project, built from zero from the migrations; no development data copied, no seed |
-| GREEN | 26 migrations, latest `20261007100000_subscription_plans`. Development verified 2026-10-07; Production migrated in the 2026-10-06/07 releases (re-check with `migration list` at the next Production DB step) |
+| GREEN | 27 migrations, latest `20261008100000_photo_links`. Development verified 2026-10-07; Production migrated in the 2026-10-06/07 releases (re-check with `migration list` at the next Production DB step) |
 | GREEN | Flow: Development first → dry-run → Production (backup first) → CLI relinked to Development at once (RELEASE_RUNBOOK.md §3–4); `npm run db:target` labels the link |
 | GREEN | pgTAP suite pins tables, definer functions and callable RPCs (`000_security_baseline`); every table change ships with role-matrix and cross-tenant tests |
 | GREEN | Supabase's own `ensure_rls` / `rls_auto_enable()` reviewed and kept |
@@ -60,7 +60,8 @@ blocks engineering, QA or Preview work.
 ## STORAGE
 | Status | Item |
 |---|---|
-| GREEN | One private bucket `documents`, 25 MB, MIME allowlist, tenant-scoped policies, signed URLs (60 s) only |
+| GREEN | One private bucket `documents`, 25 MB, MIME allowlist (PDF/DOCX/XLSX; **no new images** since migration `photo_links`), tenant-scoped policies, signed URLs (60 s) only |
+| GREEN | Earlier images deletable by members (file removed, row kept as a trace — DATABASE.md §5j); failed-upload cleanup now really removes objects |
 
 ## SECURITY
 | Status | Item |

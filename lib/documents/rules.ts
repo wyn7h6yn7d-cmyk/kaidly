@@ -3,19 +3,22 @@
 
 export const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
-/** Allowed types and the extensions each may carry. No SVG, HTML or executables. */
+/**
+ * Types that can be uploaded and the extensions each may carry. No images (photos are kept
+ * elsewhere and linked: `photos_url`), no SVG, HTML or executables. The database and the
+ * bucket refuse images as well (migration `photo_links`).
+ */
 export const ALLOWED_FILE_TYPES = {
   "application/pdf": ["pdf"],
-  "image/jpeg": ["jpg", "jpeg"],
-  "image/png": ["png"],
-  "image/webp": ["webp"],
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"],
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"],
 } as const satisfies Record<string, readonly string[]>;
 
 export type AllowedMimeType = keyof typeof ALLOWED_FILE_TYPES;
 
-export const IMAGE_TYPES: readonly AllowedMimeType[] = ["image/jpeg", "image/png", "image/webp"];
+/** Images uploaded before photo links: still shown (and deletable), never uploaded again. */
+export const IMAGE_TYPES: readonly string[] = ["image/jpeg", "image/png", "image/webp"];
+export const isImageType = (mime: string) => IMAGE_TYPES.includes(mime);
 
 /** For <input accept>. */
 export const ACCEPT_ATTRIBUTE = Object.entries(ALLOWED_FILE_TYPES)
@@ -36,7 +39,21 @@ export const DOCUMENT_CATEGORIES = [
 
 export type DocumentCategory = (typeof DOCUMENT_CATEGORIES)[number];
 
-export type FileProblem = "type" | "size" | "empty";
+/** Categories for new uploads: "photo" stays only for images uploaded earlier. */
+export const UPLOAD_CATEGORIES = [
+  "audit",
+  "measurement_protocol",
+  "single_line_diagram",
+  "operating_plan",
+  "maintenance_report",
+  "declaration",
+  "manual",
+  "other",
+] as const satisfies readonly DocumentCategory[];
+
+export type UploadCategory = (typeof UPLOAD_CATEGORIES)[number];
+
+export type FileProblem = "type" | "size" | "empty" | "image";
 
 export function extensionOf(filename: string): string {
   const dot = filename.lastIndexOf(".");
@@ -50,6 +67,7 @@ export function isAllowedMimeType(value: string): value is AllowedMimeType {
 /** Both the declared type and the extension must be allowed, and must agree. */
 export function checkFile(file: { name: string; type: string; size: number }): FileProblem | null {
   const mime = file.type.toLowerCase();
+  if (mime.startsWith("image/") && mime !== "image/svg+xml") return "image";
   if (!isAllowedMimeType(mime)) return "type";
   if (!(ALLOWED_FILE_TYPES[mime] as readonly string[]).includes(extensionOf(file.name))) return "type";
   if (file.size <= 0) return "empty";

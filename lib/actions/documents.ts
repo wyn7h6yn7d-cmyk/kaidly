@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getOrgContext } from "@/lib/data/organisations";
 import { dbErrorCode } from "@/lib/db/errors";
@@ -10,6 +11,7 @@ import {
   DOCUMENT_CATEGORIES,
   sanitizeFilename,
   titleFromFilename,
+  UPLOAD_CATEGORIES,
 } from "@/lib/documents/rules";
 import { createClient } from "@/lib/supabase/server";
 import { field, requiredText } from "@/lib/validation/common";
@@ -36,7 +38,7 @@ const registerSchema = z.object({
   target: targetSchema,
   file: z.object({ name: z.string().min(1).max(1000), type: z.string().max(200), size: z.number().int() }),
   title: z.string().trim().max(200).optional(),
-  category: z.enum(DOCUMENT_CATEGORIES),
+  category: z.enum(UPLOAD_CATEGORIES),
 });
 
 export type RegisterUploadInput = z.input<typeof registerSchema>;
@@ -102,7 +104,10 @@ export async function registerUpload(input: RegisterUploadInput): Promise<Action
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) return failure("invalid_input");
   const { orgSlug, target, file, title, category } = parsed.data;
-  if (checkFile(file)) return failure("invalid_input");
+  const problem = checkFile(file);
+  // Photos are linked, not uploaded (the database and the bucket refuse images too).
+  if (problem === "image") return failure("image_uploads_disabled");
+  if (problem) return failure("invalid_input");
 
   const ctx = await getOrgContext(orgSlug);
   if (!ctx) return failure("not_found");
@@ -158,8 +163,9 @@ export async function discardUpload(orgSlug: string, documentId: string): Promis
   if (!doc) return failure("not_found");
   // Remove the object first; if that fails, keep the row so the leftover stays visible in
   // the storage report instead of becoming an object nobody can trace.
-  const { error: removeError } = await supabase.storage.from("documents").remove([doc.storage_path]);
-  if (removeError) return failure("unknown");
+  const { data: removed, error: removeError } = await supabase.storage.from("documents").remove([doc.storage_path]);
+  // An upload that never reached Storage has nothing to remove; anything else must really go.
+  if (removeError || (!removed?.length && (await objectExists(doc.storage_path)))) return failure("unknown");
   const { error } = await supabase.from("documents").delete().eq("id", doc.id);
   if (error) return failure(dbErrorCode(error));
   return { ok: true };
@@ -218,4 +224,54 @@ export async function archiveDocument(_prev: ActionState, formData: FormData): P
 
 export async function restoreDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
   return setArchived(formData, false);
+}
+
+/** Whether the object is still in Storage (the caller can see it only while removable). */
+async function objectExists(path: string): Promise<boolean> {
+  const supabase = await createClient();
+  const slash = path.lastIndexOf("/");
+  const { data } = await supabase.storage
+    .from("documents")
+    .list(path.slice(0, slash), { search: path.slice(slash + 1), limit: 1 });
+  return Boolean(data?.length);
+}
+
+const deleteImageSchema = z.object({
+  documentId: z.uuid(),
+  // The page to come back to; only pages of this company.
+  back: z.string().regex(/^\/o\/[a-z0-9-]+(\/[a-z0-9-]+)+$/),
+});
+
+/**
+ * Deletes an image uploaded before photo links (docs/DATABASE.md §10): the database marks
+ * it deleted (authorised there: operators for attachments, admins for general documents),
+ * the file is removed from Storage with the user's own session, and the database confirms
+ * the object is gone. The row stays as a trace. A failed removal is reported and can be
+ * retried from the same button; the image is unreadable from the first step on.
+ */
+export async function deleteDocumentImage(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const access = await actionContext(formData, "operator");
+  if (!access.ok) return access.error;
+  const parsed = deleteImageSchema.safeParse({ documentId: field(formData, "documentId"), back: field(formData, "back") });
+  if (!parsed.success || !parsed.data.back.startsWith(`/o/${access.ctx.org.slug}/`)) return failure("not_found");
+  const { documentId, back } = parsed.data;
+  const supabase = await createClient();
+
+  const { data: doc } = await supabase
+    .from("documents")
+    .select("id")
+    .eq("organisation_id", access.ctx.org.id)
+    .eq("id", documentId)
+    .maybeSingle();
+  if (!doc) return failure("not_found");
+
+  const { data: path, error } = await supabase.rpc("delete_document_image", { p_document_id: doc.id });
+  if (error || !path) return failure(dbErrorCode(error));
+  const { error: removeError } = await supabase.storage.from("documents").remove([path]);
+  if (removeError) return failure("image_delete_incomplete");
+  const { data: removed, error: confirmError } = await supabase.rpc("confirm_document_image_removed", {
+    p_document_id: doc.id,
+  });
+  if (confirmError || !removed) return failure("image_delete_incomplete");
+  redirect(`${back}?pilt=kustutatud`);
 }

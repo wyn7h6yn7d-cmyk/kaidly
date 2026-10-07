@@ -51,7 +51,7 @@ returns void language plpgsql as $$
 declare v_id uuid; v_path text;
 begin
   insert into public.documents (organisation_id, site_id, electrical_installation_id, log_entry_id, deficiency_id, category, title, original_filename, mime_type, size_bytes)
-  select i.organisation_id, i.site_id, i.id, p_log, p_def, 'photo', 'Uus', 'uus.jpg', 'image/jpeg', p_size
+  select i.organisation_id, i.site_id, i.id, p_log, p_def, 'other', 'Uus', 'uus.pdf', 'application/pdf', p_size
     from public.electrical_installations i where i.id = pg_temp.inst(p_inst)
   returning id, storage_path into v_id, v_path;
   perform set_config('test.id_' || p_key, v_id::text, true);
@@ -74,7 +74,7 @@ select is_empty($$ select 1 from public.documents where id = pg_temp.doc('b1') o
   'tenant A cannot list tenant B''s documents');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'photo', 'x', 'x.jpg', 'image/jpeg', 10) $$,
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'x', 'x.pdf', 'application/pdf', 10) $$,
   '42501', null, 'a viewer cannot upload');
 
 select pg_temp.login('a_operator');
@@ -92,15 +92,15 @@ select throws_ok(
   '42501', null, 'operators cannot upload organisation-level documents (admin+)');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes, storage_path)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'photo', 'x', 'x.jpg', 'image/jpeg', 10, pg_temp.p('b1')) $$,
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'x', 'x.pdf', 'application/pdf', 10, pg_temp.p('b1')) $$,
   '42501', null, 'the storage path cannot be supplied (no reference to another tenant''s object)');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('b1'), 'photo', 'x', 'x.jpg', 'image/jpeg', 10) $$,
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('b1'), 'other', 'x', 'x.pdf', 'application/pdf', 10) $$,
   '23503', null, 'metadata cannot reference another tenant''s installation');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, log_entry_id, category, title, original_filename, mime_type, size_bytes)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'e1000000-0000-4000-8000-0000000000a2', 'photo', 'x', 'x.jpg', 'image/jpeg', 10) $$,
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'e1000000-0000-4000-8000-0000000000a2', 'other', 'x', 'x.pdf', 'application/pdf', 10) $$,
   '23503', null, 'an attachment must belong to the log entry''s own installation');
 select throws_ok(
   $$ insert into public.documents (organisation_id, category, title, original_filename, mime_type, size_bytes)
@@ -108,8 +108,8 @@ select throws_ok(
   '42501', null, 'tenant A cannot register documents in tenant B');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'x', 'skript.svg', 'image/svg+xml', 10) $$,
-  '23514', null, 'SVG (and anything outside the allowlist) is refused');
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'x', 'leht.html', 'text/html', 10) $$,
+  '23514', null, 'HTML (and anything outside the allowlist) is refused (images, SVG included: 230_photo_links)');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
      values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'x', 'suur.pdf', 'application/pdf', 26214401) $$,
@@ -139,7 +139,7 @@ select lives_ok($$ select pg_temp.register('def', 'a1', null, 'df000000-0000-400
 select pg_temp.login('a_operator');
 select lives_ok(
   $$ insert into storage.objects (bucket_id, name, metadata)
-     values ('documents', pg_temp.reg_path('op'), '{"size": 1234, "mimetype": "image/jpeg"}') $$,
+     values ('documents', pg_temp.reg_path('op'), '{"size": 1234, "mimetype": "application/pdf"}') $$,
   'an operator can upload to their own registered pending path');
 select throws_ok(
   $$ insert into storage.objects (bucket_id, name, metadata)
@@ -159,8 +159,10 @@ with u as (
 select is(count(*)::int, 0, 'nobody can overwrite an object (no update policy)') from u;
 select is_empty($$ select 1 from storage.objects where name = pg_temp.p('b1') $$,
   'tenant A cannot read (or learn about) tenant B''s object');
-select is_empty($$ select 1 from storage.objects where name = pg_temp.reg_path('op') $$,
-  'an uploaded but not finalized (pending) object is not readable');
+select pg_temp.login('a_admin');
+select is_empty(format('select 1 from storage.objects where name = %L', current_setting('test.path_op')),
+  'an uploaded but not finalized (pending) object is not readable by other members');
+select pg_temp.login('a_operator');
 select isnt_empty($$ select 1 from storage.objects where name = pg_temp.p('a1') $$,
   'ready objects of the own organisation are readable (for signed URLs)');
 
@@ -171,7 +173,7 @@ select is(public.finalize_document(pg_temp.reg_id('fresh')), 'failed'::public.do
   'finalize without an uploaded object marks it failed');
 select pg_temp.register('liar', 'a1', null, null, 5000);
 insert into storage.objects (bucket_id, name, metadata)
-values ('documents', pg_temp.reg_path('liar'), '{"size": 26000000, "mimetype": "image/jpeg"}');
+values ('documents', pg_temp.reg_path('liar'), '{"size": 26000000, "mimetype": "application/pdf"}');
 select is(public.finalize_document(pg_temp.reg_id('liar')), 'failed'::public.document_status,
   'finalize refuses a file whose size differs from the registered metadata');
 select pg_temp.login('b_operator');

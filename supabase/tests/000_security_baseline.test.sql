@@ -79,9 +79,11 @@ select results_eq(
        ('admin_users(text,integer,integer)'),
        ('am_platform_admin()'),
        ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
+       ('confirm_document_image_removed(uuid)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
        ('deactivate_organisation(uuid,text)'),
+       ('delete_document_image(uuid)'),
        ('delete_organisation(uuid,text)'),
        ('finalize_document(uuid)'),
        ('import_company_data(uuid,text,jsonb,uuid)'),
@@ -198,9 +200,11 @@ select results_eq(
        ('admin_users(text,integer,integer)'),
        ('am_platform_admin()'),
        ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
+       ('confirm_document_image_removed(uuid)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
        ('deactivate_organisation(uuid,text)'),
+       ('delete_document_image(uuid)'),
        ('delete_organisation(uuid,text)'),
        ('finalize_document(uuid)'),
        ('import_company_data(uuid,text,jsonb,uuid)'),
@@ -316,7 +320,7 @@ select results_eq(
   $$ select id::text, public, file_size_limit, allowed_mime_types::text[]
        from storage.buckets order by id $$,
   $$ values ('documents', false, 26214400::bigint,
-             array['application/pdf', 'image/jpeg', 'image/png', 'image/webp',
+             array['application/pdf',
                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']::text[]) $$,
   'storage buckets are exactly the reviewed private documents bucket'
@@ -327,7 +331,9 @@ select results_eq(
        from pg_policies where schemaname = 'storage' order by 1 $$,
   $$ values
        ('objects: kaidly documents: read ready files (SELECT to authenticated)'),
+       ('objects: kaidly documents: remove deleted images (DELETE to authenticated)'),
        ('objects: kaidly documents: remove own incomplete uploads (DELETE to authenticated)'),
+       ('objects: kaidly documents: see removable files (SELECT to authenticated)'),
        ('objects: kaidly documents: upload registered pending files (INSERT to authenticated)') $$,
   'storage policies are exactly the reviewed set (no update, nothing for anon)'
 );

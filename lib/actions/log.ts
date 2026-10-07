@@ -9,7 +9,7 @@ import { actionContext } from "./context";
 import { savedOrRedirect } from "./saved";
 import { type ActionState, failure, invalidInput, type SavedRecord } from "./state";
 
-const LOG_TIME_MESSAGES = { future: "occurred_in_future", time: "invalid_time" } as const;
+const LOG_TIME_MESSAGES = { future: "occurred_in_future", time: "invalid_time", url: "invalid_photos_url" } as const;
 
 // Organisation, site and installation are never taken from the form: the organisation
 // comes from the URL slug (RLS), the installation is looked up inside it, and the site is
@@ -23,6 +23,7 @@ function input(formData: FormData) {
     description: field(formData, "description"),
     result: field(formData, "result"),
     performedByName: field(formData, "performedByName"),
+    photosUrl: field(formData, "photosUrl"),
   };
 }
 
@@ -53,6 +54,7 @@ export async function createLogEntry(
       description: entry.description,
       result: entry.result ?? null,
       performed_by_name: entry.performedByName ?? null,
+      photos_url: entry.photosUrl ?? null,
     })
     .select("id")
     .single();
@@ -102,6 +104,7 @@ export async function correctLogEntry(
       description: entry.description,
       result: entry.result ?? null,
       performed_by_name: entry.performedByName ?? null,
+      photos_url: entry.photosUrl ?? null,
       correction_of_id: original.id,
       correction_reason: entry.correctionReason,
     })

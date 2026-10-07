@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AttachmentPicker } from "@/components/documents/attachment-picker";
+import { PhotosLinkField } from "@/components/documents/photos-link";
 import { DraftNotice, UploadRecovery, useSaveThenUpload } from "@/components/documents/use-save-then-upload";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
@@ -20,15 +21,17 @@ export type LogEntryDefaults = {
   description?: string;
   result?: string | null;
   performedByName?: string | null;
+  photosUrl?: string | null;
 };
 
 /**
  * New entry or correction. Organisation and installation are already known from the URL,
  * so the form only asks for what happened. Rarely changed fields start collapsed.
  *
- * Photos: the entry is saved first, then the chosen files upload to it (the author may
- * attach files for 24 hours after saving). If an upload fails the entry is already safe;
- * the user can retry or continue without the file — nothing typed is lost.
+ * Photos are linked ("Fotode link"), not uploaded. Files (PDF, DOCX, XLSX): the entry is
+ * saved first, then the chosen files upload to it (the author may attach files for 24 hours
+ * after saving). If an upload fails the entry is already safe; the user can retry or
+ * continue without the file — nothing typed is lost.
  */
 export function LogEntryForm({
   orgSlug,
@@ -128,6 +131,12 @@ export function LogEntryForm({
         />
       </Field>
 
+      <PhotosLinkField
+        id={id("photosUrl")}
+        defaultValue={value("photosUrl", defaults.photosUrl)}
+        invalid={state.fields?.photosUrl}
+      />
+
       {isCorrection ? (
         <>
           {details}
@@ -154,10 +163,10 @@ export function LogEntryForm({
       )}
 
       <fieldset className="grid gap-2">
-        <legend className="mb-2 text-[15px] font-semibold">{attachmentCopy.photos}</legend>
+        <legend className="mb-2 text-[15px] font-semibold">{attachmentCopy.files}</legend>
         <AttachmentPicker
           queue={queue}
-          label={attachmentCopy.takePhoto}
+          label={attachmentCopy.addFiles}
           hint={isCorrection ? `${attachmentCopy.correctionHint} ${attachmentCopy.hint}` : attachmentCopy.hint}
           disabled={locked}
         />

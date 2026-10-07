@@ -159,6 +159,7 @@ deficiencies. **Domain review pending:** type list, statuses, responsible person
 | `correction_of_id`, `correction_reason` | set together (§6) |
 | `scheduled_activity_id`, `scheduled_due_on` | completion records (§8); server-only |
 | `deficiency_id` | resolution records (§9); server-only |
+| `photos_url` | optional external photo link, https only (§5j); part of the insert like every field — a correction carries its own |
 
 View **`log_entry_current`** (`security_invoker`): one row per original entry with the
 values of its newest correction, plus `is_corrected`, `correction_count`, the newest
@@ -177,7 +178,8 @@ from the view.
 `high` Kõrge · `critical` Kriitiline — descriptive, not legal), `detected_at` (not in the
 future), `responsible_person_name`, `due_on`, `status` (`open` Avatud · `in_progress` Töös
 · `resolved` Lahendatud), `resolution`, `resolved_at`, `resolved_by`, `resolved_by_name`
-(all four set exactly when resolved), `created_by`, `created_by_name`.
+(all four set exactly when resolved), `created_by`, `created_by_name`, `photos_url` (optional
+external photo link, https only, editable by operator+ until resolved — §5j).
 
 ### documents — dokumendid ja fotod (Phase 7)
 Metadata only — file bytes live in Storage, never in Postgres. `category`
@@ -186,9 +188,11 @@ Metadata only — file bytes live in Storage, never in Postgres. `category`
 `declaration` Deklaratsioon · `manual` Juhend · `photo` Foto · `other` Muu), `title` 1–200,
 `original_filename` (display only; no path separators or control characters),
 `storage_path` (generated: `{organisation_id}/{document_id}/{random uuid}`, unique, checked),
-`mime_type` (PDF, JPEG, PNG, WebP, DOCX, XLSX — no SVG/HTML), `size_bytes` 1 B–25 MB,
+`mime_type` (PDF, JPEG, PNG, WebP, DOCX, XLSX — no SVG/HTML; **new uploads PDF/DOCX/XLSX
+only**, images exist only from before photo links), `size_bytes` 1 B–25 MB,
 `status` (`pending` → `ready` | `failed`), `uploaded_by`, `uploaded_by_name`, `created_at`,
-`ready_at` (set exactly when ready), `archived_at`.
+`ready_at` (set exactly when ready), `archived_at`, and the deletion trace of an earlier image
+(`deleted_at`, `deleted_by`, `deleted_by_name`, `file_removed_at` — §5j; server-only).
 Placement: optional `site_id`, `electrical_installation_id` (needs the site), and at most one
 of `log_entry_id` / `deficiency_id` (needs the installation); composite FKs as for every
 tenant table, including `(log_entry_id, electrical_installation_id)` and
@@ -208,7 +212,7 @@ V = viewer, Op = operator, A = admin, Ow = owner; "+" = that role and above.
 | log entries | V+ | Op+ | **never** — Op+ adds corrections | **never** |
 | scheduled activities | V+ | A+ | A+ incl. archive; Op+ completes via `complete_scheduled_activity` | — (archive) |
 | deficiencies | V+ | Op+ | Op+ fields and open ⇄ in progress; Op+ resolves via `resolve_deficiency`; resolved = final | **never** |
-| documents (ready) | V+ | Op+ for installations, log entries and deficiencies; A+ for organisation and site documents | A+: title, category, archive — general documents only; attachments never | **never** (archive) |
+| documents (ready) | V+ | Op+ for installations, log entries and deficiencies; A+ for organisation and site documents; **never images** (§5j) | A+: title, category, archive — general documents only; attachments never | **never** (archive) — except an **image** uploaded before photo links: its file is deleted, the row stays as a trace (Op+ for attachments, A+ for general documents; `delete_document_image`, §5j) |
 | documents (incomplete upload) | — (not listed or readable) | — | `finalize_document` (uploader) | the uploader (cleanup) |
 
 Differences from the original Phase 0 plan, by later briefs: operators may correct any log
@@ -541,6 +545,40 @@ Model, rules and admin workflow: docs/SUBSCRIPTIONS.md.
   (audited `subscription_set`), `admin_subscriptions`, `admin_subscription` (with history);
   members — `organisation_plan(org)` (plan, limits, usage, expiry; no price or notes).
 
+## 5j. Photo links and deleting earlier images (migration `photo_links`)
+
+Owner decision 2026-10-08: Storage capacity is limited and photos fill it quickly, so KAIDLY
+stops storing images and keeps a **link** to where the photos are instead.
+
+- **Photo links:** `log_entries.photos_url` and `deficiencies.photos_url`, optional, checked
+  in the database (https, a host with a dot, no credentials, no whitespace, ≤ 2000) and
+  normalised by the app (`lib/photo-links.ts`). Rendered only as a link with
+  `rel="noopener noreferrer"`, never fetched. Log entries stay append-only (the link is part of
+  the insert; a correction carries its own); deficiencies change it with their other fields
+  until resolved.
+- **No new images:** trigger `document_no_new_images` refuses image MIME types for signed-in
+  users (`image_uploads_disabled`; maintenance without a session, e.g. a restore, can still
+  write existing rows), and the bucket's `allowed_mime_types` is PDF/DOCX/XLSX. The table's
+  type check still allows the image types so existing rows stay valid.
+- **Deleting an earlier image (tombstone):** the operational record keeps a trace instead of
+  losing the row. Two steps, both as the user (no service key):
+  1. `delete_document_image(id)` — security definer; `not_found` for viewers, other companies,
+     read-only companies, non-images and incomplete uploads. Operators delete attachments of
+     log entries and deficiencies (also once resolved / after 24 h), admins general documents.
+     Sets `deleted_at`, `deleted_by`, `deleted_by_name` (row locked; repeating it returns the
+     path again while the file is still there, `image_already_deleted` after) and returns the
+     object path. From this moment the read policy no longer serves the file.
+  2. The app removes the object through the Storage API with the user's session (policy
+     "remove deleted images"), then `confirm_document_image_removed(id)` checks the object is
+     really gone and sets `file_removed_at` (false while it still exists — the UI offers
+     "Lõpeta kustutamine"; `supabase/maintenance/storage_report.sql` lists unfinished ones).
+  A deleted row never changes again (`document_before_update`); the change history records it.
+- **Storage needs SELECT to delete:** Storage removes objects with `DELETE … RETURNING`, so
+  Postgres applies the SELECT policies too. Policy "see removable files" makes exactly the
+  removable objects visible to those allowed to remove them (own incomplete uploads; deleted
+  images until confirmed gone). Before this migration the uploader's cleanup of a failed
+  upload removed the row but silently left the object in Storage.
+
 ## 6. Operating log — append-only and corrections
 
 - There are no update or delete grants or policies for any role, and trigger
@@ -569,6 +607,7 @@ Model, rules and admin workflow: docs/SUBSCRIPTIONS.md.
 | `resolve_deficiency(deficiency, resolution, entry_type, occurred_at, performed_by)` | Op+ | §9 |
 | `delete_organisation`, `deactivate_organisation`, `reactivate_organisation` | Ow | §5a |
 | `finalize_document(document)` | the uploader, Op+ | §10: `ready` if the object exists at the registered path with the registered size and type, else `failed` |
+| `delete_document_image(document)`, `confirm_document_image_removed(document)` | Op+ for attachments, A+ for general documents | §5j: tombstone an earlier image and return its path; confirm its object is gone |
 | `am_platform_admin()`, `admin_*` | platform admins (others: `not_found`) | §5b |
 | `my_notifications(unread_only, limit, offset)` | signed in (security invoker: own rows under RLS) | §5c |
 | `organisation_access(org)` | members (viewer+) | §5d |
@@ -632,19 +671,22 @@ the signed-in user by the route `/o/[org]/dokumendid/[id]/ava`.
    non-ready rows of the uploader). No background worker; leftovers are reported by the
    read-only `supabase/maintenance/storage_report.sql`.
 
-**Storage policies on `storage.objects`** (exactly three; the baseline pins them):
+**Storage policies on `storage.objects`** (exactly five; the baseline pins them):
 | Policy | Rule |
 |---|---|
-| read ready files (SELECT) | a `ready` documents row with this path is visible to the caller (documents RLS applies) |
+| read ready files (SELECT) | a `ready`, not deleted documents row with this path is visible to the caller (documents RLS applies) |
+| see removable files (SELECT) | own incomplete uploads, and deleted images not yet confirmed gone (operator+) — needed because Storage deletes with `RETURNING` (§5j) |
 | upload registered pending files (INSERT) | a `pending` row with this path, uploaded by the caller |
 | remove own incomplete uploads (DELETE) | a non-ready row with this path, uploaded by the caller |
+| remove deleted images (DELETE) | a deleted image of the caller's company (operator+), file not yet confirmed gone |
 
 No UPDATE policy: objects are never overwritten or replaced. Nothing for `anon`.
 
 **Immutability**
 - Files on a log entry or a deficiency are part of the operational record: the row can't
   be changed, archived or deleted (`document_immutable`, `documents_are_kept`, check
-  constraint) and the object can't be deleted or overwritten.
+  constraint) and the object can't be deleted or overwritten. Only exception: an image
+  uploaded before photo links may be deleted (file removed, row kept as a trace, §5j).
 - New files go onto a log entry only from its author within **24 hours** of recording it
   (approved 2026-10-02, migration `attachment_window_24h`)
   (`log_entry_attachment_closed`) — enough to finish uploads from site. Later material goes
@@ -684,7 +726,8 @@ deletes) is filtered in the query. No schema change was needed.
 
 ## 11. Tests
 
-`npm run test:db` runs pgTAP: 633 tests in 19 files, using the shared fixture
+`npm run test:db` runs pgTAP (964 tests in 25 files on 2026-10-08) and the concurrency
+scripts (e-mail processor, plan limits, personal trial, concurrent image deletes), using the shared fixture
 `supabase/tests/helpers/fixture.psql` (two tenants with one user per role, an outsider, and
 a user in both) and `helpers/sites.psql`.
 
@@ -709,6 +752,7 @@ a user in both) and `helpers/sites.psql`.
 | `150_organisation_access` | 56 | §5d |
 | `160_global_search` | 20 | §5e |
 | `170_release_hardening` | 20 | §5f |
+| `230_photo_links` | 42 | §5j: https-only links (http, script, credentials, no domain, whitespace refused), append-only log link, viewer/other company can't change, resolved deficiency final; images and SVG refused, PDFs registered, bucket without image types; delete roles (viewer, other company, operator vs general document, non-image), tombstone, unreadable at once, confirm before/after removal, retry, no double delete, tombstone immutable, history; failed-upload cleanup removes the object |
 
 Every protection has been **mutation-tested**: deliberately breaking a policy, trigger,
 grant or function made the relevant tests fail, and everything was restored afterwards.

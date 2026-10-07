@@ -53,6 +53,7 @@ export default async function CorrectLogEntryPage({
                 description: current.description,
                 result: current.result,
                 performedByName: current.performedByName,
+                photosUrl: current.photosUrl,
               }}
               cancelHref={`/o/${org.slug}/paigaldised/${installation.id}/paevik/${entry.id}`}
             />

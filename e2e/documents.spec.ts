@@ -6,45 +6,41 @@ import {
   expectNoHorizontalScroll,
   field,
   login,
+  PNG,
   sql,
   test,
 } from "./support/fixtures";
 
-// A 1×1 PNG and a minimal PDF: real files, no network.
-const PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-  "base64",
-);
+// A minimal PDF: a real file, no network.
 const PDF = Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
 
-test.describe("Dokumendid ja fotod", () => {
-  test("operator adds a log entry with a photo from the phone @responsive", async ({ page }) => {
+test.describe("Dokumendid ja fotode lingid", () => {
+  test("operator adds a log entry with a photo link and a PDF from the phone @responsive", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Tootmishoone");
     const installation = await createInstallation(org, site, "Peajaotuskilp", "PJK-1");
     await login(page, org.users.operator, `/o/${org.slug}/paigaldised/${installation}/paevik/uus`);
 
     await page.getByText("Kontroll", { exact: true }).click();
-    await field(page, "description").fill("Kilbi ülevaatus, foto lisatud");
-    await page.getByLabel("Pildista või vali fotod").setInputFiles({
-      name: "kilp.png",
-      mimeType: "image/png",
-      buffer: PNG,
-    });
-    await expect(page.getByRole("list", { name: "Manused" }).getByText("kilp.png")).toBeVisible();
+    await field(page, "description").fill("Kilbi ülevaatus, fotod kaustas");
+    await page.getByLabel("Fotode link").fill("  https://drive.example.com/folders/kilp-2026  ");
+    await page.getByLabel("Lisa failid").setInputFiles({ name: "protokoll.pdf", mimeType: "application/pdf", buffer: PDF });
+    await expect(page.getByRole("list", { name: "Manused" }).getByText("protokoll.pdf")).toBeVisible();
     await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
     await expect(page).toHaveURL(new RegExp(`/paigaldised/${installation}/paevik\\?salvestatud=1$`));
 
     await page.getByRole("link", { name: /Kilbi ülevaatus/ }).click();
-    const photo = page.getByRole("list", { name: "Fotod" }).getByRole("img", { name: "kilp" });
-    await expect(photo).toBeVisible();
-    // The thumbnail really loads through the access-checked, short-lived link.
-    await expect.poll(() => photo.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    const link = page.getByRole("link", { name: "Ava fotode link (drive.example.com) uues aknas" });
+    await expect(link).toHaveAttribute("href", "https://drive.example.com/folders/kilp-2026");
+    await expect(link).toHaveAttribute("target", "_blank");
+    await expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    await expect(page.getByRole("list", { name: "Manused" }).getByRole("link", { name: "protokoll", exact: true })).toBeVisible();
     await expectNoHorizontalScroll(page);
 
-    expect(sql(`select count(*) from public.documents where organisation_id = '${org.id}' and status = 'ready'`)).toBe(
-      "1",
+    expect(sql(`select photos_url from public.log_entries where organisation_id = '${org.id}'`)).toBe(
+      "https://drive.example.com/folders/kilp-2026",
     );
+    expect(sql(`select count(*) from public.documents where organisation_id = '${org.id}' and status = 'ready'`)).toBe("1");
   });
 
   test("a failed upload keeps the saved entry and can be retried", async ({ page }) => {
@@ -56,12 +52,12 @@ test.describe("Dokumendid ja fotod", () => {
     // The network drops while the file is uploading.
     await page.route("**/storage/v1/object/documents/**", (route) => route.abort("connectionreset"));
     await page.getByText("Hooldus", { exact: true }).click();
-    await field(page, "description").fill("Hooldus tehtud, foto ei läinud kohe läbi");
-    await page.getByLabel("Pildista või vali fotod").setInputFiles({ name: "hooldus.png", mimeType: "image/png", buffer: PNG });
+    await field(page, "description").fill("Hooldus tehtud, akt ei läinud kohe läbi");
+    await page.getByLabel("Lisa failid").setInputFiles({ name: "akt.pdf", mimeType: "application/pdf", buffer: PDF });
     await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
 
     await expect(page.getByText(/Sissekanne on salvestatud. Mõni fail jäi üles laadimata/)).toBeVisible();
-    await expect(field(page, "description")).toHaveValue("Hooldus tehtud, foto ei läinud kohe läbi");
+    await expect(field(page, "description")).toHaveValue("Hooldus tehtud, akt ei läinud kohe läbi");
     // The incomplete upload was cleaned up; the entry exists once.
     expect(sql(`select count(*) from public.documents where organisation_id = '${org.id}'`)).toBe("0");
     expect(sql(`select count(*) from public.log_entries where organisation_id = '${org.id}'`)).toBe("1");
@@ -73,18 +69,29 @@ test.describe("Dokumendid ja fotod", () => {
     expect(sql(`select count(*) from public.documents where organisation_id = '${org.id}' and status = 'ready'`)).toBe("1");
   });
 
-  test("files outside the allowlist are refused before upload", async ({ page }) => {
+  test("images and files outside the allowlist are refused before upload; no camera picker", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
     await login(page, org.users.operator, `/o/${org.slug}/paigaldised/${installation}/paevik/uus`);
 
-    await page.getByLabel("Pildista või vali fotod").setInputFiles({
+    const picker = page.getByLabel("Lisa failid");
+    // The chooser offers documents only: no image/* (so phones offer no camera).
+    const accept = (await picker.getAttribute("accept")) ?? "";
+    expect(accept).not.toContain("image");
+    expect(accept).toContain("application/pdf");
+    await expect(page.getByText("Pildista või vali fotod")).toHaveCount(0);
+
+    await picker.setInputFiles({ name: "kilp.png", mimeType: "image/png", buffer: PNG });
+    const refused = page.getByRole("group", { name: "Failid" }).getByRole("alert");
+    await expect(refused).toContainText("kilp.png");
+    await expect(refused).toContainText("Pilte KAIDLYsse üles ei laadita. Lisa fotode link");
+    await picker.setInputFiles({
       name: "skeem.svg",
       mimeType: "image/svg+xml",
       buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>'),
     });
-    await expect(page.getByRole("alert").getByText(/skeem\.svg/)).toBeVisible();
+    await expect(refused.getByText(/skeem\.svg/)).toBeVisible();
     await expect(page.getByRole("list", { name: "Manused" })).toHaveCount(0);
   });
 
@@ -176,7 +183,7 @@ test.describe("Dokumendid ja fotod", () => {
     await expect(page.locator("main").getByRole("alert")).toContainText("Faili ei õnnestunud praegu avada");
   });
 
-  test("photos can be added to an open deficiency", async ({ page }) => {
+  test("files and a photo link can be added to an open deficiency", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
@@ -186,7 +193,16 @@ test.describe("Dokumendid ja fotod", () => {
       values ('${org.id}', '${site}', '${installation}', 'Lahtine klemm', 'Peakilbis', 'high', '${org.users.operator.id}')
       returning id;`);
     await login(page, org.users.operator, `/o/${org.slug}/puudused/${deficiency}`);
-    await page.getByLabel("Lisa fotod").setInputFiles({ name: "klemm.png", mimeType: "image/png", buffer: PNG });
-    await expect(page.getByRole("list", { name: "Fotod" }).getByRole("img", { name: "klemm" })).toBeVisible();
+    await page.getByLabel("Lisa failid").setInputFiles({ name: "klemm.pdf", mimeType: "application/pdf", buffer: PDF });
+    await expect(page.getByRole("list", { name: "Manused" }).getByRole("link", { name: "klemm", exact: true })).toBeVisible();
+
+    await page.getByRole("link", { name: "Muuda" }).click();
+    await page.getByLabel("Fotode link").fill("https://example.sharepoint.com/sites/kilbid/klemm");
+    await page.getByRole("button", { name: "Salvesta" }).click();
+    await expect(page).toHaveURL(new RegExp(`/puudused/${deficiency}$`));
+    await expect(page.getByRole("link", { name: "Ava fotode link (example.sharepoint.com) uues aknas" })).toHaveAttribute(
+      "href",
+      "https://example.sharepoint.com/sites/kilbid/klemm",
+    );
   });
 });

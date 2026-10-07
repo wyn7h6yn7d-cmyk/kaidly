@@ -30,7 +30,7 @@ Desktop (≥ 1024 px):
 - [ ] Open `https://kaidly.ee/#hinnad` directly → lands on pricing, then the address bar shows `https://kaidly.ee/`
 - [ ] **Registreeru** → `/auth/sign-up` ("Loo konto" form); back; **Logi sisse** → `/auth/login`
 - [ ] Switch **EN** → "How does it work?", "Pricing", "Sign in", "Sign up"; **RU** → "Как это работает?", "Цены", "Войти", "Регистрация"; back to **ET**
-- [ ] Phone (or a window narrower than 1024 px) → header shows logo, ET and a menu button only; the menu lists "Kuidas töötab?", "Hinnakiri", "Logi sisse" and green "Registreeru"; **Hinnakiri** scrolls to pricing, closes the menu and leaves no `#…`; Escape closes it
+- [ ] Phone (or a window narrower than 1024 px) → header shows logo, **"Logi sisse"**, ET and a menu button on one row; the menu lists "Kuidas töötab?", "Hinnakiri" and green "Registreeru"; **Hinnakiri** scrolls to pricing, closes the menu and leaves no `#…`; Escape closes it
 - [ ] Footer → "Kuidas töötab?", "Hinnakiri", "Logi sisse", "Registreeru", Privaatsus, Kasutustingimused, ET/EN/RU
 - [ ] Privaatsus / Kasutustingimused → visible pre-launch notice (draft until operator details exist)
 
@@ -56,7 +56,8 @@ Redirects, crawlers:
 - [ ] "Lisa objekt" → one site; "Lisa paigaldis" ×5 (short names) → Pakett shows 5 / 5
 - [ ] Try a 6th installation → "Prooviperioodil saab olla kuni 5 aktiivset elektripaigaldist" instead of the form → **5-installation limit**; archive one → the form is available again (edit an existing one works at the limit too)
 - [ ] **Käidukava** → add an activity due in 3 days with a 7-day reminder → countdown shows; the bell shows a reminder
-- [ ] **Käidupäevik** → new entry on an installation with a photo from the phone → saved, photo opens
+- [ ] **Käidupäevik** → new entry with a **Fotode link** (`https://…`, any folder) and a PDF → saved; the entry shows "Ava link" (opens in a new tab) and the PDF opens. The file picker offers no camera / images; choosing a JPG shows "Pilte KAIDLYsse üles ei laadita…"
+- [ ] (only if the smoke company has an image from before 2026-10-08) **Kustuta pilt** → confirm → "Pilt on kustutatud.", the thumbnail is replaced by "Pilt kustutatud — name, time". Never test this on a customer's image
 - [ ] **Puudused** → "Lisa puudus" → appears in the list and on the overview; resolve it with a description → resolved
 - [ ] **Dokumendid** → upload a small PDF → opens (new tab) and downloads
 - [ ] **Otsing** → search the installation name → found; a word from the log entry → found

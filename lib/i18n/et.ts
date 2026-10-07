@@ -132,6 +132,7 @@ export const et = {
       recordedBy: "Kirja pannud",
       correction: "Parandused",
       attachments: "Manused",
+      photosUrl: "Fotode link",
       activity: "Tegevus",
       recurrence: "Sagedus",
       nextDue: "Järgmine tähtaeg",
@@ -255,7 +256,7 @@ export const et = {
       customSubject: "KAIDLY pakett: vajan rohkem",
       startCta: "Alusta tasuta",
       featuresTitle: "Igas paketis",
-      features: ["Käidupäevik", "Käidukava ja teavitused", "Puudused", "Dokumendid ja fotod", "PDF- ja CSV-aruanded", "Otsing", "Rollid ja õigused", "Eesti, inglise ja vene keel"],
+      features: ["Käidupäevik", "Käidukava ja teavitused", "Puudused", "Dokumendid ja fotode lingid", "PDF- ja CSV-aruanded", "Otsing", "Rollid ja õigused", "Eesti, inglise ja vene keel"],
       note: "Hinnad ei sisalda käibemaksu. Kasutajate hulka loetakse kõik liikmed, ka omanik, ning ootel kutsed. Arhiveeritud paigaldised ei lähe arvesse.",
     },
     hero: {
@@ -336,7 +337,7 @@ export const et = {
         log: { label: "Käidupäevik", detail: "mis tehti ja mis juhtus" },
         schedule: { label: "Käidukava", detail: "mis on ees ja millal" },
         deficiencies: { label: "Puudused", detail: "mis vajab kõrvaldamist" },
-        documents: { label: "Dokumendid", detail: "skeemid, protokollid, fotod" },
+        documents: { label: "Dokumendid", detail: "skeemid, protokollid, fotode lingid" },
       },
       diagramLabel:
         "Skeem: ettevõttel on objektid, objektil elektripaigaldised; igal paigaldisel on käidupäevik, käidukava, puudused ja dokumendid.",
@@ -346,7 +347,7 @@ export const et = {
       body: "Ava paigaldis telefonis, vali sissekande liik, kirjuta paar lauset ja salvesta. Objekti ja paigaldist ei pea uuesti valima.",
       steps: [
         { title: "Ava paigaldis", body: "Viimati kasutatud paigaldised on kohe ees." },
-        { title: "Lisa sissekanne", body: "Liik ühe puudutusega, paar lauset, foto kaamerast." },
+        { title: "Lisa sissekanne", body: "Liik ühe puudutusega, paar lauset, fotode link." },
         { title: "Salvesta", body: "Nimi ja aeg lähevad kirja ise. Muuta ei saa, ainult parandada." },
       ],
       previewLabel: "KAIDLY telefonivaade: uus sissekanne",
@@ -481,6 +482,10 @@ export const et = {
       "Sellele sissekandele ei saa enam faile lisada. Lisa parandus ja manusta fail sinna.",
     document_immutable: "Ajaloo juurde kuuluvat faili ei saa muuta ega asendada.",
     documents_are_kept: "Üleslaaditud dokumente ei kustutata. Üldise dokumendi saab arhiveerida.",
+    invalid_photos_url: "Fotode link peab olema kehtiv aadress, mis algab https://-ga.",
+    image_uploads_disabled: "Pilte KAIDLYsse üles ei laadita. Lisa fotode link.",
+    image_already_deleted: "See pilt on juba kustutatud.",
+    image_delete_incomplete: "Pildi kustutamine jäi pooleli. Pilti enam ei näidata — proovi kustutamist uuesti.",
     organisation_has_history:
       "Selles ettevõttes on käiduajalugu, seega seda ei saa praegu jäädavalt kustutada. Ettevõtte saad deaktiveerida.",
     organisation_deactivated: "Ettevõte on deaktiveeritud. Sinna ei saa midagi lisada ega muuta.",
@@ -910,8 +915,8 @@ export const et = {
     },
     documents: {
       title: "Dokumendid",
-      intro: "Skeemid, protokollid, juhendid ja fotod — ettevõtte, objekti või paigaldise juures.",
-      installationIntro: "Selle paigaldise dokumendid ning sissekannete ja puuduste fotod.",
+      intro: "Skeemid, protokollid ja juhendid — ettevõtte, objekti või paigaldise juures.",
+      installationIntro: "Selle paigaldise dokumendid ning sissekannete ja puuduste manused.",
       upload: "Laadi dokument üles",
       uploadTitle: "Dokumendi üleslaadimine",
       empty: "Dokumente pole veel üles laaditud.",
@@ -931,7 +936,7 @@ export const et = {
       },
       fields: {
         file: "Fail",
-        fileHint: "PDF, JPG, PNG, WebP, DOCX või XLSX, kuni 25 MB.",
+        fileHint: "PDF, DOCX või XLSX, kuni 25 MB.",
         title: "Pealkiri",
         category: "Liik",
         scope: "Kuhu dokument kuulub",
@@ -969,34 +974,54 @@ export const et = {
     },
     attachments: {
       photos: "Fotod",
-      addPhotos: "Lisa fotod",
-      addFiles: "Lisa fotod või failid",
-      takePhoto: "Pildista või vali fotod",
-      hint: "Fotod vähendatakse enne üleslaadimist. Kuni 25 MB faili kohta.",
+      photosAndFiles: "Fotod ja failid",
+      files: "Failid",
+      addFiles: "Lisa failid",
+      hint: "PDF, DOCX või XLSX, kuni 25 MB faili kohta. Fotode jaoks lisa fotode link.",
       listLabel: "Manused",
       none: "Manuseid pole.",
       remove: (name: string) => `Eemalda ${name}`,
       retry: "Proovi uuesti",
       queued: "Ootel",
-      preparing: "Valmistan ette…",
       uploading: (percent: number) => `Laadin üles… ${percent}%`,
       done: "Üles laaditud",
       failed: "Üleslaadimine ebaõnnestus",
       problems: {
-        type: "Seda failitüüpi ei saa üles laadida. Lubatud: PDF, JPG, PNG, WebP, DOCX, XLSX.",
+        type: "Seda failitüüpi ei saa üles laadida. Lubatud: PDF, DOCX, XLSX.",
         size: "Fail on suurem kui 25 MB.",
         empty: "Fail on tühi.",
-        image: "Pilti ei õnnestunud lugeda. Proovi JPG või PNG faili.",
+        image: "Pilte KAIDLYsse üles ei laadita. Lisa fotode link — kaust või album, kus fotod asuvad.",
       },
       progressSummary: (done: number, total: number) => `Üles laaditud ${done}/${total}`,
       savedWithFailures:
         "Sissekanne on salvestatud. Mõni fail jäi üles laadimata — proovi uuesti või jätka ilma.",
       deficiencySavedWithFailures:
-        "Puudus on salvestatud. Mõni foto jäi üles laadimata — proovi uuesti või jätka ilma.",
+        "Puudus on salvestatud. Mõni fail jäi üles laadimata — proovi uuesti või jätka ilma.",
       continueWithout: "Jätka ilma nende failideta",
       entryClosedHint: "Sissekande autor saab faile lisada 24 tunni jooksul. Hiljem lisa parandus ja manusta failid sinna.",
       correctionHint: "Algse sissekande failid jäävad alles. Uued failid lisatakse parandusele.",
       selected: (n: number) => (n === 1 ? "1 fail valitud" : `${n} faili valitud`),
+    },
+    /** External link to where the photos are kept (log entries, deficiencies). */
+    photosLink: {
+      label: "Fotode link",
+      hint: "Lisa link kaustale või albumile, kus fotod asuvad.",
+      open: "Ava link",
+      openLabel: (host: string) => (host ? `Ava fotode link (${host}) uues aknas` : "Ava fotode link uues aknas"),
+    },
+    /** Deleting an image uploaded before photo links; the record keeps a trace. */
+    imageDelete: {
+      button: "Kustuta pilt",
+      buttonFor: (title: string) => `Kustuta pilt ${title}`,
+      confirm:
+        "Kas soovid selle pildi jäädavalt kustutada? Pilti ei saa taastada. Kirjele jääb märge, et pilt on kustutatud.",
+      explain: "Pilt kustutatakse jäädavalt. Kirjele jääb märge, kes ja millal pildi kustutas.",
+      pending: "Kustutan…",
+      done: "Pilt on kustutatud.",
+      retry: "Lõpeta kustutamine",
+      deleted: "Pilt kustutatud",
+      deletedBy: (name: string, when: string) => `${name}, ${when}`,
+      deletedListLabel: "Kustutatud pildid",
     },
     emptyStates: {
       examples: "Näiteks",
@@ -1273,7 +1298,7 @@ export const et = {
         },
         document: {
           term: "Dokument",
-          text: "Auditid, mõõteprotokollid, skeemid, juhendid ja fotod õige ettevõtte, objekti või paigaldise juures.",
+          text: "Auditid, mõõteprotokollid, skeemid ja juhendid õige ettevõtte, objekti või paigaldise juures. KAIDLYs saad tegevuse juurde lisada fotode lingi.",
         },
         reports: {
           term: "Aruanded",
@@ -1361,7 +1386,7 @@ export const et = {
       lastEntry: "Viimane sissekanne",
       firstEntryTitle: "Käidupäevik on veel tühi",
       firstEntryBody:
-        "Alusta paigaldise praeguse seisu kirjeldusega — näiteks ülevaatus käidu üle võtmisel. Fotod saad lisada kohe.",
+        "Alusta paigaldise praeguse seisu kirjeldusega — näiteks ülevaatus käidu üle võtmisel. Fotode lingi saad lisada kohe.",
       quickTitle: "Lisa sellele paigaldisele",
       quickDeficiency: "Lisa puudus",
       quickActivity: "Lisa käidukava tegevus",

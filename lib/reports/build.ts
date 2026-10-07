@@ -2,6 +2,7 @@ import "server-only";
 import type { OrgContext } from "@/lib/data/organisations";
 import type { T } from "@/lib/i18n";
 import { countdown, countdownText, dueStateRange } from "@/lib/schedule";
+import { photosLinkHost } from "@/lib/photo-links";
 import { createClient } from "@/lib/supabase/server";
 import { localInputToIso, todayInTallinn, toLocalInput } from "@/lib/time";
 import type { ReportFilters } from "./filters";
@@ -53,6 +54,8 @@ const nextDayStart = (day: string) => {
 };
 /** Raw, sortable local time for CSV. */
 const csvTime = (iso: string | null) => (iso ? toLocalInput(new Date(iso)).replace("T", " ") : "");
+/** PDF/preview: a photo link as its host only ("Fotode link: drive.google.com"); CSV has the full URL. */
+const photosNote = (t: T, url: string | null) => (url ? `${t.reports.columns.photosUrl}: ${photosLinkHost(url) || url}` : null);
 
 function frequency(t: T, a: { frequency_type: string; interval_value: number | null; interval_unit: string | null }) {
   const f = t.app.schedule.frequency;
@@ -97,7 +100,7 @@ async function logReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): 
     let q = supabase
       .from("log_entries")
       .select(
-        "id, occurred_at, entry_type, description, result, performed_by_name, created_by_name, correction_of_id, correction_reason, electrical_installation_id",
+        "id, occurred_at, entry_type, description, result, performed_by_name, created_by_name, correction_of_id, correction_reason, photos_url, electrical_installation_id",
         { count: "exact" },
       )
       .eq("organisation_id", org);
@@ -118,7 +121,7 @@ async function logReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): 
       supabase.from("log_entries").select("correction_of_id").eq("organisation_id", org).not("correction_of_id", "is", null).order("id").range(a, b),
     ),
     readAll((a, b) =>
-      supabase.from("documents").select("log_entry_id").eq("organisation_id", org).eq("status", "ready").not("log_entry_id", "is", null).order("id").range(a, b),
+      supabase.from("documents").select("log_entry_id").eq("organisation_id", org).eq("status", "ready").is("deleted_at", null).not("log_entry_id", "is", null).order("id").range(a, b),
     ),
   ]);
   const correctedCount = new Map<string, number>();
@@ -157,7 +160,9 @@ async function logReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): 
       date: t.fmt.dateTime(r.occurred_at),
       type: t.app.log.types[r.entry_type],
       installation: [place?.site, label(place)].filter(Boolean).join(" · "),
-      description: r.result ? `${r.description}\n${c.result}: ${r.result}` : r.description,
+      description: [r.description, r.result ? `${c.result}: ${r.result}` : null, photosNote(t, r.photos_url)]
+        .filter(Boolean)
+        .join("\n"),
       people: [r.performed_by_name, r.created_by_name].filter(Boolean).join(" / "),
       correction: correctionText,
       attachments: String(attachmentCount.get(r.id) ?? 0),
@@ -176,6 +181,7 @@ async function logReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): 
       reason: r.correction_reason ?? "",
       corrections: String(corrected),
       attachments: String(attachmentCount.get(r.id) ?? 0),
+      photosUrl: r.photos_url ?? "",
     });
   }
   const total = count ?? rows.length;
@@ -199,6 +205,7 @@ async function logReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): 
         { key: "reason", label: t.reports.reason },
         { key: "corrections", label: c.correction },
         { key: "attachments", label: c.attachments },
+        { key: "photosUrl", label: c.photosUrl },
       ],
       rows: csv,
     },
@@ -338,7 +345,7 @@ async function deficiencyReport(ctx: OrgContext, t: T, f: ReportFilters, cap: nu
   const filtered = () => {
     let q = supabase
       .from("deficiencies")
-      .select("id, title, description, severity, status, detected_at, responsible_person_name, due_on, resolved_at, resolution, resolved_by_name, electrical_installation_id", {
+      .select("id, title, description, severity, status, detected_at, responsible_person_name, due_on, resolved_at, resolution, resolved_by_name, photos_url, electrical_installation_id", {
         count: "exact",
       })
       .eq("organisation_id", org);
@@ -373,7 +380,7 @@ async function deficiencyReport(ctx: OrgContext, t: T, f: ReportFilters, cap: nu
       severity: d.severities[r.severity],
       status: d.statuses[r.status],
       detected: t.fmt.date(r.detected_at),
-      description: r.description,
+      description: [r.description, photosNote(t, r.photos_url)].filter(Boolean).join("\n"),
       responsible: [r.responsible_person_name, r.due_on ? `${c.dueOn} ${t.fmt.date(r.due_on)}` : null].filter(Boolean).join("\n"),
       resolved,
     });
@@ -391,6 +398,7 @@ async function deficiencyReport(ctx: OrgContext, t: T, f: ReportFilters, cap: nu
       resolvedAt: csvTime(r.resolved_at),
       resolvedBy: r.resolved_by_name ?? "",
       resolution: r.resolution ?? "",
+      photosUrl: r.photos_url ?? "",
     });
   }
   const total = count ?? rows.length;
@@ -417,6 +425,7 @@ async function deficiencyReport(ctx: OrgContext, t: T, f: ReportFilters, cap: nu
         { key: "resolvedAt", label: c.resolved },
         { key: "resolvedBy", label: `${c.resolved} (${t.reports.columns.performedBy})` },
         { key: "resolution", label: c.resolution },
+        { key: "photosUrl", label: c.photosUrl },
       ],
       rows: csv,
     },
@@ -441,7 +450,9 @@ async function documentReport(ctx: OrgContext, t: T, f: ReportFilters, cap: numb
         count: "exact",
       })
       .eq("organisation_id", org)
-      .eq("status", "ready");
+      .eq("status", "ready")
+      // Deleted images have no file any more; the trace stays on the record itself.
+      .is("deleted_at", null);
     if (!f.archived) q = q.is("archived_at", null);
     if (f.site) q = q.eq("site_id", f.site);
     if (f.installation) q = q.eq("electrical_installation_id", f.installation);
@@ -618,7 +629,7 @@ async function siteReport(ctx: OrgContext, t: T, f: ReportFilters): Promise<Repo
     supabase.from("scheduled_activities").select("id, title, next_due_on, electrical_installation_id, responsible_person_name").eq("organisation_id", org).eq("site_id", site.id).is("archived_at", null).gte("next_due_on", soon.from).lte("next_due_on", soon.to).order("next_due_on"),
     supabase.from("deficiencies").select("title, severity, status, detected_at, electrical_installation_id, responsible_person_name").eq("organisation_id", org).eq("site_id", site.id).neq("status", "resolved").order("detected_at", { ascending: false }),
     supabase.from("log_entries").select("occurred_at, entry_type, description, created_by_name, correction_of_id, electrical_installation_id").eq("organisation_id", org).eq("site_id", site.id).order("occurred_at", { ascending: false }).limit(10),
-    supabase.from("documents").select("id", { count: "exact", head: true }).eq("organisation_id", org).eq("site_id", site.id).eq("status", "ready").is("archived_at", null),
+    supabase.from("documents").select("id", { count: "exact", head: true }).eq("organisation_id", org).eq("site_id", site.id).eq("status", "ready").is("archived_at", null).is("deleted_at", null),
   ]);
   for (const r of [installations, overdue, dueSoon, deficiencies, log]) if (r.error) throw r.error;
   const c = t.reports.columns;
@@ -696,7 +707,7 @@ async function installationReport(ctx: OrgContext, t: T, f: ReportFilters): Prom
     supabase.from("scheduled_activities").select("id, title, next_due_on, electrical_installation_id, responsible_person_name").eq("organisation_id", org).eq("electrical_installation_id", inst.id).is("archived_at", null).gte("next_due_on", today).lte("next_due_on", horizon.toISOString().slice(0, 10)).order("next_due_on"),
     supabase.from("deficiencies").select("title, severity, status, detected_at, electrical_installation_id, responsible_person_name").eq("organisation_id", org).eq("electrical_installation_id", inst.id).neq("status", "resolved").order("detected_at", { ascending: false }),
     supabase.from("log_entries").select("occurred_at, entry_type, description, created_by_name, correction_of_id, electrical_installation_id").eq("organisation_id", org).eq("electrical_installation_id", inst.id).order("occurred_at", { ascending: false }).limit(10),
-    supabase.from("documents").select("title, category, ready_at", { count: "exact" }).eq("organisation_id", org).eq("electrical_installation_id", inst.id).eq("status", "ready").is("archived_at", null).order("ready_at", { ascending: false }).limit(20),
+    supabase.from("documents").select("title, category, ready_at", { count: "exact" }).eq("organisation_id", org).eq("electrical_installation_id", inst.id).eq("status", "ready").is("archived_at", null).is("deleted_at", null).order("ready_at", { ascending: false }).limit(20),
   ]);
   for (const r of [overdue, upcoming, deficiencies, log, docs]) if (r.error) throw r.error;
   const fa = t.reports.facts;

@@ -159,6 +159,8 @@ export type LogEntryVersion = {
   createdByName: string;
   createdAt: string;
   correctionReason: string | null;
+  /** External link to the photos of this version (https), if any. */
+  photosUrl: string | null;
 };
 
 export type LogEntryWithHistory = {
@@ -185,7 +187,7 @@ export async function getLogEntry(
   const { data, error } = await supabase
     .from("log_entries")
     .select(
-      "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, created_by, created_by_name, created_at, correction_of_id, correction_reason, scheduled_activity_id, scheduled_due_on, deficiency_id",
+      "id, site_id, electrical_installation_id, occurred_at, entry_type, description, result, performed_by_name, created_by, created_by_name, created_at, correction_of_id, correction_reason, photos_url, scheduled_activity_id, scheduled_due_on, deficiency_id",
     )
     .eq("organisation_id", organisationId)
     .eq("electrical_installation_id", installationId)
@@ -207,6 +209,7 @@ export async function getLogEntry(
     createdByName: row.created_by_name,
     createdAt: row.created_at,
     correctionReason: row.correction_reason,
+    photosUrl: row.photos_url,
   });
   const original = version(originalRow);
   const corrections = data.filter((row) => row.correction_of_id === entryId).map(version);

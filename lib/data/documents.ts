@@ -6,7 +6,10 @@ import { isUuid } from "@/lib/validation/sites";
 
 export const DOCUMENTS_PAGE_SIZE = 50;
 
-/** A ready document as listed. Pending and failed uploads are never listed. */
+/**
+ * A ready document as listed. Pending and failed uploads are never listed. A deleted image
+ * stays listed as a trace (`deletedAt`), without its file.
+ */
 export type DocumentItem = {
   id: string;
   title: string;
@@ -21,10 +24,14 @@ export type DocumentItem = {
   installationId: string | null;
   logEntryId: string | null;
   deficiencyId: string | null;
+  deletedAt: string | null;
+  deletedByName: string | null;
+  /** The deleted image's file is confirmed gone (false = removal still to be retried). */
+  fileRemoved: boolean;
 };
 
 const COLUMNS =
-  "id, title, category, original_filename, mime_type, size_bytes, uploaded_by_name, created_at, archived_at, site_id, electrical_installation_id, log_entry_id, deficiency_id";
+  "id, title, category, original_filename, mime_type, size_bytes, uploaded_by_name, created_at, archived_at, site_id, electrical_installation_id, log_entry_id, deficiency_id, deleted_at, deleted_by_name, file_removed_at";
 
 type Row = {
   id: string;
@@ -40,6 +47,9 @@ type Row = {
   electrical_installation_id: string | null;
   log_entry_id: string | null;
   deficiency_id: string | null;
+  deleted_at: string | null;
+  deleted_by_name: string | null;
+  file_removed_at: string | null;
 };
 
 function toItem(row: Row): DocumentItem {
@@ -57,6 +67,9 @@ function toItem(row: Row): DocumentItem {
     installationId: row.electrical_installation_id,
     logEntryId: row.log_entry_id,
     deficiencyId: row.deficiency_id,
+    deletedAt: row.deleted_at,
+    deletedByName: row.deleted_by_name,
+    fileRemoved: row.file_removed_at !== null,
   };
 }
 
@@ -186,6 +199,7 @@ export async function signDocumentUrl(
     .eq("organisation_id", organisationId)
     .eq("id", documentId)
     .eq("status", "ready")
+    .is("deleted_at", null)
     .maybeSingle();
   if (error || !doc) return null;
   const { data } = await supabase.storage

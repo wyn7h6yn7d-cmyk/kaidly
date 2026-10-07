@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalText, requiredText, uuid } from "./common.ts"; // explicit extensions: also loaded by node --test
+import { optionalPhotosUrl, optionalText, requiredText, uuid } from "./common.ts"; // explicit extensions: also loaded by node --test
 import { occurredAt } from "./log.ts";
 import { SEVERITIES } from "./constants.ts";
 export { SEVERITIES, DEFICIENCY_STATUSES } from "./constants.ts";
@@ -20,6 +20,7 @@ export const deficiencySchema = z.object({
   detectedAt: occurredAt,
   responsiblePersonName: optionalText(200),
   dueOn: optionalDate,
+  photosUrl: optionalPhotosUrl,
 });
 
 /** Statuses a person may set directly; "resolved" only through resolving. */

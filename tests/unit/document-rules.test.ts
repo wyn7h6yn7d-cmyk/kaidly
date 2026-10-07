@@ -6,10 +6,7 @@ const file = (name: string, type: string, size = 1000) => ({ name, type, size })
 
 test("allowed types with a matching extension pass", () => {
   assert.equal(checkFile(file("skeem.pdf", "application/pdf")), null);
-  assert.equal(checkFile(file("FOTO.JPG", "image/jpeg")), null);
-  assert.equal(checkFile(file("foto.jpeg", "image/jpeg")), null);
-  assert.equal(checkFile(file("a.png", "image/png")), null);
-  assert.equal(checkFile(file("a.webp", "image/webp")), null);
+  assert.equal(checkFile(file("SKEEM.PDF", "application/pdf")), null);
   assert.equal(
     checkFile(file("akt.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")),
     null,
@@ -20,18 +17,25 @@ test("allowed types with a matching extension pass", () => {
   );
 });
 
+test("images are refused with their own reason: photos are linked, not uploaded", () => {
+  assert.equal(checkFile(file("FOTO.JPG", "image/jpeg")), "image");
+  assert.equal(checkFile(file("a.png", "image/png")), "image");
+  assert.equal(checkFile(file("a.webp", "image/webp")), "image");
+  assert.equal(checkFile(file("IMG_0001.HEIC", "image/heic")), "image");
+});
+
 test("SVG, HTML, executables and unknown types are refused", () => {
   assert.equal(checkFile(file("x.svg", "image/svg+xml")), "type");
   assert.equal(checkFile(file("x.html", "text/html")), "type");
   assert.equal(checkFile(file("x.exe", "application/octet-stream")), "type");
-  assert.equal(checkFile(file("x.heic", "image/heic")), "type");
   assert.equal(checkFile(file("x", "")), "type");
 });
 
 test("type and extension must agree", () => {
-  assert.equal(checkFile(file("x.svg", "image/png")), "type");
+  assert.equal(checkFile(file("x.docx", "application/pdf")), "type");
   assert.equal(checkFile(file("x.pdf.html", "application/pdf")), "type");
   assert.equal(checkFile(file("x.png", "application/pdf")), "type");
+  assert.equal(checkFile(file("x.pdf", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")), "type");
   assert.equal(checkFile(file("pdf", "application/pdf")), "type");
 });
 

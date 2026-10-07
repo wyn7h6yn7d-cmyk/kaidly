@@ -24,10 +24,12 @@ export type Deficiency = {
   resolvedAt: string | null;
   resolvedByName: string | null;
   createdByName: string;
+  /** External link to the photos (https), if any. */
+  photosUrl: string | null;
 };
 
 const COLUMNS =
-  "id, site_id, electrical_installation_id, title, description, severity, detected_at, responsible_person_name, due_on, status, resolution, resolved_at, resolved_by_name, created_by_name";
+  "id, site_id, electrical_installation_id, title, description, severity, detected_at, responsible_person_name, due_on, status, resolution, resolved_at, resolved_by_name, created_by_name, photos_url";
 
 type Row = {
   id: string;
@@ -44,6 +46,7 @@ type Row = {
   resolved_at: string | null;
   resolved_by_name: string | null;
   created_by_name: string;
+  photos_url: string | null;
 };
 
 function toDeficiency(row: Row): Deficiency {
@@ -62,6 +65,7 @@ function toDeficiency(row: Row): Deficiency {
     resolvedAt: row.resolved_at,
     resolvedByName: row.resolved_by_name,
     createdByName: row.created_by_name,
+    photosUrl: row.photos_url,
   };
 }
 

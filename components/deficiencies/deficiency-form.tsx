@@ -5,6 +5,7 @@ import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { AttachmentPicker } from "@/components/documents/attachment-picker";
+import { PhotosLinkField } from "@/components/documents/photos-link";
 import { DraftNotice, UploadRecovery, useSaveThenUpload } from "@/components/documents/use-save-then-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ export function DeficiencyForm({
 }) {
   const t = useT();
   // Editing never returns a record (it redirects), so it fits the same signature; only
-  // creating offers photos, which upload once the deficiency is saved.
+  // creating offers files, which upload once the deficiency is saved.
   const upload = useSaveThenUpload(
     orgSlug,
     deficiency ? (_previous, formData) => updateDeficiency({}, formData) : createDeficiency,
@@ -153,10 +154,16 @@ export function DeficiencyForm({
         </Field>
       </div>
 
+      <PhotosLinkField
+        id={id("photosUrl")}
+        defaultValue={value("photosUrl", deficiency?.photosUrl)}
+        invalid={state.fields?.photosUrl}
+      />
+
       {!deficiency && (
         <fieldset className="grid gap-2">
-          <legend className="mb-2 text-[15px] font-semibold">{t.app.attachments.photos}</legend>
-          <AttachmentPicker queue={queue} label={t.app.attachments.takePhoto} disabled={locked} />
+          <legend className="mb-2 text-[15px] font-semibold">{t.app.attachments.files}</legend>
+          <AttachmentPicker queue={queue} label={t.app.attachments.addFiles} disabled={locked} />
         </fieldset>
       )}
 

@@ -13,7 +13,7 @@ update private.upload_limits set per_user_hour = 3, per_user_day = 5, bytes_per_
 
 create function pg_temp.register(p_size int) returns void language sql as $$
   insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-  values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'photo', 'Foto', 'foto.jpg', 'image/jpeg', p_size)
+  values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Juhend', 'juhend.pdf', 'application/pdf', p_size)
 $$;
 grant execute on function pg_temp.register(int) to authenticated;
 

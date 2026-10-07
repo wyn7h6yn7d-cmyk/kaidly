@@ -33,6 +33,8 @@ const RAISED: Record<string, ErrorCode> = {
   log_entry_attachment_closed: "log_entry_attachment_closed",
   document_immutable: "document_immutable",
   documents_are_kept: "documents_are_kept",
+  image_uploads_disabled: "image_uploads_disabled",
+  image_already_deleted: "image_already_deleted",
   organisation_has_history: "organisation_has_history",
   organisation_deactivated: "organisation_deactivated",
   upload_rate_limited: "upload_rate_limited",

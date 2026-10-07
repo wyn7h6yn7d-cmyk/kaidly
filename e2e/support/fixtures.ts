@@ -111,6 +111,49 @@ export async function createInstallation(org: TestOrg, siteId: string, name: str
 }
 
 /** Logs in through the real login form and waits until the app has loaded. */
+/** A signed-in API client for a test user (publishable key, RLS applies as in the app). */
+export async function apiAs(user: TestUser): Promise<SupabaseClient> {
+  const url = process.env.E2E_API_URL;
+  const key = process.env.E2E_PUBLISHABLE_KEY;
+  if (!url || !key) throw new Error("E2E env missing — run through `npm run test:e2e`.");
+  const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { error } = await client.auth.signInWithPassword({ email: user.email, password: user.password });
+  if (error) throw error;
+  return client;
+}
+
+/** A 1×1 PNG. */
+export const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+/**
+ * An image uploaded BEFORE photo links (as existing Production rows are): the row is written
+ * as postgres (users can no longer register images), the uploader puts the bytes at its
+ * path — declared as PDF, because the bucket refuses image types now — and the row is
+ * marked ready. Returns the document id and object path.
+ */
+export async function legacyImage(
+  org: TestOrg,
+  place: { site: string; installation: string; deficiency?: string; logEntry?: string },
+  uploader: TestUser,
+  title: string,
+): Promise<{ id: string; path: string }> {
+  const [id, path] = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, deficiency_id, log_entry_id,
+      category, title, original_filename, mime_type, size_bytes, uploaded_by)
+    values ('${org.id}', '${place.site}', '${place.installation}', ${lit(place.deficiency)}, ${lit(place.logEntry)},
+      'photo', ${lit(title)}, 'foto.png', 'image/png', ${PNG.length}, '${uploader.id}')
+    returning id || '|' || storage_path;`).split("|");
+  const client = await apiAs(uploader);
+  const { error } = await client.storage
+    .from("documents")
+    .upload(path, new Blob([PNG], { type: "application/pdf" }), { contentType: "application/pdf" });
+  if (error) throw error;
+  sql(`update public.documents set status = 'ready', ready_at = now() where id = '${id}';`);
+  return { id, path };
+}
+
 export async function login(page: Page, user: TestUser, next?: string) {
   await page.goto(`/auth/login${next ? `?next=${encodeURIComponent(next)}` : ""}`);
   await page.waitForLoadState("networkidle"); // hydrated: the form submits through JavaScript

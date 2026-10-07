@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Camera, CircleAlert, CircleCheck, FileText, X } from "lucide-react";
+import { CircleAlert, CircleCheck, FileText, Paperclip, X } from "lucide-react";
 import { useFieldId } from "@/components/forms/use-field-id";
 import { ACCEPT_ATTRIBUTE } from "@/lib/documents/rules";
 import { cn } from "@/lib/utils";
@@ -10,9 +10,9 @@ import type { T } from "@/lib/i18n";
 import { useT } from "@/lib/i18n/client";
 
 /**
- * File chooser and upload list. On phones the chooser offers the camera. Progress is
- * shown per file; state changes are announced to screen readers through a polite live
- * region (not every percent).
+ * File chooser and upload list for documents (PDF, DOCX, XLSX — no images: photos are
+ * linked, see PhotosLinkField). Progress is shown per file; state changes are announced
+ * to screen readers through a polite live region (not every percent).
  */
 export function AttachmentPicker({
   queue,
@@ -54,7 +54,7 @@ export function AttachmentPicker({
             disabled && "pointer-events-none opacity-50",
           )}
         >
-          <Camera className="size-[18px]" aria-hidden="true" />
+          <Paperclip className="size-[18px]" aria-hidden="true" />
           {label ?? t.app.attachments.addFiles}
           <input
             ref={inputRef}
@@ -62,7 +62,7 @@ export function AttachmentPicker({
             type="file"
             className="sr-only"
             multiple={multiple}
-            accept={`image/*,${ACCEPT_ATTRIBUTE}`}
+            accept={ACCEPT_ATTRIBUTE}
             disabled={disabled}
             aria-describedby={`${id("files")}-hint`}
             onChange={(event) => {
@@ -130,8 +130,6 @@ export function AttachmentPicker({
 function statusText(item: UploadQueue["items"][number], t: T): string {
   const copy = t.app.attachments;
   switch (item.status) {
-    case "preparing":
-      return copy.preparing;
     case "queued":
       return copy.queued;
     case "uploading":

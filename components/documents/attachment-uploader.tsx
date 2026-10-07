@@ -25,7 +25,7 @@ export function AttachmentUploader({
 }) {
   const t = useT();
   const router = useRouter();
-  const queue = useUploadQueue({ orgSlug, resizeImages: true });
+  const queue = useUploadQueue({ orgSlug });
   const running = useRef(false);
   const { items, uploadAll, clear } = queue;
   const waiting = items.some((item) => item.status === "queued");

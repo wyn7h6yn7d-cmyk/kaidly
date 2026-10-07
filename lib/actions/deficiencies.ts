@@ -15,6 +15,8 @@ import { actionContext } from "./context";
 import { savedOrRedirect } from "./saved";
 import { type ActionState, failure, invalidInput, type SavedRecord } from "./state";
 
+const DEFICIENCY_MESSAGES = { future: "occurred_in_future", url: "invalid_photos_url" } as const;
+
 function input(formData: FormData) {
   return deficiencySchema.safeParse({
     installationId: field(formData, "installationId"),
@@ -24,6 +26,7 @@ function input(formData: FormData) {
     detectedAt: field(formData, "detectedAt"),
     responsiblePersonName: field(formData, "responsiblePersonName"),
     dueOn: field(formData, "dueOn"),
+    photosUrl: field(formData, "photosUrl"),
   });
 }
 
@@ -35,7 +38,7 @@ export async function createDeficiency(
   if (!access.ok) return access.error;
   const { ctx } = access;
   const parsed = input(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: "occurred_in_future" });
+  if (!parsed.success) return invalidInput(parsed.error, DEFICIENCY_MESSAGES);
   const d = parsed.data;
 
   const installation = await getInstallation(ctx.org.id, d.installationId);
@@ -54,6 +57,7 @@ export async function createDeficiency(
       detected_at: d.detectedAt,
       responsible_person_name: d.responsiblePersonName ?? null,
       due_on: d.dueOn ?? null,
+      photos_url: d.photosUrl ?? null,
     })
     .select("id")
     .single();
@@ -69,7 +73,7 @@ export async function updateDeficiency(_prev: ActionState, formData: FormData): 
   const deficiencyId = field(formData, "deficiencyId");
   if (!isUuid(deficiencyId)) return failure("not_found");
   const parsed = input(formData);
-  if (!parsed.success) return invalidInput(parsed.error, { future: "occurred_in_future" });
+  if (!parsed.success) return invalidInput(parsed.error, DEFICIENCY_MESSAGES);
   const d = parsed.data;
 
   const supabase = await createClient();
@@ -82,6 +86,7 @@ export async function updateDeficiency(_prev: ActionState, formData: FormData): 
       detected_at: d.detectedAt,
       responsible_person_name: d.responsiblePersonName ?? null,
       due_on: d.dueOn ?? null,
+      photos_url: d.photosUrl ?? null,
     })
     .eq("organisation_id", ctx.org.id)
     .eq("id", deficiencyId)

@@ -248,7 +248,7 @@ test.describe("Turvalisus API tasemel", () => {
       refused(await op.rpc("complete_scheduled_activity", { p_activity_id: t.activity, p_due_on: sql(`select next_due_on from public.scheduled_activities where id = '${t.activity}'`), p_entry_type: "inspection", p_occurred_at: new Date().toISOString(), p_description: "x", p_result: null, p_performed_by_name: null }), label);
       refused(await op.rpc("resolve_deficiency", { p_deficiency_id: t.deficiency, p_resolution: "x", p_entry_type: "repair", p_occurred_at: new Date().toISOString(), p_performed_by_name: null }), label);
       expect((await owner.rpc("import_company_data", { p_org: t.org.id, p_kind: "sites", p_rows: [{ name: "x" }], p_token: crypto.randomUUID() })).error?.message, label).toBe("company_read_only");
-      refused(await op.from("documents").insert({ organisation_id: t.org.id, site_id: t.site, electrical_installation_id: t.installation, category: "photo", title: "x", original_filename: "x.jpg", mime_type: "image/jpeg", size_bytes: 10 }), label);
+      refused(await op.from("documents").insert({ organisation_id: t.org.id, site_id: t.site, electrical_installation_id: t.installation, category: "manual", title: "x", original_filename: "x.pdf", mime_type: "application/pdf", size_bytes: 10 }), label);
       expect(count(`select count(*) from public.sites where organisation_id = '${t.org.id}'`), label).toBe(1);
       expect(count(`select count(*) from public.log_entries where organisation_id = '${t.org.id}'`), label).toBe(1);
       expect(count(`select count(*) from public.sites where id = '${t.site}' and name = 'Muudetud'`), label).toBe(0);
@@ -296,6 +296,8 @@ test.describe("Turvalisus API tasemel", () => {
     const path = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes, uploaded_by)
       values ('${A.org.id}', '${A.site}', '${A.installation}', 'photo', 'x', 'x.jpg', 'image/jpeg', 20, '${A.org.users.operator.id}') returning storage_path;`);
     refused(await op.storage.from("documents").upload(path, new Blob(["<svg onload=alert(1)>"], { type: "image/svg+xml" }), { contentType: "image/svg+xml" }));
+    // Photos are linked, not stored: image bytes are refused by the bucket as well.
+    refused(await op.storage.from("documents").upload(path, new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }), { contentType: "image/png" }));
     refused(await op.storage.from("documents").upload(path, new Blob(["<html><script>alert(1)</script>"], { type: "text/html" }), { contentType: "text/html" }));
     // Registering a disallowed type fails in the database too.
     refused(await op.from("documents").insert({ organisation_id: A.org.id, site_id: A.site, electrical_installation_id: A.installation, category: "other", title: "x", original_filename: "x.html", mime_type: "text/html", size_bytes: 10 }));

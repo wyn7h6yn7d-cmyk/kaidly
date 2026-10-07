@@ -26,7 +26,7 @@ export function useSaveThenUpload(
 ) {
   const router = useRouter();
   const draft = useSessionDraft(draftKey);
-  const queue = useUploadQueue({ orgSlug, resizeImages: true });
+  const queue = useUploadQueue({ orgSlug });
   const [retrying, setRetrying] = useState(false);
 
   const save = async (previous: ActionState<SavedRecord>, formData: FormData) => {

@@ -89,6 +89,7 @@ export type Database = {
           electrical_installation_id: string
           id: string
           organisation_id: string
+          photos_url: string | null
           resolution: string | null
           resolved_at: string | null
           resolved_by: string | null
@@ -110,6 +111,7 @@ export type Database = {
           electrical_installation_id: string
           id?: string
           organisation_id: string
+          photos_url?: string | null
           resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
@@ -131,6 +133,7 @@ export type Database = {
           electrical_installation_id?: string
           id?: string
           organisation_id?: string
+          photos_url?: string | null
           resolution?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
@@ -186,7 +189,11 @@ export type Database = {
           category: Database["public"]["Enums"]["document_category"]
           created_at: string
           deficiency_id: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          deleted_by_name: string | null
           electrical_installation_id: string | null
+          file_removed_at: string | null
           id: string
           log_entry_id: string | null
           mime_type: string
@@ -206,7 +213,11 @@ export type Database = {
           category: Database["public"]["Enums"]["document_category"]
           created_at?: string
           deficiency_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deleted_by_name?: string | null
           electrical_installation_id?: string | null
+          file_removed_at?: string | null
           id?: string
           log_entry_id?: string | null
           mime_type: string
@@ -226,7 +237,11 @@ export type Database = {
           category?: Database["public"]["Enums"]["document_category"]
           created_at?: string
           deficiency_id?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          deleted_by_name?: string | null
           electrical_installation_id?: string | null
+          file_removed_at?: string | null
           id?: string
           log_entry_id?: string | null
           mime_type?: string
@@ -401,6 +416,7 @@ export type Database = {
           occurred_at: string
           organisation_id: string
           performed_by_name: string | null
+          photos_url: string | null
           result: string | null
           scheduled_activity_id: string | null
           scheduled_due_on: string | null
@@ -420,6 +436,7 @@ export type Database = {
           occurred_at?: string
           organisation_id: string
           performed_by_name?: string | null
+          photos_url?: string | null
           result?: string | null
           scheduled_activity_id?: string | null
           scheduled_due_on?: string | null
@@ -439,6 +456,7 @@ export type Database = {
           occurred_at?: string
           organisation_id?: string
           performed_by_name?: string | null
+          photos_url?: string | null
           result?: string | null
           scheduled_activity_id?: string | null
           scheduled_due_on?: string | null
@@ -1193,6 +1211,10 @@ export type Database = {
         }
         Returns: string
       }
+      confirm_document_image_removed: {
+        Args: { p_document_id: string }
+        Returns: boolean
+      }
       create_invitation: {
         Args: {
           p_email: string
@@ -1212,6 +1234,10 @@ export type Database = {
       deactivate_organisation: {
         Args: { p_confirm_name: string; p_organisation_id: string }
         Returns: undefined
+      }
+      delete_document_image: {
+        Args: { p_document_id: string }
+        Returns: string
       }
       delete_organisation: {
         Args: { p_confirm_name: string; p_organisation_id: string }

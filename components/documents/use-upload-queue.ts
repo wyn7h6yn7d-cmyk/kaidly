@@ -2,12 +2,12 @@
 
 import { useCallback, useRef, useState } from "react";
 import { discardUpload, finalizeUpload, registerUpload, type UploadTarget } from "@/lib/actions/documents";
-import { checkFile, type DocumentCategory, IMAGE_TYPES, type FileProblem } from "@/lib/documents/rules";
-import { isConvertibleImage, prepareImage, uploadObject } from "@/lib/documents/upload-client";
+import { checkFile, type FileProblem, type UploadCategory } from "@/lib/documents/rules";
+import { uploadObject } from "@/lib/documents/upload-client";
 import { useT } from "@/lib/i18n/client";
 
 
-export type QueueStatus = "preparing" | "queued" | "uploading" | "done" | "failed";
+export type QueueStatus = "queued" | "uploading" | "done" | "failed";
 
 export type QueueItem = {
   key: string;
@@ -19,7 +19,7 @@ export type QueueItem = {
   file?: File;
 };
 
-export type Rejected = { name: string; problem: FileProblem | "image" };
+export type Rejected = { name: string; problem: FileProblem };
 
 let counter = 0;
 
@@ -28,7 +28,7 @@ let counter = 0;
  * register (server) → bytes to Storage (browser) → finalize (server). A failed file is
  * cleaned up and can be retried; files already uploaded are never sent twice.
  */
-export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; resizeImages: boolean }) {
+export function useUploadQueue({ orgSlug }: { orgSlug: string }) {
   const t = useT();
   const [items, setItems] = useState<QueueItem[]>([]);
   const [rejected, setRejected] = useState<Rejected[]>([]);
@@ -46,39 +46,24 @@ export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; res
   );
 
   const add = useCallback(
-    async (files: FileList | File[]) => {
+    (files: FileList | File[]) => {
       const rejectedNow: Rejected[] = [];
-      for (const original of Array.from(files)) {
-        const key = `f${++counter}`;
-        const convert = resizeImages && isConvertibleImage(original);
-        if (!convert) {
-          const problem = checkFile(original);
-          if (problem) {
-            rejectedNow.push({ name: original.name, problem });
-            continue;
-          }
-          update((current) => [
-            ...current,
-            { key, name: original.name, size: original.size, status: "queued", progress: 0, file: original },
-          ]);
+      for (const file of Array.from(files)) {
+        // Images are refused here with their own message: photos are linked, not uploaded.
+        const problem = checkFile(file);
+        if (problem) {
+          rejectedNow.push({ name: file.name, problem });
           continue;
         }
+        const key = `f${++counter}`;
         update((current) => [
           ...current,
-          { key, name: original.name, size: original.size, status: "preparing", progress: 0 },
+          { key, name: file.name, size: file.size, status: "queued", progress: 0, file },
         ]);
-        const prepared = await prepareImage(original);
-        const problem = prepared ? checkFile(prepared) : "image";
-        if (!prepared || problem) {
-          update((current) => current.filter((item) => item.key !== key));
-          rejectedNow.push({ name: original.name, problem: problem ?? "image" });
-          continue;
-        }
-        patch(key, { name: prepared.name, size: prepared.size, status: "queued", file: prepared });
       }
       setRejected(rejectedNow);
     },
-    [patch, resizeImages, update],
+    [update],
   );
 
   const remove = useCallback(
@@ -88,10 +73,10 @@ export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; res
 
   /** Uploads everything not yet uploaded. Resolves true when every file is done. */
   const uploadAll = useCallback(
-    async (target: UploadTarget, category?: DocumentCategory, title?: string): Promise<boolean> => {
+    async (target: UploadTarget, category?: UploadCategory, title?: string): Promise<boolean> => {
       const copy = t.app.attachments;
       for (const item of itemsRef.current) {
-        if (item.status === "done" || item.status === "preparing" || !item.file) continue;
+        if (item.status === "done" || !item.file) continue;
         const file = item.file;
         patch(item.key, { status: "uploading", progress: 0, error: undefined });
         setAnnouncement(`${item.name}: ${copy.uploading(0)}`);
@@ -113,7 +98,7 @@ export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; res
           orgSlug,
           target,
           file: { name: file.name, type: file.type, size: file.size },
-          category: category ?? (IMAGE_TYPES.includes(file.type as never) ? "photo" : "other"),
+          category: category ?? "other",
           title,
         });
         if (!registered.ok || !registered.data) {
@@ -147,7 +132,7 @@ export function useUploadQueue({ orgSlug, resizeImages }: { orgSlug: string; res
     remove,
     uploadAll,
     clear,
-    busy: items.some((item) => item.status === "uploading" || item.status === "preparing"),
+    busy: items.some((item) => item.status === "uploading"),
     hasPending: items.some((item) => item.status !== "done"),
   };
 }

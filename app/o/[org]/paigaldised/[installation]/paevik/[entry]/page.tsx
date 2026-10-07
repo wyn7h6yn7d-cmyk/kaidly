@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { DetailList } from "@/components/app/detail-list";
 import { AttachmentUploader } from "@/components/documents/attachment-uploader";
 import { AttachmentGallery } from "@/components/documents/document-list";
+import { PhotosLink } from "@/components/documents/photos-link";
+import { FormMessage } from "@/components/forms/form-message";
 import { OrgPage } from "@/components/app/org-page";
 import { Button } from "@/components/ui/button";
 import { hasRole } from "@/lib/auth/roles";
@@ -59,21 +61,28 @@ async function Version({
           {copy.fields.result}: {version.result}
         </p>
       )}
+      {version.photosUrl && (
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm">
+          {t.app.photosLink.label}: <PhotosLink url={version.photosUrl} />
+        </p>
+      )}
     </li>
   );
 }
 
 export default async function LogEntryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ org: string; installation: string; entry: string }>;
+  searchParams: Promise<{ pilt?: string }>;
 }) {
   const t = await getT();
   return (
     <OrgPage
       params={params}
       render={async ({ org, role, user }) => {
-        const { installation: installationId, entry: entryId } = await params;
+        const [{ installation: installationId, entry: entryId }, query] = await Promise.all([params, searchParams]);
         const installation = await getInstallation(org.id, installationId);
         if (!installation) notFound();
         const entry = await getLogEntry(org.id, installation.id, entryId);
@@ -85,6 +94,8 @@ export default async function LogEntryPage({
         const versions = [entry.original, ...entry.corrections];
         const attachments = await listAttachments(org.id, { logEntryIds: versions.map((v) => v.id) });
         const attachmentCopy = t.app.attachments;
+        // Images uploaded before photo links: any operator+ may delete them (the trace stays).
+        const canDeleteImages = hasRole(role, "operator");
         const canAttach =
           hasRole(role, "operator") &&
           !installation.archivedAt &&
@@ -164,16 +175,32 @@ export default async function LogEntryPage({
 
             <section aria-labelledby="attachments" className="mt-10">
               <h3 id="attachments" className="mb-3 text-lg font-bold">
-                {attachmentCopy.photos}
+                {attachmentCopy.photosAndFiles}
               </h3>
-              {groups.length === 0 && <p className="text-k-muted">{attachmentCopy.none}</p>}
+              {query.pilt === "kustutatud" && (
+                <div className="mb-4">
+                  <FormMessage success={t.app.imageDelete.done} />
+                </div>
+              )}
+              {current.photosUrl && (
+                <p className="mb-4 flex flex-wrap items-center gap-x-2">
+                  <span className="font-semibold">{t.app.photosLink.label}:</span>
+                  <PhotosLink url={current.photosUrl} />
+                </p>
+              )}
+              {groups.length === 0 && !current.photosUrl && <p className="text-k-muted">{attachmentCopy.none}</p>}
               <div className="grid gap-5">
                 {groups.map((group) => (
                   <div key={group.version.id}>
                     {entry.corrections.length > 0 && (
                       <p className="mb-2 text-sm font-semibold">{versionLabel(group.version.id)}</p>
                     )}
-                    <AttachmentGallery orgSlug={org.slug} items={group.items} />
+                    <AttachmentGallery
+                      orgSlug={org.slug}
+                      items={group.items}
+                      canDelete={canDeleteImages}
+                      back={`${base}/${entry.id}`}
+                    />
                   </div>
                 ))}
               </div>
@@ -182,7 +209,7 @@ export default async function LogEntryPage({
                   <AttachmentUploader
                     orgSlug={org.slug}
                     target={{ kind: "logEntry", id: current.id }}
-                    label={attachmentCopy.addPhotos}
+                    label={attachmentCopy.addFiles}
                     hint={`${attachmentCopy.hint} ${attachmentCopy.entryClosedHint}`}
                   />
                 </div>
