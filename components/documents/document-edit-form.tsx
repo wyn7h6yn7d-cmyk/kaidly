@@ -10,19 +10,27 @@ import { Select } from "@/components/ui/select";
 import { updateDocument } from "@/lib/actions/documents";
 import { DOCUMENT_CATEGORIES, type DocumentCategory } from "@/lib/documents/rules";
 import { useT } from "@/lib/i18n/client";
+import { DocumentLinkField } from "./photos-link";
 
-
-/** Title and category of a general document (admins). The file itself never changes. */
+/**
+ * Title, category and external link of a general document (admins). A file uploaded earlier
+ * never changes; it can get a link (also after the file was deleted).
+ */
 export function DocumentEditForm({
   orgSlug,
   documentId,
   title,
   category,
+  externalUrl,
+  linkRequired,
 }: {
   orgSlug: string;
   documentId: string;
   title: string;
   category: DocumentCategory;
+  externalUrl: string | null;
+  /** A document without a file must keep its link. */
+  linkRequired: boolean;
 }) {
   const t = useT();
   const [state, action, pending, value] = useFormAction(updateDocument);
@@ -42,6 +50,12 @@ export function DocumentEditForm({
           aria-invalid={state.fields?.title}
         />
       </Field>
+      <DocumentLinkField
+        id={id("externalUrl")}
+        defaultValue={value("externalUrl", externalUrl)}
+        invalid={state.fields?.externalUrl}
+        required={linkRequired}
+      />
       <Field id={id("category")} label={copy.fields.category}>
         <Select
           key={value("category", category)}

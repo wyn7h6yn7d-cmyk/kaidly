@@ -160,7 +160,7 @@ test.describe("Turvalisus API tasemel", () => {
     // RPCs with B's ids.
     refused(await a.rpc("complete_scheduled_activity", { p_activity_id: B.activity, p_due_on: "2026-01-01", p_entry_type: "inspection", p_occurred_at: new Date().toISOString(), p_description: "x", p_result: null, p_performed_by_name: null }));
     refused(await a.rpc("resolve_deficiency", { p_deficiency_id: B.deficiency, p_resolution: "x", p_entry_type: "repair", p_occurred_at: new Date().toISOString(), p_performed_by_name: null }));
-    refused(await a.rpc("finalize_document", { p_document_id: B.document }));
+    refused(await a.rpc("delete_document_file", { p_document_id: B.document }));
     expect((await a.rpc("import_company_data", { p_org: B.org.id, p_kind: "sites", p_rows: [{ name: "Võõras" }], p_token: crypto.randomUUID() })).error?.message).toBe("not_found");
     refused(await a.rpc("create_invitation", { p_organisation_id: B.org.id, p_email: "x@example.ee", p_role: "owner" }));
     refused(await a.rpc("delete_organisation", { p_organisation_id: B.org.id, p_confirm_name: B.org.name }));
@@ -296,8 +296,9 @@ test.describe("Turvalisus API tasemel", () => {
     const path = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes, uploaded_by)
       values ('${A.org.id}', '${A.site}', '${A.installation}', 'photo', 'x', 'x.jpg', 'image/jpeg', 20, '${A.org.users.operator.id}') returning storage_path;`);
     refused(await op.storage.from("documents").upload(path, new Blob(["<svg onload=alert(1)>"], { type: "image/svg+xml" }), { contentType: "image/svg+xml" }));
-    // Photos are linked, not stored: image bytes are refused by the bucket as well.
+    // KAIDLY stores no files: nothing can be uploaded, not even a PDF to a registered path.
     refused(await op.storage.from("documents").upload(path, new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }), { contentType: "image/png" }));
+    refused(await op.storage.from("documents").upload(path, new Blob(["%PDF-1.4\n"], { type: "application/pdf" }), { contentType: "application/pdf" }));
     refused(await op.storage.from("documents").upload(path, new Blob(["<html><script>alert(1)</script>"], { type: "text/html" }), { contentType: "text/html" }));
     // Registering a disallowed type fails in the database too.
     refused(await op.from("documents").insert({ organisation_id: A.org.id, site_id: A.site, electrical_installation_id: A.installation, category: "other", title: "x", original_filename: "x.html", mime_type: "text/html", size_bytes: 10 }));

@@ -128,27 +128,33 @@ export const PNG = Buffer.from(
   "base64",
 );
 
+/** A minimal PDF. */
+export const PDF = Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
+
 /**
- * An image uploaded BEFORE photo links (as existing Production rows are): the row is written
- * as postgres (users can no longer register images), the uploader puts the bytes at its
- * path — declared as PDF, because the bucket refuses image types now — and the row is
- * marked ready. Returns the document id and object path.
+ * A file uploaded BEFORE KAIDLY stopped storing files (as existing Production rows are):
+ * the row is written as postgres (users can register no files), the bytes are put at its
+ * path with the local Storage admin (users can upload nothing), and the row is ready.
  */
-export async function legacyImage(
+export async function legacyFile(
   org: TestOrg,
   place: { site: string; installation: string; deficiency?: string; logEntry?: string },
   uploader: TestUser,
   title: string,
+  kind: "image" | "pdf" = "image",
 ): Promise<{ id: string; path: string }> {
+  const [filename, mime, bytes] = kind === "image" ? ["foto.png", "image/png", PNG] : ["akt.pdf", "application/pdf", PDF];
   const [id, path] = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, deficiency_id, log_entry_id,
       category, title, original_filename, mime_type, size_bytes, uploaded_by)
     values ('${org.id}', '${place.site}', '${place.installation}', ${lit(place.deficiency)}, ${lit(place.logEntry)},
-      'photo', ${lit(title)}, 'foto.png', 'image/png', ${PNG.length}, '${uploader.id}')
+      '${kind === "image" ? "photo" : "measurement_protocol"}', ${lit(title)}, '${filename}', '${mime}', ${bytes.length}, '${uploader.id}')
     returning id || '|' || storage_path;`).split("|");
-  const client = await apiAs(uploader);
-  const { error } = await client.storage
+  const url = process.env.E2E_API_URL!;
+  const admin = createClient(url, process.env.E2E_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+  // The bucket's type list has no images any more; fixtures store the bytes as PDF.
+  const { error } = await admin.storage
     .from("documents")
-    .upload(path, new Blob([PNG], { type: "application/pdf" }), { contentType: "application/pdf" });
+    .upload(path, new Blob([bytes], { type: "application/pdf" }), { contentType: "application/pdf" });
   if (error) throw error;
   sql(`update public.documents set status = 'ready', ready_at = now() where id = '${id}';`);
   return { id, path };

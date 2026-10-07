@@ -37,7 +37,7 @@ export type SearchResults = {
   })[];
   documents: (Base & {
     title: string;
-    original_filename: string;
+    original_filename: string | null;
     category: string;
     archived: boolean;
     site: string | null;

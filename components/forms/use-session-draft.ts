@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const SKIP = new Set(["orgSlug", "installationId", "correctionOfId", "deficiencyId", "withAttachments"]);
+const SKIP = new Set(["orgSlug", "installationId", "correctionOfId", "deficiencyId"]);
 
 function read(form: HTMLFormElement): Record<string, string> {
   const values: Record<string, string> = {};

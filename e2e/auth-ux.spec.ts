@@ -42,11 +42,15 @@ test.describe("Sisselogimise ja konto loomise kasutuskogemus", () => {
 
     // Sign-up: both password fields have their own toggle.
     await page.goto("/auth/sign-up");
+    // The form is controlled: type only once React is interactive (dev hydration can lag under load).
+    await page.waitForLoadState("networkidle");
     await expect(page.getByRole("button", { name: "Näita parooli" })).toHaveCount(2);
   });
 
   test("sign-up: the length hint turns green and a mismatch is shown inline before submitting", async ({ page }) => {
     await page.goto("/auth/sign-up");
+    // The form is controlled: type only once React is interactive (dev hydration can lag under load).
+    await page.waitForLoadState("networkidle");
     const hint = page.getByText("Vähemalt 10 tähemärki.");
     await expect(hint).toHaveAttribute("data-met", "false");
     await field(page, "password").fill("Pikk-parool-123");
@@ -97,6 +101,8 @@ test.describe("Sisselogimise ja konto loomise kasutuskogemus", () => {
     await expect(page.getByRole("button", { name: "Show password" })).toBeVisible();
     await setLanguage(context, "ru");
     await page.goto("/auth/sign-up");
+    // The form is controlled: type only once React is interactive (dev hydration can lag under load).
+    await page.waitForLoadState("networkidle");
     await expect(page.getByRole("banner").getByRole("link", { name: "На главную" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Показать пароль" })).toHaveCount(2);
   });

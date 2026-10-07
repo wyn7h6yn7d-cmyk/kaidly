@@ -33,7 +33,7 @@ npm run db:start       # local Supabase (needs a running Docker-compatible runti
 npm run db:reset       # rebuild local DB from migrations + seed
 npm run test:db        # pgTAP database/RLS tests (supabase/tests)
 npm run db:types       # regenerate lib/supabase/database.types.ts from the local DB
-npm run db:seed-files  # sample documents and a photo link for the local demo org (after db:reset)
+npm run db:seed-files  # sample document links and a photo link for the local demo org (after db:reset)
 npm run build
 npm run test:e2e       # Playwright, local stack only (own dev server on :3100)
 npm run check          # lint, typecheck, unit, database tests, build
@@ -103,14 +103,13 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   hosted variant.
 - After changing a protection, mutation-test it: break it deliberately, see tests fail, restore.
 - Never use `use cache` / `use cache: remote` for tenant data.
-- Files: one private bucket; object paths come from the database; browsers upload only to
-  their own registered pending path; files are read through short-lived signed URLs from
-  the access-checked route. Attachments on log entries and deficiencies are never changed
-  or deleted — the one exception (owner decision 2026-10-08) is an **image uploaded before
-  photo links**: `delete_document_image` + Storage remove + `confirm_document_image_removed`
-  delete its file and keep the row as a trace (DATABASE.md §5j). No new images are stored:
-  photos are external links (`photos_url`, https only); never re-open image uploads. No
-  `service_role` anywhere, including scripts that upload.
+- Files: KAIDLY stores **no user files** (owner decision 2026-10-08, DATABASE.md §5k):
+  documents are https links (`documents.external_url`), log entries and deficiencies have a
+  photo link (`photos_url`). Never re-open uploads — no file inputs, no Storage INSERT
+  policy, no file rows from users. Files uploaded before stay in the one private bucket,
+  are read through short-lived signed URLs from the access-checked route, and can only be
+  deleted through `delete_document_file` + Storage remove + `confirm_document_file_removed`
+  (file removed, row kept as a trace). No `service_role` anywhere, including scripts.
 
 **Environments**
 - Preview/feature branches → DEVELOPMENT Supabase `gdpzavhkblbcxivoaqax`; `main`/Production →
@@ -118,7 +117,7 @@ Use the project's pinned CLI (`npx supabase`, from devDependencies), not a globa
   production, never hard-code project refs. Production setup and release gate:
   docs/DEPLOYMENT.md, docs/RELEASE_CHECKLIST.md — do not merge `main` while the gate is red.
 - New tenant policies go through `org_ids()` / `org_ids_readable()`, which also enforce live
-  sessions; upload paths must keep the database upload limits in front of Storage.
+  sessions. There are no upload paths (DATABASE.md §5k).
 
 **Database**
 - All schema, policy and bucket changes go through `supabase/migrations/`. No manual dashboard changes.

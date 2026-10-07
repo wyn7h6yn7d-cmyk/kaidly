@@ -63,11 +63,9 @@ select throws_ok(
      values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('b1'), 'x', 'x', 'low') $$,
   '23503', null, 'deficiency naming B''s archived installation: no hint');
 select throws_ok(
-  $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, deficiency_id, category, title,
-                                   original_filename, mime_type, size_bytes)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'dfb00000-0000-4000-8000-0000000000b1', 'other',
-             'x', 'x.pdf', 'application/pdf', 10) $$,
-  '23503', null, 'document on B''s resolved deficiency: no "deficiency_resolved" hint');
+  $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, external_url)
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('b1'), 'other', 'x', 'https://example.com/x') $$,
+  '23503', null, 'document naming B''s archived installation: no "installation_archived" hint');
 
 -- Writing into B directly as a non-member: the RLS error, before any trigger hint.
 select throws_ok(

@@ -1,7 +1,7 @@
--- Photo links instead of photo uploads, and deleting images uploaded earlier
--- (migration photo_links): https-only links on log entries and deficiencies, no new image
--- documents, the delete RPCs (roles, tenants, tombstone, retry), the storage policies that
--- make the file removable, and the failed-upload cleanup that now really removes objects.
+-- Photo links instead of uploads, and deleting files uploaded earlier (migrations
+-- photo_links, document_links): https-only links on log entries and deficiencies, no new
+-- files, the delete RPCs (roles, tenants, tombstone, retry; any file type), the storage
+-- policies that make the file removable, and the cleanup of incomplete uploads.
 
 begin;
 create extension if not exists pgtap with schema extensions;
@@ -46,7 +46,7 @@ begin
 end; $$;
 grant execute on function pg_temp.remove_object(text) to authenticated;
 
-select plan(42);
+select plan(44);
 
 -- ===========================================================================
 -- Photo links
@@ -115,19 +115,19 @@ select throws_ok(
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
      values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'photo', 'x', 'x.jpg', 'image/jpeg', 10) $$,
-  'P0001', 'image_uploads_disabled', 'an image can no longer be registered for upload');
+  'P0001', 'file_uploads_disabled', 'an image can no longer be registered for upload');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, deficiency_id, category, title, original_filename, mime_type, size_bytes)
      values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'df230000-0000-4000-8000-0000000000a1', 'other', 'x', 'x.png', 'image/png', 10) $$,
-  'P0001', 'image_uploads_disabled', 'not as a deficiency attachment either');
+  'P0001', 'file_uploads_disabled', 'not as a deficiency attachment either');
 select throws_ok(
   $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
      values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'x', 'x.svg', 'image/svg+xml', 10) $$,
-  'P0001', 'image_uploads_disabled', 'SVG images are refused as well');
+  'P0001', 'file_uploads_disabled', 'SVG images are refused as well');
 select lives_ok(
-  $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'measurement_protocol', 'Protokoll', 'p.pdf', 'application/pdf', 10) $$,
-  'PDF documents are still registered as before');
+  $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, external_url)
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'measurement_protocol', 'Protokoll', 'https://example.com/protokoll') $$,
+  'documents are added as links');
 reset role;
 select is((select allowed_mime_types::text[] from storage.buckets where id = 'documents') && array['image/jpeg', 'image/png', 'image/webp'],
   false, 'the bucket accepts no image types');
@@ -137,23 +137,23 @@ select is((select allowed_mime_types::text[] from storage.buckets where id = 'do
 -- ===========================================================================
 
 select pg_temp.login('a_viewer');
-select throws_ok($$ select public.delete_document_image(pg_temp.doc('a1')) $$, 'P0002', 'not_found', 'a viewer cannot delete an image');
+select throws_ok($$ select public.delete_document_file(pg_temp.doc('a1')) $$, 'P0002', 'not_found', 'a viewer cannot delete an image');
 select pg_temp.login('b_admin');
-select throws_ok($$ select public.delete_document_image(pg_temp.doc('a1')) $$, 'P0002', 'not_found',
+select throws_ok($$ select public.delete_document_file(pg_temp.doc('a1')) $$, 'P0002', 'not_found',
   'another company cannot delete (or probe) an image');
 select is(pg_temp.remove_object(pg_temp.p('a1')), 0, 'another company cannot remove the file through Storage');
 select pg_temp.login('a_operator');
-select throws_ok($$ select public.delete_document_image(pg_temp.doc('a3')) $$, 'P0002', 'not_found',
+select throws_ok($$ select public.delete_document_file(pg_temp.doc('a3')) $$, 'P0002', 'not_found',
   'an operator cannot delete a general document image (admins manage general documents)');
-select throws_ok($$ select public.delete_document_image(pg_temp.doc('c1')) $$, 'P0002', 'not_found',
-  'only images can be deleted, never PDFs or other documents');
+select throws_ok($$ select public.delete_document_file((select id from public.documents where title = 'Protokoll' and external_url is not null)) $$,
+  'P0002', 'not_found', 'a link document has no file to delete');
 select is(pg_temp.remove_object(pg_temp.p('a1')), 0, 'a ready image''s file cannot be removed without deleting it first');
 
 -- ===========================================================================
 -- Deleting an image: tombstone, file removal, confirmation
 -- ===========================================================================
 
-select is(public.delete_document_image(pg_temp.doc('a1')), pg_temp.p('a1'), 'an operator deletes a log entry image; the path comes back');
+select is(public.delete_document_file(pg_temp.doc('a1')), pg_temp.p('a1'), 'an operator deletes a log entry image; the path comes back');
 select is((select deleted_by_name is not null and deleted_at is not null and file_removed_at is null
              from public.documents where id = pg_temp.doc('a1')), true,
   'the row stays as a trace: who and when, file not yet confirmed gone');
@@ -161,23 +161,26 @@ select pg_temp.login('a_viewer');
 select is_empty($$ select 1 from storage.objects where name = pg_temp.p('a1') $$,
   'a deleted image is unreadable at once (no signed URL), even before the file is removed');
 select pg_temp.login('a_operator');
-select is(public.confirm_document_image_removed(pg_temp.doc('a1')), false, 'confirming before removal reports the file is still there');
-select is(public.delete_document_image(pg_temp.doc('a1')), pg_temp.p('a1'), 'repeating the delete returns the path again (retry)');
+select is(public.confirm_document_file_removed(pg_temp.doc('a1')), false, 'confirming before removal reports the file is still there');
+select is(public.delete_document_file(pg_temp.doc('a1')), pg_temp.p('a1'), 'repeating the delete returns the path again (retry)');
 select is(pg_temp.remove_object(pg_temp.p('a1')), 1, 'the operator removes the file through Storage');
-select is(public.confirm_document_image_removed(pg_temp.doc('a1')), true, 'confirming after removal succeeds');
+select is(public.confirm_document_file_removed(pg_temp.doc('a1')), true, 'confirming after removal succeeds');
 select is((select file_removed_at is not null from public.documents where id = pg_temp.doc('a1')), true, 'the removal is recorded');
-select throws_ok($$ select public.delete_document_image(pg_temp.doc('a1')) $$, 'P0001', 'image_already_deleted',
+select throws_ok($$ select public.delete_document_file(pg_temp.doc('a1')) $$, 'P0001', 'file_already_deleted',
   'a fully deleted image cannot be deleted again');
-select is(public.delete_document_image(pg_temp.doc('a2')), pg_temp.p('a2'), 'an operator deletes a deficiency image');
+select is(public.delete_document_file(pg_temp.doc('a2')), pg_temp.p('a2'), 'an operator deletes a deficiency image');
+select is(public.delete_document_file(pg_temp.doc('c1')), pg_temp.p('c1'), 'an operator deletes an earlier PDF on a log entry too');
 
 select pg_temp.login('a_admin');
-select is(public.delete_document_image(pg_temp.doc('a3')), pg_temp.p('a3'), 'an admin deletes a general document image');
+select is(public.delete_document_file(pg_temp.doc('a3')), pg_temp.p('a3'), 'an admin deletes a general document image');
 select throws_ok(
   $$ update public.documents set deleted_at = null where id = pg_temp.doc('a3') $$,
   '42501', null, 'the tombstone columns are not writable through the API');
 reset role;
-select throws_ok($$ update public.documents set title = 'Muudetud' where id = pg_temp.doc('a3') $$,
-  'P0001', 'document_immutable', 'a deleted image''s row never changes again');
+select throws_ok($$ update public.documents set title = 'Muudetud' where id = pg_temp.doc('a1') $$,
+  'P0001', 'document_immutable', 'a deleted attachment''s row never changes again');
+select lives_ok($$ update public.documents set external_url = 'https://example.com/yldfoto' where id = pg_temp.doc('a3') $$,
+  'a general document whose file was deleted can get an external link');
 select throws_ok($$ update public.documents set deleted_at = null, deleted_by_name = null where id = pg_temp.doc('a3') $$,
   'P0001', 'document_immutable', 'a deletion cannot be undone, not even by the table owner');
 select isnt_empty(
@@ -187,14 +190,17 @@ select isnt_empty(
 select is((select count(*)::int from public.documents where id::text like 'd2300000-%'), 5, 'no document row disappeared');
 
 -- ===========================================================================
--- Failed uploads: the uploader's cleanup now really removes the object
+-- Incomplete uploads: the uploader can still remove the leftover object
 -- ===========================================================================
 
-select pg_temp.login('a_operator');
-insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Katkenud', 'k.pdf', 'application/pdf', 10);
+-- An upload left incomplete before uploads ended (written as postgres).
+select pg_temp.logout();
+reset role;
+insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes, uploaded_by)
+values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Katkenud', 'k.pdf', 'application/pdf', 10, pg_temp.uid('a_operator'));
 insert into storage.objects (bucket_id, name, metadata)
 select 'documents', storage_path, '{"size": 10, "mimetype": "application/pdf"}' from public.documents where title = 'Katkenud';
+select pg_temp.login('a_operator');
 select is(pg_temp.remove_object((select storage_path from public.documents where title = 'Katkenud')), 1,
   'the uploader removes the object of their own incomplete upload');
 

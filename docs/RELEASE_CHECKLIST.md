@@ -28,7 +28,7 @@ blocks engineering, QA or Preview work.
 ## APPLICATION
 | Status | Item |
 |---|---|
-| GREEN | All modules: companies, sites, installations, käidupäevik, käidukava with reminders, puudused, documents (photos as external links since 2026-10-08), notifications, search, PDF/CSV reports, CSV import, Platform Admin |
+| GREEN | All modules: companies, sites, installations, käidupäevik, käidukava with reminders, puudused, document register (links; photo links on records), notifications, search, PDF/CSV reports, CSV import, Platform Admin |
 | GREEN | Plans Start / Team / Pro / Business / Custom with database-enforced user and active-installation limits (SUBSCRIPTIONS.md); customers see plan and usage only |
 | GREEN | Personal 14-day trial (one per user; 1 user, 5 active installations; deleting a company never resets it) |
 | GREEN | Public header: left logo + "Kuidas töötab?" + "Hinnakiri", right "Logi sisse" + "Registreeru" + language; below 1024 px logo + "Logi sisse" + language + menu button (section links, Registreeru); section links never leave `#…` in the URL |
@@ -60,8 +60,8 @@ blocks engineering, QA or Preview work.
 ## STORAGE
 | Status | Item |
 |---|---|
-| GREEN | One private bucket `documents`, 25 MB, MIME allowlist (PDF/DOCX/XLSX; **no new images** since migration `photo_links`), tenant-scoped policies, signed URLs (60 s) only |
-| GREEN | Earlier images deletable by members (file removed, row kept as a trace — DATABASE.md §5j); failed-upload cleanup now really removes objects |
+| GREEN | **No user files stored** (migration `document_links`): documents are https links, records have photo links; no Storage INSERT policy, file rows refused for users |
+| GREEN | Earlier files (one private bucket, signed URLs 60 s) readable until deleted by a member; deletion removes the object and keeps a trace (DATABASE.md §5k); Platform Admin shows stored files and bytes |
 
 ## SECURITY
 | Status | Item |

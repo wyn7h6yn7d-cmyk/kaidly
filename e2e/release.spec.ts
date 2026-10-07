@@ -1,7 +1,5 @@
 import { createOrg, createSite, createUser, expect, login, sql, test } from "./support/fixtures";
 
-const PDF = Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
-
 test.describe("Väljalase", () => {
   test("security headers, no indexing outside production, health check without secrets", async ({ page, request }) => {
     const res = await request.get("/");
@@ -110,16 +108,16 @@ test.describe("Väljalase", () => {
     await expect(page.getByRole("heading", { name: org.name })).toBeVisible();
   });
 
-  test("upload limits give a clear message", async ({ page }) => {
+  test("adding a document never offers a file upload; a link is required", async ({ page }) => {
     const org = await createOrg();
     await createSite(org, "Objekt");
-    sql(`insert into private.upload_events (user_id, organisation_id, size_bytes)
-         select '${org.users.admin.id}', '${org.id}', 1 from generate_series(1, 100);`);
     await login(page, org.users.admin, `/o/${org.slug}/dokumendid`);
-    await page.getByRole("link", { name: "Laadi dokument üles" }).first().click();
-    await page.getByLabel("Vali fail").setInputFiles({ name: "juhend.pdf", mimeType: "application/pdf", buffer: PDF });
-    await page.locator('[name="category"]:visible').selectOption({ label: "Juhend" });
-    await page.getByRole("button", { name: "Laadi üles" }).click();
-    await expect(page.getByText("Liiga palju üleslaadimisi lühikese aja jooksul.", { exact: false })).toBeVisible();
+    await page.getByRole("link", { name: "Lisa dokument" }).first().click();
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
+    await expect(page.getByLabel("Dokumendi link")).toHaveAttribute("required", "");
+    await page.locator('[name="title"]:visible').fill("Juhend");
+    await page.getByLabel("Dokumendi link").evaluate((input: HTMLInputElement) => input.removeAttribute("required"));
+    await page.getByRole("button", { name: "Lisa dokument" }).click();
+    await expect(page.getByText("Lisa dokumendi link.")).toBeVisible();
   });
 });

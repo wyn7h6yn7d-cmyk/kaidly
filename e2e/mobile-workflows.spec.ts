@@ -1,48 +1,25 @@
 import { createInstallation, createOrg, createSite, expect, field, login, sql, test } from "./support/fixtures";
 
-const PDF = Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
-
 test.describe("Välitöö telefonis", () => {
-  test("a deficiency is recorded with a photo link and a file in one go @responsive", async ({ page }) => {
+  test("a deficiency is recorded with a photo link in one go; no upload control @responsive", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Peakilp");
     await login(page, org.users.operator, `/o/${org.slug}`);
     await page.goto(`/o/${org.slug}/puudused/uus?paigaldis=${installation}`);
 
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
     await field(page, "title").fill("Lahtine klemm X3");
     await field(page, "description").fill("Klemm X3 lahti, märgid ülekuumenemisest.");
     await page.getByLabel("Fotode link").fill("https://photos.example.com/album/klemm-x3");
-    await page.getByLabel("Lisa failid").setInputFiles({ name: "mootmine.pdf", mimeType: "application/pdf", buffer: PDF });
     await page.getByRole("button", { name: "Lisa puudus" }).click();
 
     await expect(page.getByRole("heading", { name: "Lahtine klemm X3" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Ava fotode link (photos.example.com) uues aknas" })).toBeVisible();
-    await expect(page.getByRole("list", { name: "Manused" }).getByRole("link", { name: "mootmine", exact: true })).toBeVisible();
-    expect(sql(`select count(*) from public.documents d join public.deficiencies f on f.id = d.deficiency_id
-                where f.organisation_id = '${org.id}' and d.status = 'ready'`)).toBe("1");
-  });
-
-  test("if the file upload fails, the deficiency is still saved and can be retried", async ({ page }) => {
-    const org = await createOrg();
-    const site = await createSite(org, "Objekt");
-    const installation = await createInstallation(org, site, "Peakilp");
-    await login(page, org.users.operator, `/o/${org.slug}`);
-    await page.goto(`/o/${org.slug}/puudused/uus?paigaldis=${installation}`);
-
-    await page.route("**/storage/v1/object/documents/**", (route) => route.abort("connectionreset"));
-    await field(page, "title").fill("Katkine lukk");
-    await field(page, "description").fill("Kilbi uks ei lukustu.");
-    await page.getByLabel("Lisa failid").setInputFiles({ name: "lukk.pdf", mimeType: "application/pdf", buffer: PDF });
-    await page.getByRole("button", { name: "Lisa puudus" }).click();
-
-    await expect(page.getByText(/Puudus on salvestatud. Mõni fail jäi üles laadimata/)).toBeVisible();
-    await expect(field(page, "title")).toHaveValue("Katkine lukk");
-    expect(sql(`select count(*) from public.deficiencies where organisation_id = '${org.id}'`)).toBe("1");
-    await page.unroute("**/storage/v1/object/documents/**");
-    await page.getByRole("button", { name: "Proovi uuesti" }).click();
-    await expect(page.getByRole("heading", { name: "Katkine lukk" })).toBeVisible();
-    expect(sql(`select count(*) from public.deficiencies where organisation_id = '${org.id}'`)).toBe("1");
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
+    expect(sql(`select photos_url from public.deficiencies where organisation_id = '${org.id}'`)).toBe(
+      "https://photos.example.com/album/klemm-x3",
+    );
   });
 
   test("a lost connection while saving keeps the text and explains what happened @responsive", async ({ page }) => {

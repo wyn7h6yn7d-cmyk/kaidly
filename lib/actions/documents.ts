@@ -3,180 +3,98 @@
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getOrgContext } from "@/lib/data/organisations";
 import { dbErrorCode } from "@/lib/db/errors";
-import { hasRole } from "@/lib/auth/roles";
-import {
-  checkFile,
-  DOCUMENT_CATEGORIES,
-  sanitizeFilename,
-  titleFromFilename,
-  UPLOAD_CATEGORIES,
-} from "@/lib/documents/rules";
+import { DOCUMENT_CATEGORIES, LINK_CATEGORIES } from "@/lib/documents/rules";
 import { createClient } from "@/lib/supabase/server";
-import { field, requiredText } from "@/lib/validation/common";
+import { field, optionalExternalUrl, requiredText } from "@/lib/validation/common";
 import { actionContext } from "./context";
 import { type ActionState, failure, invalidInput } from "./state";
 
-// Upload flow (see docs/DATABASE.md §10): registerUpload → the browser uploads the bytes
-// straight to Storage at the returned path → finalizeUpload. File bytes never pass
-// through the app server. Organisation, site and installation always come from the
-// database (RLS), never from the client.
+// The document register (docs/DATABASE.md §5k): KAIDLY stores links, never files. A
+// document's organisation, site and installation always come from the database (RLS),
+// never from the client.
 
-const targetSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("organisation") }),
-  z.object({ kind: z.literal("site"), id: z.uuid() }),
-  z.object({ kind: z.literal("installation"), id: z.uuid() }),
-  z.object({ kind: z.literal("logEntry"), id: z.uuid() }),
-  z.object({ kind: z.literal("deficiency"), id: z.uuid() }),
+const LINK_MESSAGES = { url: "invalid_document_url" } as const;
+
+/** "org", "site:<id>" or "inst:<id>" from the form. */
+const scopeSchema = z.union([
+  z.literal("org"),
+  z.string().regex(/^site:[0-9a-f-]{36}$/),
+  z.string().regex(/^inst:[0-9a-f-]{36}$/),
 ]);
 
-export type UploadTarget = z.infer<typeof targetSchema>;
-
-const registerSchema = z.object({
-  orgSlug: z.string().max(60),
-  target: targetSchema,
-  file: z.object({ name: z.string().min(1).max(1000), type: z.string().max(200), size: z.number().int() }),
-  title: z.string().trim().max(200).optional(),
-  category: z.enum(UPLOAD_CATEGORIES),
+const createSchema = z.object({
+  scope: scopeSchema,
+  title: requiredText(200),
+  category: z.enum(LINK_CATEGORIES),
+  externalUrl: optionalExternalUrl,
 });
 
-export type RegisterUploadInput = z.input<typeof registerSchema>;
-export type RegisteredUpload = { id: string; path: string };
+type Placement = { site_id: string | null; electrical_installation_id: string | null };
 
-type Placement = {
-  site_id: string | null;
-  electrical_installation_id: string | null;
-  log_entry_id: string | null;
-  deficiency_id: string | null;
-};
-
-async function placementFor(organisationId: string, target: UploadTarget): Promise<Placement | null> {
-  const none = { site_id: null, electrical_installation_id: null, log_entry_id: null, deficiency_id: null };
-  if (target.kind === "organisation") return none;
+async function placementFor(organisationId: string, scope: string): Promise<Placement | null> {
+  if (scope === "org") return { site_id: null, electrical_installation_id: null };
+  const [kind, id] = scope.split(":");
   const supabase = await createClient();
-  switch (target.kind) {
-    case "site": {
-      const { data } = await supabase
-        .from("sites")
-        .select("id")
-        .eq("organisation_id", organisationId)
-        .eq("id", target.id)
-        .maybeSingle();
-      return data ? { ...none, site_id: data.id } : null;
-    }
-    case "installation": {
-      const { data } = await supabase
-        .from("electrical_installations")
-        .select("id, site_id")
-        .eq("organisation_id", organisationId)
-        .eq("id", target.id)
-        .maybeSingle();
-      return data ? { ...none, site_id: data.site_id, electrical_installation_id: data.id } : null;
-    }
-    case "logEntry": {
-      const { data } = await supabase
-        .from("log_entries")
-        .select("id, site_id, electrical_installation_id")
-        .eq("organisation_id", organisationId)
-        .eq("id", target.id)
-        .maybeSingle();
-      return data
-        ? { ...none, site_id: data.site_id, electrical_installation_id: data.electrical_installation_id, log_entry_id: data.id }
-        : null;
-    }
-    case "deficiency": {
-      const { data } = await supabase
-        .from("deficiencies")
-        .select("id, site_id, electrical_installation_id")
-        .eq("organisation_id", organisationId)
-        .eq("id", target.id)
-        .maybeSingle();
-      return data
-        ? { ...none, site_id: data.site_id, electrical_installation_id: data.electrical_installation_id, deficiency_id: data.id }
-        : null;
-    }
+  if (kind === "site") {
+    const { data } = await supabase.from("sites").select("id").eq("organisation_id", organisationId).eq("id", id).maybeSingle();
+    return data ? { site_id: data.id, electrical_installation_id: null } : null;
   }
-}
-
-/** Registers a pending document and returns the generated object path to upload to. */
-export async function registerUpload(input: RegisterUploadInput): Promise<ActionState<RegisteredUpload>> {
-  const parsed = registerSchema.safeParse(input);
-  if (!parsed.success) return failure("invalid_input");
-  const { orgSlug, target, file, title, category } = parsed.data;
-  const problem = checkFile(file);
-  // Photos are linked, not uploaded (the database and the bucket refuse images too).
-  if (problem === "image") return failure("image_uploads_disabled");
-  if (problem) return failure("invalid_input");
-
-  const ctx = await getOrgContext(orgSlug);
-  if (!ctx) return failure("not_found");
-  if (!hasRole(ctx.role, "operator")) return failure("forbidden");
-  const placement = await placementFor(ctx.org.id, target);
-  if (!placement) return failure("not_found");
-
-  const filename = sanitizeFilename(file.name);
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("documents")
-    .insert({
-      organisation_id: ctx.org.id,
-      ...placement,
-      category,
-      title: title || titleFromFilename(filename),
-      original_filename: filename,
-      mime_type: file.type.toLowerCase(),
-      size_bytes: file.size,
-    })
-    .select("id, storage_path")
-    .single();
-  if (error || !data) return failure(dbErrorCode(error));
-  return { ok: true, data: { id: data.id, path: data.storage_path } };
-}
-
-/** Checks the uploaded object and marks the document ready (or failed). */
-export async function finalizeUpload(orgSlug: string, documentId: string): Promise<ActionState> {
-  const ctx = await getOrgContext(orgSlug);
-  if (!ctx || !z.uuid().safeParse(documentId).success) return failure("not_found");
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("finalize_document", { p_document_id: documentId });
-  if (error) return failure(dbErrorCode(error));
-  return data === "ready" ? { ok: true } : failure("unknown");
+  const { data } = await supabase
+    .from("electrical_installations")
+    .select("id, site_id")
+    .eq("organisation_id", organisationId)
+    .eq("id", id)
+    .maybeSingle();
+  return data ? { site_id: data.site_id, electrical_installation_id: data.id } : null;
 }
 
 /**
- * Removes the caller's own incomplete upload (object and row) after a failure. Ready
- * documents are never removed — the database refuses it.
+ * Adds a document to the register: title, category, placement and the external link.
+ * Operators add installation documents; organisation and site documents are admin+ (the
+ * database enforces the same rule).
  */
-export async function discardUpload(orgSlug: string, documentId: string): Promise<ActionState> {
-  const ctx = await getOrgContext(orgSlug);
-  if (!ctx || !z.uuid().safeParse(documentId).success) return failure("not_found");
+export async function createDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const access = await actionContext(formData, "operator");
+  if (!access.ok) return access.error;
+  const { ctx } = access;
+  const parsed = createSchema.safeParse({
+    scope: field(formData, "scope"),
+    title: field(formData, "title"),
+    category: field(formData, "category"),
+    externalUrl: field(formData, "externalUrl"),
+  });
+  if (!parsed.success) return invalidInput(parsed.error, LINK_MESSAGES);
+  const { scope, title, category, externalUrl } = parsed.data;
+  if (!externalUrl) return failure("document_link_required", { externalUrl: true });
+  const placement = await placementFor(ctx.org.id, scope);
+  if (!placement) return failure("not_found");
+
   const supabase = await createClient();
-  const { data: doc } = await supabase
+  const { data, error } = await supabase
     .from("documents")
-    .select("id, storage_path")
-    .eq("organisation_id", ctx.org.id)
-    .eq("id", documentId)
-    .eq("uploaded_by", ctx.user.id)
-    .neq("status", "ready")
-    .maybeSingle();
-  if (!doc) return failure("not_found");
-  // Remove the object first; if that fails, keep the row so the leftover stays visible in
-  // the storage report instead of becoming an object nobody can trace.
-  const { data: removed, error: removeError } = await supabase.storage.from("documents").remove([doc.storage_path]);
-  // An upload that never reached Storage has nothing to remove; anything else must really go.
-  if (removeError || (!removed?.length && (await objectExists(doc.storage_path)))) return failure("unknown");
-  const { error } = await supabase.from("documents").delete().eq("id", doc.id);
-  if (error) return failure(dbErrorCode(error));
-  return { ok: true };
+    .insert({ organisation_id: ctx.org.id, ...placement, title, category, external_url: externalUrl })
+    .select("id")
+    .single();
+  if (error || !data) return failure(dbErrorCode(error));
+  redirect(
+    placement.electrical_installation_id
+      ? `/o/${ctx.org.slug}/paigaldised/${placement.electrical_installation_id}/dokumendid?salvestatud=1`
+      : `/o/${ctx.org.slug}/dokumendid?salvestatud=1`,
+  );
 }
 
 const updateSchema = z.object({
   documentId: z.uuid(),
   title: requiredText(200),
   category: z.enum(DOCUMENT_CATEGORIES),
+  externalUrl: optionalExternalUrl,
 });
 
+/**
+ * Title, category and link of a general document (admins). A document without a file must
+ * keep its link; a file uploaded earlier may get one (also after the file was deleted).
+ */
 export async function updateDocument(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const access = await actionContext(formData, "admin");
   if (!access.ok) return access.error;
@@ -184,14 +102,23 @@ export async function updateDocument(_prev: ActionState, formData: FormData): Pr
     documentId: field(formData, "documentId"),
     title: field(formData, "title"),
     category: field(formData, "category"),
+    externalUrl: field(formData, "externalUrl"),
   });
-  if (!parsed.success) return invalidInput(parsed.error);
+  if (!parsed.success) return invalidInput(parsed.error, LINK_MESSAGES);
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data: doc } = await supabase
     .from("documents")
-    .update({ title: parsed.data.title, category: parsed.data.category })
+    .select("id, storage_path")
     .eq("organisation_id", access.ctx.org.id)
     .eq("id", parsed.data.documentId)
+    .maybeSingle();
+  if (!doc) return failure("not_found");
+  if (!doc.storage_path && !parsed.data.externalUrl) return failure("document_link_required", { externalUrl: true });
+  const { data, error } = await supabase
+    .from("documents")
+    .update({ title: parsed.data.title, category: parsed.data.category, external_url: parsed.data.externalUrl ?? null })
+    .eq("organisation_id", access.ctx.org.id)
+    .eq("id", doc.id)
     .select("id");
   if (error) return failure(dbErrorCode(error));
   if (!data.length) return failure("not_found");
@@ -226,33 +153,23 @@ export async function restoreDocument(_prev: ActionState, formData: FormData): P
   return setArchived(formData, false);
 }
 
-/** Whether the object is still in Storage (the caller can see it only while removable). */
-async function objectExists(path: string): Promise<boolean> {
-  const supabase = await createClient();
-  const slash = path.lastIndexOf("/");
-  const { data } = await supabase.storage
-    .from("documents")
-    .list(path.slice(0, slash), { search: path.slice(slash + 1), limit: 1 });
-  return Boolean(data?.length);
-}
-
-const deleteImageSchema = z.object({
+const deleteFileSchema = z.object({
   documentId: z.uuid(),
   // The page to come back to; only pages of this company.
   back: z.string().regex(/^\/o\/[a-z0-9-]+(\/[a-z0-9-]+)+$/),
 });
 
 /**
- * Deletes an image uploaded before photo links (docs/DATABASE.md §10): the database marks
- * it deleted (authorised there: operators for attachments, admins for general documents),
- * the file is removed from Storage with the user's own session, and the database confirms
- * the object is gone. The row stays as a trace. A failed removal is reported and can be
- * retried from the same button; the image is unreadable from the first step on.
+ * Deletes a file uploaded before links (docs/DATABASE.md §5k): the database marks it deleted
+ * (authorised there: operators for attachments, admins for general documents), the file is
+ * removed from Storage with the user's own session, and the database confirms the object is
+ * gone. The row stays as a trace. A failed removal is reported and can be finished from the
+ * same button; the file is unreadable from the first step on.
  */
-export async function deleteDocumentImage(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function deleteDocumentFile(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
-  const parsed = deleteImageSchema.safeParse({ documentId: field(formData, "documentId"), back: field(formData, "back") });
+  const parsed = deleteFileSchema.safeParse({ documentId: field(formData, "documentId"), back: field(formData, "back") });
   if (!parsed.success || !parsed.data.back.startsWith(`/o/${access.ctx.org.slug}/`)) return failure("not_found");
   const { documentId, back } = parsed.data;
   const supabase = await createClient();
@@ -265,13 +182,13 @@ export async function deleteDocumentImage(_prev: ActionState, formData: FormData
     .maybeSingle();
   if (!doc) return failure("not_found");
 
-  const { data: path, error } = await supabase.rpc("delete_document_image", { p_document_id: doc.id });
+  const { data: path, error } = await supabase.rpc("delete_document_file", { p_document_id: doc.id });
   if (error || !path) return failure(dbErrorCode(error));
   const { error: removeError } = await supabase.storage.from("documents").remove([path]);
-  if (removeError) return failure("image_delete_incomplete");
-  const { data: removed, error: confirmError } = await supabase.rpc("confirm_document_image_removed", {
+  if (removeError) return failure("file_delete_incomplete");
+  const { data: removed, error: confirmError } = await supabase.rpc("confirm_document_file_removed", {
     p_document_id: doc.id,
   });
-  if (confirmError || !removed) return failure("image_delete_incomplete");
-  redirect(`${back}?pilt=kustutatud`);
+  if (confirmError || !removed) return failure("file_delete_incomplete");
+  redirect(`${back}?kustutatud=1`);
 }

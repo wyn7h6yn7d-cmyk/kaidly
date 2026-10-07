@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { normalizePhotosUrl } from "../photo-links.ts"; // explicit extension: also loaded by node --test
+import { normalizeExternalUrl } from "../external-links.ts"; // explicit extension: also loaded by node --test
 
 /** Trimmed text; empty string becomes undefined (→ null in the database). */
 export const optionalText = (max: number) =>
@@ -14,18 +14,21 @@ export const requiredText = (max: number) => z.string().trim().min(1).max(max);
 
 export const uuid = z.uuid();
 
-/** Optional external photo link: trimmed, https only; normalised. Issue message "url". */
-export const optionalPhotosUrl = z
+/** Optional external link (photos, documents): trimmed, https only; normalised. Issue message "url". */
+export const optionalExternalUrl = z
   .string()
   .optional()
   .transform((value, ctx) => {
-    const url = normalizePhotosUrl(value);
+    const url = normalizeExternalUrl(value);
     if (url === "invalid") {
       ctx.addIssue({ code: "custom", message: "url" });
       return z.NEVER;
     }
     return url ?? undefined;
   });
+
+/** The photo-link fields of log entries and deficiencies. */
+export const optionalPhotosUrl = optionalExternalUrl;
 
 /** Turns zod issues into { field: true } so forms can mark fields as invalid. */
 export function fieldErrors(error: z.ZodError): Record<string, true> {

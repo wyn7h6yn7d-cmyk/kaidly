@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
-import { DocumentUploadForm } from "@/components/documents/document-upload-form";
+import { DocumentForm } from "@/components/documents/document-form";
 import { hasRole } from "@/lib/auth/roles";
 import { listInstallationOptions } from "@/lib/data/log";
 import { listActiveSiteOptions } from "@/lib/data/sites";
@@ -10,10 +10,10 @@ import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
-  return { title: t.app.documents.uploadTitle };
+  return { title: t.app.documents.addTitle };
 }
 
-export default async function UploadDocumentPage({
+export default async function AddDocumentPage({
   params,
   searchParams,
 }: {
@@ -49,8 +49,8 @@ export default async function UploadDocumentPage({
             : { href: `/o/${org.slug}/dokumendid`, label: t.app.documents.title };
         return (
           <>
-            <PageHeader eyebrow={org.name} title={t.app.documents.uploadTitle} back={back} />
-            <DocumentUploadForm
+            <PageHeader eyebrow={org.name} title={t.app.documents.addTitle} back={back} />
+            <DocumentForm
               orgSlug={org.slug}
               canUseGeneralScopes={admin}
               sites={sites.map((s) => ({ id: s.id, label: s.name }))}

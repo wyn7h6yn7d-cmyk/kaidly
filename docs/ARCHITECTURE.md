@@ -127,7 +127,7 @@ lib/
   i18n/                        et.ts, en.ts, ru.ts (same keys), index.ts (types), server.ts (getT),
                                client.tsx (I18nProvider, useT), format.ts (dates/numbers), locales.ts
   history.ts                   activity_history rows → readable events (allowlisted fields)
-  documents/                   rules.ts (types, size, filenames — shared), upload-client.ts (browser: XHR upload)
+  documents/                   rules.ts (categories, image types of earlier files)
   schedule.ts, time.ts, labels.ts, env.ts
 scripts/                       local-supabase.mjs, dev-local.mjs, seed-files.mjs (local stack only)
 .github/workflows/ci.yml       CI: verify, database, e2e jobs
@@ -206,29 +206,18 @@ archived) render a clear notice instead of a permission error.
    `{ ok, error, fields }`; the client keeps typed values on failure (`useFormAction`),
 5. redirects or calls `refresh()`.
 
-The browser talks to Supabase directly only for **auth** (the auth forms) and for **file
-bytes**: an upload goes straight to Storage with the user's own session, so files never
-pass through the app server.
+The browser talks to Supabase directly only for **auth** (the auth forms). KAIDLY stores no
+user files (2026-10-08, DATABASE.md §5k): documents are links (`external_url`) and log entries
+and deficiencies carry a photo link (`photos_url`), both https only, normalised by
+`lib/external-links.ts` and rendered with `rel="noopener noreferrer"`. There is no upload code
+path in the app, no Storage INSERT policy and the database refuses file rows.
 
-**Upload flow** (`components/documents/use-upload-queue.ts`):
-1. `registerUpload` (Server Action) validates type, extension, size and filename, resolves
-   the target (organisation, site, installation, log entry or deficiency) through RLS and
-   inserts a `pending` documents row; the database generates the object path.
-2. The browser uploads with `XMLHttpRequest` for progress, `x-upsert: false`. Only PDF, DOCX
-   and XLSX are uploaded; images are refused in the picker, the action, the database and the
-   bucket — photos are linked instead (`photos_url`, DATABASE.md §5j).
-3. `finalizeUpload` → `finalize_document` checks the object and marks it `ready`.
-4. On any failure `discardUpload` removes the object (checking it is really gone) and the
-   pending row; the file stays in the list with "Proovi uuesti".
-Log-entry files: the form saves the entry first (the action returns its id instead of
-redirecting when files are queued), then uploads to it. If an upload fails the entry is
-already saved; the form keeps its values and offers retry or "continue without".
-Files are opened through `/o/[org]/dokumendid/[id]/ava`, which signs one 60-second URL on
-demand — nothing is pre-signed for lists, and thumbnails of earlier images load lazily
-through the same route. **Deleting an earlier image** (`deleteDocumentImage`): RPC
-`delete_document_image` (tombstone, returns the path) → Storage remove with the user's session
-→ `confirm_document_image_removed`; a failure returns `image_delete_incomplete` and the same
-button finishes it later.
+Files uploaded **before** that are opened through `/o/[org]/dokumendid/[id]/ava`, which signs
+one 60-second URL on demand — nothing is pre-signed for lists, and thumbnails of earlier
+images load lazily through the same route. **Deleting an earlier file**
+(`deleteDocumentFile`): RPC `delete_document_file` (tombstone, returns the path) → Storage
+remove with the user's session → `confirm_document_file_removed`; a failure returns
+`file_delete_incomplete` and the same button finishes it later.
 
 **Authorisation layers**, from strongest to weakest:
 1. Postgres RLS + storage policies — the real boundary.
@@ -349,10 +338,9 @@ lõppenud…"), then a missing earlier step.
 
 - `useFormAction` catches a failed Server Action request (`unstable_rethrow` lets Next
   redirects through) and returns the `network` error with the typed values kept.
-- `useSaveThenUpload` (`components/documents/use-save-then-upload.tsx`) is the one
-  implementation for "save a record, then upload its files" (log entries, corrections,
-  deficiencies): the action returns a `SavedRecord` when files follow; failed uploads leave
-  the record saved and offer retry / continue.
+- `useDraftedForm` (`components/forms/use-drafted-form.tsx`) is the one implementation for
+  forms that create or correct a record (log entries, corrections, deficiencies): values
+  survive errors and unsaved text survives a reload in this tab.
 - `useSessionDraft` keeps unsaved field values in `sessionStorage` (this tab only; cleared
   when the form goes out, restored if saving fails, discardable). Not an offline mode —
   full offline entry with sync remains future scope.
@@ -536,10 +524,9 @@ English column keys explained in the UI).
 
 - First load of a tenant page on 4G: usable < 2 s.
 - No client-side data-fetching libraries; Server Components render lists.
-- Client components only where interaction needs them (forms with file upload, org switcher, filters).
-- Images: KAIDLY no longer stores photos (2026-10-08, Storage capacity); records keep an
-  external photo link. Images uploaded earlier are shown as lazy thumbnails of the stored
-  file and can be deleted.
+- Client components only where interaction needs them (forms, org switcher, filters).
+- Files: KAIDLY stores none (2026-10-08, Storage capacity); records keep external links.
+  Images uploaded earlier are shown as lazy thumbnails of the stored file and can be deleted.
 - Lists that grow are paginated (50, deterministic order, one extra row to detect more):
   log, documents, deficiencies, activities. Dashboard sections are `limit 5` + exact count;
   per-site counts come from one view. No N+1: labels come from one installation lookup.

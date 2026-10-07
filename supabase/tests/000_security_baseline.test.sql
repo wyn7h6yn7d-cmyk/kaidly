@@ -79,13 +79,12 @@ select results_eq(
        ('admin_users(text,integer,integer)'),
        ('am_platform_admin()'),
        ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
-       ('confirm_document_image_removed(uuid)'),
+       ('confirm_document_file_removed(uuid)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
        ('deactivate_organisation(uuid,text)'),
-       ('delete_document_image(uuid)'),
+       ('delete_document_file(uuid)'),
        ('delete_organisation(uuid,text)'),
-       ('finalize_document(uuid)'),
        ('import_company_data(uuid,text,jsonb,uuid)'),
        ('invitation_preview(text)'),
        ('my_notifications(boolean,integer,integer)'),
@@ -200,13 +199,12 @@ select results_eq(
        ('admin_users(text,integer,integer)'),
        ('am_platform_admin()'),
        ('complete_scheduled_activity(uuid,date,log_entry_type,timestamp with time zone,text,text,text)'),
-       ('confirm_document_image_removed(uuid)'),
+       ('confirm_document_file_removed(uuid)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
        ('deactivate_organisation(uuid,text)'),
-       ('delete_document_image(uuid)'),
+       ('delete_document_file(uuid)'),
        ('delete_organisation(uuid,text)'),
-       ('finalize_document(uuid)'),
        ('import_company_data(uuid,text,jsonb,uuid)'),
        ('invitation_preview(text)'),
        ('my_trial()'),
@@ -331,11 +329,10 @@ select results_eq(
        from pg_policies where schemaname = 'storage' order by 1 $$,
   $$ values
        ('objects: kaidly documents: read ready files (SELECT to authenticated)'),
-       ('objects: kaidly documents: remove deleted images (DELETE to authenticated)'),
+       ('objects: kaidly documents: remove deleted files (DELETE to authenticated)'),
        ('objects: kaidly documents: remove own incomplete uploads (DELETE to authenticated)'),
-       ('objects: kaidly documents: see removable files (SELECT to authenticated)'),
-       ('objects: kaidly documents: upload registered pending files (INSERT to authenticated)') $$,
-  'storage policies are exactly the reviewed set (no update, nothing for anon)'
+       ('objects: kaidly documents: see removable files (SELECT to authenticated)') $$,
+  'storage policies are exactly the reviewed set (no upload, no update, nothing for anon)'
 );
 select is_empty(
   $$ select policyname from pg_policies where schemaname = 'storage'

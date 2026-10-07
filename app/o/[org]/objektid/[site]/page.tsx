@@ -168,7 +168,7 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
                 </h2>
                 {canAdd && (
                   <Button asChild variant="outline">
-                    <Link href={`${base}/dokumendid/uus?objekt=${site.id}`}>{t.app.documents.upload}</Link>
+                    <Link href={`${base}/dokumendid/uus?objekt=${site.id}`}>{t.app.documents.add}</Link>
                   </Button>
                 )}
               </div>

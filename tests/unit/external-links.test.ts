@@ -1,21 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizePhotosUrl, photosLinkHost } from "../../lib/photo-links.ts";
+import { normalizeExternalUrl, linkHost } from "../../lib/external-links.ts";
 import { deficiencySchema } from "../../lib/validation/deficiencies.ts";
 
 test("https links to any provider are accepted, trimmed and normalised", () => {
-  assert.equal(normalizePhotosUrl("  https://drive.google.com/drive/folders/abc?usp=sharing  "), "https://drive.google.com/drive/folders/abc?usp=sharing");
-  assert.equal(normalizePhotosUrl("https://1drv.ms/f/s!abc"), "https://1drv.ms/f/s!abc");
-  assert.equal(normalizePhotosUrl("https://www.dropbox.com/scl/fo/x/y?dl=0"), "https://www.dropbox.com/scl/fo/x/y?dl=0");
-  assert.equal(normalizePhotosUrl("https://firma.sharepoint.com/sites/kilbid/Shared%20Documents"), "https://firma.sharepoint.com/sites/kilbid/Shared%20Documents");
-  assert.equal(normalizePhotosUrl("HTTPS://Example.COM/Fotod"), "https://example.com/Fotod");
-  assert.equal(normalizePhotosUrl("https://fotod.example.ee:8443/album"), "https://fotod.example.ee:8443/album");
+  assert.equal(normalizeExternalUrl("  https://drive.google.com/drive/folders/abc?usp=sharing  "), "https://drive.google.com/drive/folders/abc?usp=sharing");
+  assert.equal(normalizeExternalUrl("https://1drv.ms/f/s!abc"), "https://1drv.ms/f/s!abc");
+  assert.equal(normalizeExternalUrl("https://www.dropbox.com/scl/fo/x/y?dl=0"), "https://www.dropbox.com/scl/fo/x/y?dl=0");
+  assert.equal(normalizeExternalUrl("https://firma.sharepoint.com/sites/kilbid/Shared%20Documents"), "https://firma.sharepoint.com/sites/kilbid/Shared%20Documents");
+  assert.equal(normalizeExternalUrl("HTTPS://Example.COM/Fotod"), "https://example.com/Fotod");
+  assert.equal(normalizeExternalUrl("https://fotod.example.ee:8443/album"), "https://fotod.example.ee:8443/album");
 });
 
 test("empty means no link", () => {
-  assert.equal(normalizePhotosUrl(""), null);
-  assert.equal(normalizePhotosUrl("   "), null);
-  assert.equal(normalizePhotosUrl(undefined), null);
+  assert.equal(normalizeExternalUrl(""), null);
+  assert.equal(normalizeExternalUrl("   "), null);
+  assert.equal(normalizeExternalUrl(undefined), null);
 });
 
 test("anything but a plain https link is refused", () => {
@@ -33,14 +33,14 @@ test("anything but a plain https link is refused", () => {
     "https:// example.com",
     `https://example.com/${"a".repeat(2000)}`,
   ]) {
-    assert.equal(normalizePhotosUrl(value), "invalid", value);
+    assert.equal(normalizeExternalUrl(value), "invalid", value);
   }
 });
 
 test("the saved link is shown by its host", () => {
-  assert.equal(photosLinkHost("https://www.dropbox.com/scl/fo/x"), "dropbox.com");
-  assert.equal(photosLinkHost("https://drive.google.com/drive/folders/abc"), "drive.google.com");
-  assert.equal(photosLinkHost("not a url"), "");
+  assert.equal(linkHost("https://www.dropbox.com/scl/fo/x"), "dropbox.com");
+  assert.equal(linkHost("https://drive.google.com/drive/folders/abc"), "drive.google.com");
+  assert.equal(linkHost("not a url"), "");
 });
 
 test("forms: an invalid link is reported as the url issue, an empty one is optional", () => {

@@ -12,8 +12,7 @@ import { deficiencySchema, progressStatusSchema } from "@/lib/validation/deficie
 import { LOG_ENTRY_TYPES, occurredAt } from "@/lib/validation/log";
 import { isUuid } from "@/lib/validation/sites";
 import { actionContext } from "./context";
-import { savedOrRedirect } from "./saved";
-import { type ActionState, failure, invalidInput, type SavedRecord } from "./state";
+import { type ActionState, failure, invalidInput } from "./state";
 
 const DEFICIENCY_MESSAGES = { future: "occurred_in_future", url: "invalid_photos_url" } as const;
 
@@ -31,9 +30,9 @@ function input(formData: FormData) {
 }
 
 export async function createDeficiency(
-  _prev: ActionState<SavedRecord>,
+  _prev: ActionState,
   formData: FormData,
-): Promise<ActionState<SavedRecord>> {
+): Promise<ActionState> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -62,7 +61,7 @@ export async function createDeficiency(
     .select("id")
     .single();
   if (error || !data) return failure(dbErrorCode(error));
-  return savedOrRedirect(formData, data.id, `/o/${ctx.org.slug}/puudused/${data.id}`);
+  redirect(`/o/${ctx.org.slug}/puudused/${data.id}`);
 }
 
 /** Fails with an error code or redirects; it never returns a success value. */

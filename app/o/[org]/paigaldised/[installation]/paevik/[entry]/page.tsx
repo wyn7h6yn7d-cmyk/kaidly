@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DetailList } from "@/components/app/detail-list";
-import { AttachmentUploader } from "@/components/documents/attachment-uploader";
 import { AttachmentGallery } from "@/components/documents/document-list";
 import { PhotosLink } from "@/components/documents/photos-link";
 import { FormMessage } from "@/components/forms/form-message";
@@ -12,7 +11,6 @@ import { hasRole } from "@/lib/auth/roles";
 import { listAttachments } from "@/lib/data/documents";
 import { getLogEntry, type LogEntryVersion } from "@/lib/data/log";
 import { getInstallation } from "@/lib/data/sites";
-import { isWithin } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/server";
 
@@ -20,9 +18,6 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return { title: t.app.log.entryTitle };
 }
-
-/** Matches the database rule: the author may attach files for 24 hours after recording. */
-const ATTACH_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 async function Version({
   label,
@@ -75,13 +70,13 @@ export default async function LogEntryPage({
   searchParams,
 }: {
   params: Promise<{ org: string; installation: string; entry: string }>;
-  searchParams: Promise<{ pilt?: string }>;
+  searchParams: Promise<{ kustutatud?: string }>;
 }) {
   const t = await getT();
   return (
     <OrgPage
       params={params}
-      render={async ({ org, role, user }) => {
+      render={async ({ org, role }) => {
         const [{ installation: installationId, entry: entryId }, query] = await Promise.all([params, searchParams]);
         const installation = await getInstallation(org.id, installationId);
         if (!installation) notFound();
@@ -94,13 +89,8 @@ export default async function LogEntryPage({
         const versions = [entry.original, ...entry.corrections];
         const attachments = await listAttachments(org.id, { logEntryIds: versions.map((v) => v.id) });
         const attachmentCopy = t.app.attachments;
-        // Images uploaded before photo links: any operator+ may delete them (the trace stays).
-        const canDeleteImages = hasRole(role, "operator");
-        const canAttach =
-          hasRole(role, "operator") &&
-          !installation.archivedAt &&
-          current.createdBy === user.id &&
-          isWithin(current.createdAt, ATTACH_WINDOW_MS);
+        // Files uploaded before links: any operator+ may delete them (the trace stays).
+        const canDeleteFiles = hasRole(role, "operator");
         const versionLabel = (versionId: string) => {
           const index = versions.findIndex((v) => v.id === versionId);
           return index === 0 ? copy.original : copy.correctionNumber(index);
@@ -175,11 +165,11 @@ export default async function LogEntryPage({
 
             <section aria-labelledby="attachments" className="mt-10">
               <h3 id="attachments" className="mb-3 text-lg font-bold">
-                {attachmentCopy.photosAndFiles}
+                {attachmentCopy.heading}
               </h3>
-              {query.pilt === "kustutatud" && (
+              {query.kustutatud && (
                 <div className="mb-4">
-                  <FormMessage success={t.app.imageDelete.done} />
+                  <FormMessage success={t.app.fileDelete.done} />
                 </div>
               )}
               {current.photosUrl && (
@@ -189,6 +179,7 @@ export default async function LogEntryPage({
                 </p>
               )}
               {groups.length === 0 && !current.photosUrl && <p className="text-k-muted">{attachmentCopy.none}</p>}
+              {groups.length > 0 && <p className="mb-2 font-semibold">{attachmentCopy.legacyHeading}</p>}
               <div className="grid gap-5">
                 {groups.map((group) => (
                   <div key={group.version.id}>
@@ -198,24 +189,13 @@ export default async function LogEntryPage({
                     <AttachmentGallery
                       orgSlug={org.slug}
                       items={group.items}
-                      canDelete={canDeleteImages}
+                      canDelete={canDeleteFiles}
                       back={`${base}/${entry.id}`}
                     />
                   </div>
                 ))}
               </div>
-              {canAttach ? (
-                <div className="mt-4">
-                  <AttachmentUploader
-                    orgSlug={org.slug}
-                    target={{ kind: "logEntry", id: current.id }}
-                    label={attachmentCopy.addFiles}
-                    hint={`${attachmentCopy.hint} ${attachmentCopy.entryClosedHint}`}
-                  />
-                </div>
-              ) : (
-                canCorrect && <p className="mt-3 text-sm text-k-muted">{attachmentCopy.entryClosedHint}</p>
-              )}
+              {canCorrect && <p className="mt-3 text-sm text-k-muted">{attachmentCopy.correctionHint}</p>}
             </section>
 
             {entry.corrections.length > 0 && (

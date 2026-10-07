@@ -38,7 +38,7 @@ async function call<T>(fn: Parameters<Awaited<ReturnType<typeof createClient>>["
 export type AdminOverview = Record<
   | "users" | "users_active_30d" | "companies" | "companies_active" | "companies_deactivated" | "sites" | "installations"
   | "activities_overdue" | "activities_due_soon" | "deficiencies_open" | "deficiencies_serious" | "documents"
-  | "storage_bytes" | "log_entries_30d",
+  | "stored_files" | "storage_bytes" | "log_entries_30d",
   number
 >;
 
@@ -91,7 +91,7 @@ export type AdminCompanyDetail = {
   members: { membership_id: string; user_id: string; name: string | null; email: string | null; role: string; joined_at: string }[];
   counts: Record<
     | "sites" | "installations" | "log_entries" | "activities" | "overdue" | "due_soon" | "deficiencies_open"
-    | "deficiencies_serious" | "documents" | "storage_bytes",
+    | "deficiencies_serious" | "documents" | "stored_files" | "storage_bytes",
     number
   >;
   recent: { created_at: string; table_name: string; action: string; actor: string | null }[];
@@ -124,7 +124,7 @@ export type AdminDeadlineFilters = {
   includeDeactivated?: boolean;
 };
 export type AdminSystem = Record<
-  "migrations" | "users" | "companies" | "documents" | "pending_uploads" | "storage_bytes" | "platform_admins",
+  "migrations" | "users" | "companies" | "documents" | "pending_uploads" | "stored_files" | "storage_bytes" | "platform_admins",
   number
 > & { latest_migration: string | null };
 export type AdminAuditEntry = {

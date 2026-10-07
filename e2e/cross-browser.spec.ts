@@ -6,6 +6,7 @@ import {
   expect,
   expectNoHorizontalScroll,
   field,
+  legacyFile,
   login,
   sql,
   test,
@@ -75,28 +76,33 @@ test.describe("Brauserid", () => {
     await expectNoHorizontalScroll(page);
   });
 
-  test("files: upload a PDF, open it through the signed link, export reports @cross-browser", async ({ page }) => {
+  test("documents: add a link, open an earlier file through the signed link, delete it, export reports @cross-browser", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Peakilp", "PK-1");
+    const earlier = await legacyFile(org, { site, installation }, org.users.admin, "Vana mõõteprotokoll", "pdf");
     await login(page, org.users.admin, `/o/${org.slug}`);
     await page.goto(`/o/${org.slug}/dokumendid/uus?paigaldis=${installation}`);
-    await page.locator('input[type="file"]').first().setInputFiles({
-      name: "Mõõteprotokoll PK-1.pdf",
-      mimeType: "application/pdf",
-      buffer: Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n"),
-    });
-    // As a person would: the chosen file is listed before uploading.
-    await expect(page.getByText("Mõõteprotokoll PK-1.pdf")).toBeVisible();
-    await page.getByRole("button", { name: "Laadi üles" }).click();
-    await expect.poll(() => sql(`select count(*) from public.documents where organisation_id = '${org.id}' and status = 'ready'`), { timeout: 30_000 }).toBe("1");
-    const doc = sql(`select id from public.documents where organisation_id = '${org.id}' and status = 'ready'`);
-    const opened = await page.request.get(`/o/${org.slug}/dokumendid/${doc}/ava`, { maxRedirects: 0 });
+    await expect(page.locator('input[type="file"]')).toHaveCount(0);
+    await field(page, "title").fill("Mõõteprotokoll PK-1");
+    await page.getByLabel("Dokumendi link").fill("https://drive.example.com/pk-1");
+    await page.getByRole("button", { name: "Lisa dokument" }).click();
+    await expect(page.getByRole("link", { name: "Ava dokument Mõõteprotokoll PK-1 uues aknas" })).toHaveAttribute(
+      "href",
+      "https://drive.example.com/pk-1",
+    );
+
+    // The earlier file opens through the access-checked, short-lived link.
+    const opened = await page.request.get(`/o/${org.slug}/dokumendid/${earlier.id}/ava`, { maxRedirects: 0 });
     expect(opened.status()).toBe(302);
-    const file = await page.request.get(`/o/${org.slug}/dokumendid/${doc}/ava?lae=1`);
+    const file = await page.request.get(`/o/${org.slug}/dokumendid/${earlier.id}/ava?lae=1`);
     expect(file.status()).toBe(200);
-    expect(file.headers()["content-type"]).toContain("application/pdf");
     expect(file.headers()["content-disposition"]).toContain("attachment");
+    await page.goto(`/o/${org.slug}/dokumendid/${earlier.id}`);
+    page.once("dialog", (dialog) => void dialog.accept());
+    await page.getByRole("button", { name: "Kustuta fail Vana mõõteprotokoll" }).click();
+    await expect(page.getByText("Fail on kustutatud.")).toBeVisible();
+    expect(sql(`select count(*) from storage.objects where name = '${earlier.path}'`)).toBe("0");
 
     for (const format of ["csv", "pdf"] as const) {
       const r = await page.request.get(`/o/${org.slug}/aruanded/documents/eksport?format=${format}`);

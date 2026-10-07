@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import { FilterPanel } from "@/components/app/filter-panel";
 import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
@@ -63,12 +63,12 @@ export default async function DocumentsPage({
             arhiiv: archived ? "1" : undefined,
           }).filter((entry): entry is [string, string] => Boolean(entry[1])),
         );
-        const canUpload = hasRole(role, "operator");
-        const uploadButton = canUpload ? (
+        const canAdd = hasRole(role, "operator");
+        const addButton = canAdd ? (
           <Button asChild>
             <Link href={`${base}/uus`}>
-              <Upload aria-hidden="true" />
-              {copy.upload}
+              <Plus aria-hidden="true" />
+              {copy.add}
             </Link>
           </Button>
         ) : undefined;
@@ -79,7 +79,7 @@ export default async function DocumentsPage({
               eyebrow={org.name}
               title={archived ? copy.showArchived : copy.title}
               description={archived ? undefined : copy.intro}
-              actions={archived ? undefined : uploadButton}
+              actions={archived ? undefined : addButton}
             />
             {query.salvestatud && (
               <div className="mb-4">
@@ -134,7 +134,7 @@ export default async function DocumentsPage({
                   title={t.app.emptyStates.documents.title}
                   body={t.app.emptyStates.documents.body}
                   examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.documents.examples }}
-                  action={canUpload ? { href: `${base}/uus`, label: t.app.emptyStates.documents.cta } : undefined}
+                  action={canAdd ? { href: `${base}/uus`, label: t.app.emptyStates.documents.cta } : undefined}
                   note={t.app.emptyStates.documents.member}
                 />
               )

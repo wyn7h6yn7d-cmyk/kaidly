@@ -25,6 +25,7 @@ async function System() {
           [s.companies, fmtNumber(sys.companies)],
           [s.documents, fmtNumber(sys.documents)],
           [s.pendingUploads, fmtNumber(sys.pending_uploads)],
+          [s.storedFiles, fmtNumber(sys.stored_files)],
           [s.storage, fmtBytes(sys.storage_bytes)],
           [s.admins, fmtNumber(sys.platform_admins)],
         ]}

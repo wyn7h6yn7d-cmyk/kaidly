@@ -84,6 +84,7 @@ async function CompanyDetail({ params }: { params: Params }) {
             [ADMIN.companies.openDeficiencies, fmtNumber(counts.deficiencies_open)],
             [s.serious, fmtNumber(counts.deficiencies_serious)],
             [ADMIN.companies.documents, fmtNumber(counts.documents)],
+            [s.storedFiles, fmtNumber(counts.stored_files)],
             [s.storage, fmtBytes(counts.storage_bytes)],
           ]}
         />

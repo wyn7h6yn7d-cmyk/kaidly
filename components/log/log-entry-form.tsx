@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { AttachmentPicker } from "@/components/documents/attachment-picker";
 import { PhotosLinkField } from "@/components/documents/photos-link";
-import { DraftNotice, UploadRecovery, useSaveThenUpload } from "@/components/documents/use-save-then-upload";
+import { DraftNotice, useDraftedForm } from "@/components/forms/use-drafted-form";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
 import { useFieldId } from "@/components/forms/use-field-id";
@@ -28,10 +27,7 @@ export type LogEntryDefaults = {
  * New entry or correction. Organisation and installation are already known from the URL,
  * so the form only asks for what happened. Rarely changed fields start collapsed.
  *
- * Photos are linked ("Fotode link"), not uploaded. Files (PDF, DOCX, XLSX): the entry is
- * saved first, then the chosen files upload to it (the author may attach files for 24 hours
- * after saving). If an upload fails the entry is already safe; the user can retry or
- * continue without the file — nothing typed is lost.
+ * KAIDLY stores no files: photos are linked ("Fotode link", any https folder or album).
  */
 export function LogEntryForm({
   orgSlug,
@@ -48,17 +44,13 @@ export function LogEntryForm({
 }) {
   const t = useT();
   const isCorrection = Boolean(correctionOfId);
-  const upload = useSaveThenUpload(
-    orgSlug,
+  const { state, formAction: action, pending, value, draft } = useDraftedForm(
     isCorrection ? correctLogEntry : createLogEntry,
-    (id) => ({ kind: "logEntry", id }),
     isCorrection ? `kaidly:draft:correction:${correctionOfId}` : `kaidly:draft:entry:${orgSlug}:${installationId}`,
   );
-  const { queue, state, formAction: action, pending, value, saved, draft, needsRecovery, retry, retrying, locked } = upload;
   const { attachForm, restored: draftRestored, discard: discardDraft } = draft;
   const id = useFieldId();
   const copy = t.app.log;
-  const attachmentCopy = t.app.attachments;
   const selectedType = value("entryType", defaults.entryType);
   const detailsHaveError = Boolean(
     state.fields?.occurredAt || state.fields?.result || state.fields?.performedByName,
@@ -162,34 +154,15 @@ export function LogEntryForm({
         </details>
       )}
 
-      <fieldset className="grid gap-2">
-        <legend className="mb-2 text-[15px] font-semibold">{attachmentCopy.files}</legend>
-        <AttachmentPicker
-          queue={queue}
-          label={attachmentCopy.addFiles}
-          hint={isCorrection ? `${attachmentCopy.correctionHint} ${attachmentCopy.hint}` : attachmentCopy.hint}
-          disabled={locked}
-        />
-      </fieldset>
-
       <FormMessage code={state.errorCode} />
-      {needsRecovery && saved ? (
-        <UploadRecovery
-          message={attachmentCopy.savedWithFailures}
-          href={saved.href}
-          retry={retry}
-          retrying={retrying}
-        />
-      ) : (
-        <div className="flex flex-col-reverse gap-3 sm:flex-row">
-          <Button asChild variant="ghost" size="lg">
-            <Link href={cancelHref}>{t.app.cancel}</Link>
-          </Button>
-          <Button type="submit" size="lg" disabled={locked} className="sm:min-w-[224px]">
-            {pending ? copy.saving : isCorrection ? copy.submitCorrection : copy.submit}
-          </Button>
-        </div>
-      )}
+      <div className="flex flex-col-reverse gap-3 sm:flex-row">
+        <Button asChild variant="ghost" size="lg">
+          <Link href={cancelHref}>{t.app.cancel}</Link>
+        </Button>
+        <Button type="submit" size="lg" disabled={pending} className="sm:min-w-[224px]">
+          {pending ? copy.saving : isCorrection ? copy.submitCorrection : copy.submit}
+        </Button>
+      </div>
     </form>
   );
 }

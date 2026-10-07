@@ -1,49 +1,36 @@
--- Upload abuse limits (database-enforced, failed/abandoned attempts count, configurable)
--- and immediate loss of data access for revoked sessions and disabled accounts.
+-- Upload abuse limits (only for stored files — users store none since document_links) and
+-- immediate loss of data access for revoked sessions and disabled accounts.
 
 begin;
 create extension if not exists pgtap with schema extensions;
 \ir helpers/fixture.psql
 \ir helpers/sites.psql
 
-select plan(20);
+select plan(12);
 
 -- Small limits for the test (the live values are in private.upload_limits).
 update private.upload_limits set per_user_hour = 3, per_user_day = 5, bytes_per_user_day = 1000, pending_per_user = 10, per_org_day = 6, bytes_per_org_day = 100000;
 
-create function pg_temp.register(p_size int) returns void language sql as $$
-  insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
-  values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Juhend', 'juhend.pdf', 'application/pdf', p_size)
-$$;
-grant execute on function pg_temp.register(int) to authenticated;
+-- Since migration document_links users register no files at all; the limits only ever
+-- applied to stored files, so link records are never counted or limited.
+create function pg_temp.add_links(p_n int) returns void language plpgsql as $$
+begin
+  for i in 1..p_n loop
+    insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, external_url)
+    values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Juhend ' || i, 'https://example.com/juhend/' || i);
+  end loop;
+end; $$;
+grant execute on function pg_temp.add_links(int) to authenticated;
 
 select pg_temp.login('a_operator');
-select lives_ok($$ select pg_temp.register(10) $$, 'normal upload registration works');
-select lives_ok($$ select pg_temp.register(10) $$, 'second');
-select lives_ok($$ select pg_temp.register(10) $$, 'third (the hourly limit)');
-select throws_ok($$ select pg_temp.register(10) $$, 'P0001', 'upload_rate_limited', 'the fourth within an hour is refused');
-
--- Deleting the pending rows does not reset the counter.
-delete from public.documents where uploaded_by = auth.uid() and status = 'pending';
-select throws_ok($$ select pg_temp.register(10) $$, 'P0001', 'upload_rate_limited', 'removing abandoned uploads does not reset the limit');
-
--- Another user of the same company has their own hourly allowance.
-select pg_temp.login('a_admin');
-select lives_ok($$ select pg_temp.register(10) $$, 'another user is not affected by the first user''s limit');
-select throws_ok($$ select pg_temp.register(5000) $$, 'P0001', 'upload_rate_limited', 'daily byte limit per user');
-
--- Company-level daily limit (3 + 1 already registered; limit 6).
-select pg_temp.login('a_owner');
-select lives_ok($$ select pg_temp.register(10) $$, 'company still under its daily limit');
-select lives_ok($$ select pg_temp.register(10) $$, 'company reaches its daily limit');
-select throws_ok($$ select pg_temp.register(10) $$, 'P0001', 'upload_rate_limited', 'company daily limit applies across users');
-
--- Limits are configuration: raising them takes effect at once.
-select pg_temp.logout();
+select throws_ok(
+  $$ insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes)
+     values (pg_temp.org('a'), pg_temp.site('a1'), pg_temp.inst('a1'), 'other', 'Juhend', 'juhend.pdf', 'application/pdf', 10) $$,
+  'P0001', 'file_uploads_disabled', 'a file can no longer be registered (no uploads at all)');
+select lives_ok($$ select pg_temp.add_links(7) $$, 'link documents are not limited like uploads (7 > hourly and company limits)');
 reset role;
-update private.upload_limits set per_org_day = 100;
+select is((select count(*)::int from private.upload_events), 0, 'link documents are not counted as uploads');
 select pg_temp.login('a_owner');
-select lives_ok($$ select pg_temp.register(10) $$, 'raised limits apply without a deploy');
 select throws_ok($$ select * from private.upload_limits $$, '42501', null, 'users cannot read or change the limits');
 
 -- ===========================================================================

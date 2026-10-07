@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 
@@ -39,12 +39,12 @@ export default async function InstallationDocumentsPage({
         const documents = await listDocuments(org.id, { installationId: installation.id }, page);
         const copy = t.app.documents;
         const base = `/o/${org.slug}/paigaldised/${installation.id}/dokumendid`;
-        const canUpload = hasRole(role, "operator") && !installation.archivedAt;
-        const uploadButton = canUpload ? (
+        const canAdd = hasRole(role, "operator") && !installation.archivedAt;
+        const addButton = canAdd ? (
           <Button asChild>
             <Link href={`/o/${org.slug}/dokumendid/uus?paigaldis=${installation.id}`}>
-              <Upload aria-hidden="true" />
-              {copy.upload}
+              <Plus aria-hidden="true" />
+              {copy.add}
             </Link>
           </Button>
         ) : undefined;
@@ -62,7 +62,7 @@ export default async function InstallationDocumentsPage({
                 body={t.app.emptyStates.documents.body}
                 examples={{ label: t.app.emptyStates.examples, items: t.app.emptyStates.documents.examples }}
                 action={
-                  canUpload
+                  canAdd
                     ? { href: `/o/${org.slug}/dokumendid/uus?paigaldis=${installation.id}`, label: t.app.emptyStates.documents.cta }
                     : undefined
                 }
@@ -72,7 +72,7 @@ export default async function InstallationDocumentsPage({
               <>
                 <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-k-muted">{copy.installationIntro}</p>
-                  {uploadButton}
+                  {addButton}
                 </div>
                 <DocumentList
                   orgSlug={org.slug}

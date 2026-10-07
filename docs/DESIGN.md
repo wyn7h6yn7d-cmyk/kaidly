@@ -196,17 +196,18 @@ requests to Google).
 - **First use**: a numbered checklist (Lisa esimene objekt → Lisa paigaldis → Tee esimene
   käidupäeviku sissekanne); done steps get a green check, the current step shows one
   button. Members who can't create sites see who does it. No tours, no modals.
-- **Documents and attachments**: documents are list rows (icon, title, category · date ·
-  size, context) with "Ava" at right. A record's section "Fotod ja failid" starts with its
-  **Fotode link** ("Ava link" + the host, never the raw URL; new tab, `noopener noreferrer`).
-  Images uploaded before photo links are square thumbnails (2 per row on phones) with an
-  outlined "Kustuta pilt" under each (confirmation says it is permanent); a deleted image
-  leaves a muted line "Pilt kustutatud — name, time". Other files as rows. Historical files
-  carry a green-bordered note that they can't be changed. The upload control is an
-  outlined button with a paperclip icon ("Lisa failid" — PDF, DOCX, XLSX); each chosen file is a
-  row with size, state (Ootel · Laadin üles… 40% · Üles laaditud · Üleslaadimine
-  ebaõnnestus) and a 44 px remove button; a thin progress bar while uploading. Refused
-  files are listed in an alert with the reason.
+- **Documents (a link register)**: list rows (link icon, title, category · date, context)
+  with **"Ava dokument"** at right — the external link, new tab, `noopener noreferrer`, never
+  the raw URL. "Lisa dokument" opens a form with title, **Dokumendi link** ("Lisa link
+  dokumendile või kaustale, kus dokument asub.", `https://...`), category and placement; no
+  file field anywhere. A document uploaded before 2026-10-08 shows "varasem fail · size",
+  opens with "Ava fail" / "Laadi alla" and has "Kustuta fail" (confirmation says it is
+  permanent); afterwards "Fail kustutatud — name, time" remains and a link can be added.
+- **Photos on a record**: the section "Fotod" shows the **Fotode link** ("Ava link" + host).
+  Files added earlier sit under "Varem lisatud failid": images as square thumbnails (2 per
+  row on phones) with "Kustuta pilt", other files as rows with "Kustuta fail"; a deleted one
+  leaves a muted "Pilt/Fail kustutatud — name, time". Historical files carry a note that they
+  can't be changed.
 
 ## 5a. Public landing page (implemented, refined 2026-10-02)
 
@@ -334,14 +335,10 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
 - Measured: from the installation page, two taps (Lisa sissekanne → type chip) plus typing
   and Salvesta. From the overview: Lisa sissekanne → recently used installation → type chip.
 - **Photos** are linked, not uploaded: "Fotode link" sits under the description ("Lisa link
-  kaustale või albumile, kus fotod asuvad.", placeholder `https://...`, `type="url"`). Files
-  ("Lisa failid": PDF, DOCX, XLSX) upload after the entry is saved, with progress per file.
-  If an upload fails, the saved entry stays on screen with "Proovi uuesti" and "Jätka ilma
-  nende failideta". More files can be added from the entry page for 24 hours (author only);
-  later ones go on a correction, which also carries the photo link forward.
+  kaustale või albumile, kus fotod asuvad.", placeholder `https://...`, `type="url"`). No
+  file or camera control. A correction carries the photo link forward and can change it.
 
-- **Deficiencies** take a photo link (create and edit) and files in the creation form (same
-  flow: saved first, then uploaded; failure keeps the deficiency and the typed text).
+- **Deficiencies** take a photo link (create and edit); no files.
 - **Drafts:** new entries, corrections and deficiencies keep unsaved text in this tab
   (sessionStorage) — a reload or lost connection doesn't cost it; "Taastasime … mustandi"
   with "Alusta tühjalt". A lost connection while saving shows the network error and keeps
@@ -362,8 +359,8 @@ Installation page ──[+ Lisa sissekanne]──► Entry form ──[Salvesta 
 - Touch targets ≥ 44 × 44 px, ≥ 8 px apart; primary buttons 48 px high.
 - Works with gloves: no small icon-only controls for primary actions; no swipe-only gestures.
 - High contrast; nothing relies on hover.
-- Slow network: pending state on save, per-file upload progress, clear retry on failure;
-  text is never lost after a validation, upload or connection error (tab drafts).
+- Slow network: pending state on save, clear errors; text is never lost after a validation
+  or connection error (tab drafts).
 - Respects `prefers-reduced-motion`; motion is minimal anyway (≤ 150 ms fades).
 
 ## 7. Copy

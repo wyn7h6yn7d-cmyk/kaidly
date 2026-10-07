@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pencil } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
-import { AttachmentUploader } from "@/components/documents/attachment-uploader";
 import { AttachmentGallery } from "@/components/documents/document-list";
 import { PhotosLink } from "@/components/documents/photos-link";
 import { OrgPage } from "@/components/app/org-page";
@@ -30,7 +29,7 @@ export default async function DeficiencyPage({
   searchParams,
 }: {
   params: Promise<{ org: string; deficiency: string }>;
-  searchParams: Promise<{ lahendatud?: string; pilt?: string }>;
+  searchParams: Promise<{ lahendatud?: string; kustutatud?: string }>;
 }) {
   const t = await getT();
   return (
@@ -137,11 +136,11 @@ export default async function DeficiencyPage({
 
             <section aria-labelledby="attachments" className="mt-10">
               <h2 id="attachments" className="mb-3 text-lg font-bold">
-                {t.app.attachments.photosAndFiles}
+                {t.app.attachments.heading}
               </h2>
-              {query.pilt === "kustutatud" && (
+              {query.kustutatud && (
                 <div className="mb-4">
-                  <FormMessage success={t.app.imageDelete.done} />
+                  <FormMessage success={t.app.fileDelete.done} />
                 </div>
               )}
               {deficiency.photosUrl && (
@@ -150,25 +149,18 @@ export default async function DeficiencyPage({
                   <PhotosLink url={deficiency.photosUrl} />
                 </p>
               )}
-              {attachments.length === 0 && !deficiency.photosUrl ? (
-                <p className="text-k-muted">{t.app.attachments.none}</p>
-              ) : (
-                <AttachmentGallery
-                  orgSlug={org.slug}
-                  items={attachments}
-                  // Images uploaded before photo links: operator+ may delete them, also once resolved.
-                  canDelete={hasRole(role, "operator")}
-                  back={base}
-                />
-              )}
-              {canAct && !installation.archivedAt && (
-                <div className="mt-4">
-                  <AttachmentUploader
+              {attachments.length === 0 && !deficiency.photosUrl && <p className="text-k-muted">{t.app.attachments.none}</p>}
+              {attachments.length > 0 && (
+                <>
+                  <p className="mb-2 font-semibold">{t.app.attachments.legacyHeading}</p>
+                  <AttachmentGallery
                     orgSlug={org.slug}
-                    target={{ kind: "deficiency", id: deficiency.id }}
-                    label={t.app.attachments.addFiles}
+                    items={attachments}
+                    // Files uploaded before links: operator+ may delete them, also once resolved.
+                    canDelete={hasRole(role, "operator")}
+                    back={base}
                   />
-                </div>
+                </>
               )}
             </section>
           </>

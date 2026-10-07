@@ -16,7 +16,7 @@
     "db:seed-files": "node scripts/seed-files.mjs",
     "db:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"tests/unit/**/*.test.ts\"",
-    "test:db": "supabase test db && node scripts/test-email-concurrency.mjs && node scripts/test-plan-concurrency.mjs && node scripts/test-image-delete-concurrency.mjs",
+    "test:db": "supabase test db && node scripts/test-email-concurrency.mjs && node scripts/test-plan-concurrency.mjs && node scripts/test-file-delete-concurrency.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run test:db && npm run build",
     "dev:local": "node scripts/dev-local.mjs",
     "test:e2e": "playwright test",

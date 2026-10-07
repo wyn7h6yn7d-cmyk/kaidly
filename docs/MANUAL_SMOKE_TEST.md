@@ -56,8 +56,9 @@ Redirects, crawlers:
 - [ ] "Lisa objekt" → one site; "Lisa paigaldis" ×5 (short names) → Pakett shows 5 / 5
 - [ ] Try a 6th installation → "Prooviperioodil saab olla kuni 5 aktiivset elektripaigaldist" instead of the form → **5-installation limit**; archive one → the form is available again (edit an existing one works at the limit too)
 - [ ] **Käidukava** → add an activity due in 3 days with a 7-day reminder → countdown shows; the bell shows a reminder
-- [ ] **Käidupäevik** → new entry with a **Fotode link** (`https://…`, any folder) and a PDF → saved; the entry shows "Ava link" (opens in a new tab) and the PDF opens. The file picker offers no camera / images; choosing a JPG shows "Pilte KAIDLYsse üles ei laadita…"
-- [ ] (only if the smoke company has an image from before 2026-10-08) **Kustuta pilt** → confirm → "Pilt on kustutatud.", the thumbnail is replaced by "Pilt kustutatud — name, time". Never test this on a customer's image
+- [ ] **Käidupäevik** → new entry with a **Fotode link** (`https://…`, any folder) → saved; the entry shows "Ava link" (opens in a new tab). No file or camera control anywhere in the form
+- [ ] **Dokumendid** → "Lisa dokument" → title + **Dokumendi link** → saved; the list shows "Ava dokument" (new tab). No file field; an `http://` link is refused
+- [ ] (only if the smoke company has a file from before 2026-10-08) **Kustuta fail** / **Kustuta pilt** → confirm → "Fail on kustutatud.", the trace "… kustutatud — name, time" remains; a link can then be added. Never test this on a customer's file
 - [ ] **Puudused** → "Lisa puudus" → appears in the list and on the overview; resolve it with a description → resolved
 - [ ] **Dokumendid** → upload a small PDF → opens (new tab) and downloads
 - [ ] **Otsing** → search the installation name → found; a word from the log entry → found

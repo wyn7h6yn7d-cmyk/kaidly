@@ -193,17 +193,18 @@ export type Database = {
           deleted_by: string | null
           deleted_by_name: string | null
           electrical_installation_id: string | null
+          external_url: string | null
           file_removed_at: string | null
           id: string
           log_entry_id: string | null
-          mime_type: string
+          mime_type: string | null
           organisation_id: string
-          original_filename: string
+          original_filename: string | null
           ready_at: string | null
           site_id: string | null
-          size_bytes: number
+          size_bytes: number | null
           status: Database["public"]["Enums"]["document_status"]
-          storage_path: string
+          storage_path: string | null
           title: string
           uploaded_by: string
           uploaded_by_name: string
@@ -217,17 +218,18 @@ export type Database = {
           deleted_by?: string | null
           deleted_by_name?: string | null
           electrical_installation_id?: string | null
+          external_url?: string | null
           file_removed_at?: string | null
           id?: string
           log_entry_id?: string | null
-          mime_type: string
+          mime_type?: string | null
           organisation_id: string
-          original_filename: string
+          original_filename?: string | null
           ready_at?: string | null
           site_id?: string | null
-          size_bytes: number
+          size_bytes?: number | null
           status?: Database["public"]["Enums"]["document_status"]
-          storage_path?: string
+          storage_path?: string | null
           title: string
           uploaded_by?: string
           uploaded_by_name?: string
@@ -241,17 +243,18 @@ export type Database = {
           deleted_by?: string | null
           deleted_by_name?: string | null
           electrical_installation_id?: string | null
+          external_url?: string | null
           file_removed_at?: string | null
           id?: string
           log_entry_id?: string | null
-          mime_type?: string
+          mime_type?: string | null
           organisation_id?: string
-          original_filename?: string
+          original_filename?: string | null
           ready_at?: string | null
           site_id?: string | null
-          size_bytes?: number
+          size_bytes?: number | null
           status?: Database["public"]["Enums"]["document_status"]
-          storage_path?: string
+          storage_path?: string | null
           title?: string
           uploaded_by?: string
           uploaded_by_name?: string
@@ -1211,7 +1214,7 @@ export type Database = {
         }
         Returns: string
       }
-      confirm_document_image_removed: {
+      confirm_document_file_removed: {
         Args: { p_document_id: string }
         Returns: boolean
       }
@@ -1235,17 +1238,10 @@ export type Database = {
         Args: { p_confirm_name: string; p_organisation_id: string }
         Returns: undefined
       }
-      delete_document_image: {
-        Args: { p_document_id: string }
-        Returns: string
-      }
+      delete_document_file: { Args: { p_document_id: string }; Returns: string }
       delete_organisation: {
         Args: { p_confirm_name: string; p_organisation_id: string }
         Returns: undefined
-      }
-      finalize_document: {
-        Args: { p_document_id: string }
-        Returns: Database["public"]["Enums"]["document_status"]
       }
       import_company_data: {
         Args: { p_kind: string; p_org: string; p_rows: Json; p_token: string }

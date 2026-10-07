@@ -30,6 +30,7 @@ async function Overview() {
           tone={o.deficiencies_serious ? "danger" : undefined}
         />
         <Stat label={s.documents} value={fmtNumber(o.documents)} />
+        <Stat label={s.storedFiles} value={fmtNumber(o.stored_files)} />
         <Stat label={s.storage} value={fmtBytes(o.storage_bytes)} />
       </dl>
       <h2 className="mb-3 mt-10 text-lg font-bold">{ADMIN.access.title}</h2>

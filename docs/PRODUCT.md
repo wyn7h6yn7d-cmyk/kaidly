@@ -72,7 +72,7 @@ organisation is one tap.
 5. **Operating log / Käidupäevik** — chronological, strictly append-only record of what happened at an installation. Mistakes are fixed with linked correction entries; the original always stays visible.
 6. **Scheduled activities / Käidukava** — recurring and one-off activities (*tegevused*) with due dates and priority; "Märgi tehtuks" writes the log entry. Shown as *Tulemas* (upcoming), *Varsti* (due within 14 days), *Üle tähtaja* (overdue) or *Tehtud* (completed) — derived from dates, there is no "in progress" state. Recurring due dates stay anchored to the plan.
 7. **Deficiencies / Puudused** — found problems with severity (*Madal*, *Keskmine*, *Kõrge*, *Kriitiline*), due date and status *Avatud* (open), *Töös* (in progress) or *Lahendatud* (resolved). Resolving requires a note and writes the log entry; resolved deficiencies stay in history and are never deleted.
-8. **Documents** — schemes, protocols and manuals for the organisation, a site, an installation, a log entry or a deficiency (PDF, DOCX, XLSX; up to 25 MB). **Photos are not stored in KAIDLY** (2026-10-08): log entries and deficiencies keep an optional *Fotode link* to the folder or album where the photos are (any https provider). Images uploaded earlier stay visible and can be deleted; the record keeps a trace. Files on log entries and deficiencies are part of the record and never change; a log entry's author can add files for 24 hours, later evidence goes on a correction. General documents can be archived and restored, never deleted. Anyone who may read a document may also open and download it. HEIC is not supported in the MVP (phone photos are converted to JPEG). *(Site cover photo: not built.)*
+8. **Documents** — a **document register**: schemes, protocols and manuals for the organisation, a site or an installation, each with a title, type and an external **Dokumendi link** (any https location: Drive, OneDrive, SharePoint, Dropbox…). **KAIDLY stores no files** (2026-10-08): log entries and deficiencies keep an optional *Fotode link*. Files uploaded earlier stay readable until an authorised member deletes them (the record keeps a trace; a document can get a link instead). Files on log entries and deficiencies are part of the record and never change; a log entry's author can add files for 24 hours, later evidence goes on a correction. General documents can be archived and restored, never deleted. Anyone who may read a document may also open and download it. HEIC is not supported in the MVP (phone photos are converted to JPEG). *(Site cover photo: not built.)*
 9. **Users and permissions** — invite with a copyable, single-use link; four roles; remove members.
 10. **Change history** — owners and admins read who changed what and when (sites,
     installations, operating plan, deficiencies, documents, members, invitations), in plain
@@ -109,8 +109,7 @@ Targets for this flow on a mid-range phone:
 Status (Phases 4–8): "Lisa sissekanne" on the overview opens a picker with the user's
 recently used installations first (straight to the form when there is only one); the form
 takes the type with one tap, an optional photo link (2026-10-08: photos are no longer
-uploaded), and keeps everything typed after validation errors. If a file upload fails, the
-entry is already saved and the file can be retried. Not yet: device-side drafts when the network
+uploaded), and keeps everything typed after validation errors. Not yet: device-side drafts when the network
 fails before saving (Phase 9).
 
 See [DESIGN.md §6](DESIGN.md#6-mobile-ux) for how.
@@ -245,10 +244,10 @@ Estonian term rules:
 | Deficiency states | Avatud · Töös · Lahendatud | suletud | *Lahenda puudus* writes a log entry. |
 | Documents | Dokumendid | failid | |
 | Document categories | Audit · Mõõteprotokoll · Ühejooneskeem · Käidukava · Hooldusraport · Deklaratsioon · Juhend · Foto · Muu | | *Käidukava* as a category = the plan document (PDF), not the module. *Foto* only for images uploaded before photo links. |
-| Attachments on a record | Fotod ja failid / manused | lisad | Section title *Fotod ja failid*. |
+| Photos on a record | Fotod | lisad | Section title *Fotod* (photo link); *Varem lisatud failid* for earlier files. |
+| Document link | Dokumendi link | dokumendi URL | *Ava dokument*; hint *Lisa link dokumendile või kaustale, kus dokument asub.* |
+| Delete an earlier file | Kustuta fail / Kustuta pilt | eemalda | Trace: *Fail kustutatud — nimi, aeg*. |
 | Photo link | Fotode link | fotolink, piltide link | *Ava link*; hint *Lisa link kaustale või albumile, kus fotod asuvad.* |
-| Delete an earlier image | Kustuta pilt | eemalda foto | Trace: *Pilt kustutatud — nimi, aeg*. |
-| Upload | Laadi üles | lisa fail, upload | Progress *Laadin üles… 40%*. |
 | Archive | Arhiveeri / Taasta | kustuta | Nothing operational is deleted. |
 | Roles | Omanik · Administraator · Käitaja · Vaataja | | |
 | Overview | Ülevaade | dashboard, töölaud | Section *Mis vajab tähelepanu*. |

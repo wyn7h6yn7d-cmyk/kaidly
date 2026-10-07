@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Deleting an image under real concurrency (LOCAL stack only): two members press
-// "Kustuta pilt" on the same image at the same moment. Both requests must succeed (the
-// second one gets the path again, so its Storage removal is a harmless repeat), the image
+// Deleting an earlier file under real concurrency (LOCAL stack only): two members press
+// "Kustuta fail" on the same file at the same moment. Both requests must succeed (the
+// second one gets the path again, so its Storage removal is a harmless repeat), the file
 // is marked deleted exactly once with one deleter, and the change history has one deletion.
 // pgTAP runs in a single session and cannot show this. A throw-away company is committed
 // for the test and removed again afterwards.
@@ -69,7 +69,7 @@ try {
     session(`begin;
       select set_config('request.jwt.claims', json_build_object('sub', '${user}', 'role', 'authenticated')::text, true);
       set local role authenticated;
-      select 'path:' || public.delete_document_image('${DOC}');
+      select 'path:' || public.delete_document_file('${DOC}');
       select pg_sleep(1);
       commit;`);
   const results = await Promise.all(USERS.map(remove));
@@ -82,7 +82,7 @@ try {
   const pass = bothGotPath && state === "true/true" && deletions === "1";
   ok &&= pass;
   console.log(
-    `${pass ? "ok" : "not ok"} - concurrent image deletes: both succeed (${bothGotPath}), deleted once by one member (${state}), ${deletions} deletion in history`,
+    `${pass ? "ok" : "not ok"} - concurrent file deletes: both succeed (${bothGotPath}), deleted once by one member (${state}), ${deletions} deletion in history`,
   );
 } finally {
   cleanup();

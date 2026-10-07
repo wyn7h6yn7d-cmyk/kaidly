@@ -4,9 +4,8 @@ import Link from "next/link";
 import { Field } from "@/components/forms/field";
 import { FormMessage } from "@/components/forms/form-message";
 import { useFieldId } from "@/components/forms/use-field-id";
-import { AttachmentPicker } from "@/components/documents/attachment-picker";
 import { PhotosLinkField } from "@/components/documents/photos-link";
-import { DraftNotice, UploadRecovery, useSaveThenUpload } from "@/components/documents/use-save-then-upload";
+import { DraftNotice, useDraftedForm } from "@/components/forms/use-drafted-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -35,15 +34,11 @@ export function DeficiencyForm({
   cancelHref: string;
 }) {
   const t = useT();
-  // Editing never returns a record (it redirects), so it fits the same signature; only
-  // creating offers files, which upload once the deficiency is saved.
-  const upload = useSaveThenUpload(
-    orgSlug,
-    deficiency ? (_previous, formData) => updateDeficiency({}, formData) : createDeficiency,
-    (id) => ({ kind: "deficiency", id }),
+  // Both actions redirect on success; creating keeps an unsaved draft in this tab.
+  const { state, formAction: action, pending, value, draft } = useDraftedForm(
+    deficiency ? updateDeficiency : createDeficiency,
     deficiency ? null : `kaidly:draft:deficiency:${orgSlug}:${installation?.id ?? "any"}`,
   );
-  const { queue, state, formAction: action, pending, value, saved, draft, needsRecovery, retry, retrying, locked } = upload;
   const { attachForm, restored: draftRestored, discard: discardDraft } = draft;
   const id = useFieldId();
   const copy = t.app.deficiencies;
@@ -160,31 +155,15 @@ export function DeficiencyForm({
         invalid={state.fields?.photosUrl}
       />
 
-      {!deficiency && (
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 text-[15px] font-semibold">{t.app.attachments.files}</legend>
-          <AttachmentPicker queue={queue} label={t.app.attachments.addFiles} disabled={locked} />
-        </fieldset>
-      )}
-
       <FormMessage code={state.errorCode} />
-      {needsRecovery && saved ? (
-        <UploadRecovery
-          message={t.app.attachments.deficiencySavedWithFailures}
-          href={saved.href}
-          retry={retry}
-          retrying={retrying}
-        />
-      ) : (
-        <div className="flex flex-col-reverse gap-3 sm:flex-row">
-          <Button asChild variant="ghost" size="lg">
-            <Link href={cancelHref}>{t.app.cancel}</Link>
-          </Button>
-          <Button type="submit" size="lg" disabled={locked}>
-            {pending ? copy.saving : deficiency ? t.app.save : copy.submitCreate}
-          </Button>
-        </div>
-      )}
+      <div className="flex flex-col-reverse gap-3 sm:flex-row">
+        <Button asChild variant="ghost" size="lg">
+          <Link href={cancelHref}>{t.app.cancel}</Link>
+        </Button>
+        <Button type="submit" size="lg" disabled={pending}>
+          {pending ? copy.saving : deficiency ? t.app.save : copy.submitCreate}
+        </Button>
+      </div>
     </form>
   );
 }

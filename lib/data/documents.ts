@@ -7,16 +7,21 @@ import { isUuid } from "@/lib/validation/sites";
 export const DOCUMENTS_PAGE_SIZE = 50;
 
 /**
- * A ready document as listed. Pending and failed uploads are never listed. A deleted image
- * stays listed as a trace (`deletedAt`), without its file.
+ * A document as listed: an external link (`externalUrl`) and/or a file uploaded before
+ * 2026-10-08 (`file`). Pending and failed uploads are never listed. A deleted file stays
+ * listed as a trace (`deletedAt`), without the file.
  */
 export type DocumentItem = {
   id: string;
   title: string;
   category: DocumentCategory;
-  originalFilename: string;
-  mimeType: string;
-  sizeBytes: number;
+  /** External https link to the document (any provider). */
+  externalUrl: string | null;
+  /** True for a file uploaded before links (it may since have been deleted). */
+  hasFile: boolean;
+  originalFilename: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
   uploadedByName: string;
   createdAt: string;
   archivedAt: string | null;
@@ -26,20 +31,22 @@ export type DocumentItem = {
   deficiencyId: string | null;
   deletedAt: string | null;
   deletedByName: string | null;
-  /** The deleted image's file is confirmed gone (false = removal still to be retried). */
+  /** The deleted file is confirmed gone (false = removal still to be finished). */
   fileRemoved: boolean;
 };
 
 const COLUMNS =
-  "id, title, category, original_filename, mime_type, size_bytes, uploaded_by_name, created_at, archived_at, site_id, electrical_installation_id, log_entry_id, deficiency_id, deleted_at, deleted_by_name, file_removed_at";
+  "id, title, category, external_url, storage_path, original_filename, mime_type, size_bytes, uploaded_by_name, created_at, archived_at, site_id, electrical_installation_id, log_entry_id, deficiency_id, deleted_at, deleted_by_name, file_removed_at";
 
 type Row = {
   id: string;
   title: string;
   category: DocumentCategory;
-  original_filename: string;
-  mime_type: string;
-  size_bytes: number;
+  external_url: string | null;
+  storage_path: string | null;
+  original_filename: string | null;
+  mime_type: string | null;
+  size_bytes: number | null;
   uploaded_by_name: string;
   created_at: string;
   archived_at: string | null;
@@ -57,6 +64,8 @@ function toItem(row: Row): DocumentItem {
     id: row.id,
     title: row.title,
     category: row.category,
+    externalUrl: row.external_url,
+    hasFile: row.storage_path !== null,
     originalFilename: row.original_filename,
     mimeType: row.mime_type,
     sizeBytes: row.size_bytes,
@@ -144,7 +153,7 @@ export async function listDocuments(
   };
 }
 
-/** Ready attachments of some log entries (an entry and its corrections) or of a deficiency. */
+/** Attachments uploaded earlier to some log entries (an entry and its corrections) or to a deficiency. */
 export async function listAttachments(
   organisationId: string,
   target: { logEntryIds: string[] } | { deficiencyId: string },
@@ -201,10 +210,10 @@ export async function signDocumentUrl(
     .eq("status", "ready")
     .is("deleted_at", null)
     .maybeSingle();
-  if (error || !doc) return null;
+  if (error || !doc?.storage_path) return null;
   const { data } = await supabase.storage
     .from("documents")
-    .createSignedUrl(doc.storage_path, 60, download ? { download: doc.original_filename } : undefined);
+    .createSignedUrl(doc.storage_path, 60, download ? { download: doc.original_filename ?? true } : undefined);
   return data?.signedUrl ?? null;
 }
 

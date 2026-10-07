@@ -6,8 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { field } from "@/lib/validation/common";
 import { correctionSchema, logEntrySchema } from "@/lib/validation/log";
 import { actionContext } from "./context";
-import { savedOrRedirect } from "./saved";
-import { type ActionState, failure, invalidInput, type SavedRecord } from "./state";
+import { redirect } from "next/navigation";
+import { type ActionState, failure, invalidInput } from "./state";
 
 const LOG_TIME_MESSAGES = { future: "occurred_in_future", time: "invalid_time", url: "invalid_photos_url" } as const;
 
@@ -28,9 +28,9 @@ function input(formData: FormData) {
 }
 
 export async function createLogEntry(
-  _prev: ActionState<SavedRecord>,
+  _prev: ActionState,
   formData: FormData,
-): Promise<ActionState<SavedRecord>> {
+): Promise<ActionState> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -60,13 +60,13 @@ export async function createLogEntry(
     .single();
   if (error || !data) return failure(dbErrorCode(error));
 
-  return savedOrRedirect(formData, data.id, `/o/${ctx.org.slug}/paigaldised/${installation.id}/paevik?salvestatud=1`);
+  redirect(`/o/${ctx.org.slug}/paigaldised/${installation.id}/paevik?salvestatud=1`);
 }
 
 export async function correctLogEntry(
-  _prev: ActionState<SavedRecord>,
+  _prev: ActionState,
   formData: FormData,
-): Promise<ActionState<SavedRecord>> {
+): Promise<ActionState> {
   const access = await actionContext(formData, "operator");
   if (!access.ok) return access.error;
   const { ctx } = access;
@@ -112,9 +112,5 @@ export async function correctLogEntry(
     .single();
   if (error || !data) return failure(dbErrorCode(error));
 
-  return savedOrRedirect(
-    formData,
-    data.id,
-    `/o/${ctx.org.slug}/paigaldised/${original.electrical_installation_id}/paevik/${original.id}`,
-  );
+  redirect(`/o/${ctx.org.slug}/paigaldised/${original.electrical_installation_id}/paevik/${original.id}`);
 }

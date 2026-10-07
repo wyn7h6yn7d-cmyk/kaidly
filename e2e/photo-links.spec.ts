@@ -6,7 +6,7 @@ import {
   expect,
   expectNoHorizontalScroll,
   field,
-  legacyImage,
+  legacyFile,
   login,
   sql,
   test,
@@ -20,7 +20,7 @@ const tombstone = (id: string) =>
   sql(`select (deleted_at is not null)::text || '/' || (file_removed_at is not null)::text || '/' || coalesce(deleted_by_name, '') from public.documents where id = '${id}'`);
 
 test.describe("Fotode lingid", () => {
-  test("an invalid photo link is refused and nothing is lost; empty is fine", async ({ page }) => {
+  test("journal: an invalid photo link is refused and nothing is lost; a valid one saves and opens externally", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
@@ -40,10 +40,14 @@ test.describe("Fotode lingid", () => {
     await expect(page.getByLabel("Fotode link")).toHaveValue("http://fotod.example.com/kilp");
     expect(sql(`select count(*) from public.log_entries where organisation_id = '${org.id}'`)).toBe("0");
 
-    await page.getByLabel("Fotode link").fill("");
+    await page.getByLabel("Fotode link").fill("https://fotod.example.com/kilp-2026");
     await page.getByRole("button", { name: "Salvesta sissekanne" }).click();
     await expect(page).toHaveURL(/paevik\?salvestatud=1$/);
-    expect(sql(`select coalesce(photos_url, 'null') from public.log_entries where organisation_id = '${org.id}'`)).toBe("null");
+    expect(sql(`select photos_url from public.log_entries where organisation_id = '${org.id}'`)).toBe("https://fotod.example.com/kilp-2026");
+    await page.getByRole("link", { name: /Ülevaatus/ }).click();
+    const saved = page.getByRole("link", { name: "Ava fotode link (fotod.example.com) uues aknas" });
+    await expect(saved).toHaveAttribute("target", "_blank");
+    await expect(saved).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   test("a correction carries the link forward and can change it; the original keeps its own", async ({ page }) => {
@@ -78,40 +82,53 @@ test.describe("Fotode lingid", () => {
   });
 });
 
-test.describe("Uusi pilte ei salvestata", () => {
-  test("the upload endpoints refuse images; PDFs still go through", async () => {
+test.describe("Faile ei salvestata", () => {
+  test("direct API calls cannot register or upload any file: images, PDF, DOCX, XLSX", async () => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
     const op = await apiAs(org.users.operator);
-    const image = await op.from("documents").insert({
+    for (const [name, mime] of [
+      ["x.jpg", "image/jpeg"],
+      ["x.pdf", "application/pdf"],
+      ["x.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+      ["x.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+    ]) {
+      const { error } = await op.from("documents").insert({
+        organisation_id: org.id, site_id: site, electrical_installation_id: installation,
+        category: "other", title: name, original_filename: name, mime_type: mime, size_bytes: 10,
+      });
+      expect(error?.message, mime).toBe("file_uploads_disabled");
+    }
+    // Even with a registered pending path (written as postgres) Storage takes nothing.
+    const path = sql(`insert into public.documents (organisation_id, site_id, electrical_installation_id, category, title, original_filename, mime_type, size_bytes, uploaded_by)
+      values ('${org.id}', '${site}', '${installation}', 'other', 'Pooleli', 'p.pdf', 'application/pdf', 9, '${org.users.operator.id}') returning storage_path;`);
+    for (const mime of ["application/pdf", "image/png"]) {
+      const upload = await op.storage.from("documents").upload(path, new Blob(["%PDF-1.4\n"], { type: mime }), { contentType: mime });
+      expect(upload.error, mime).not.toBeNull();
+    }
+    const elsewhere = await op.storage
+      .from("documents")
+      .upload(`${org.id}/${crypto.randomUUID()}/${crypto.randomUUID()}`, new Blob(["x"], { type: "application/pdf" }), { contentType: "application/pdf" });
+    expect(elsewhere.error).not.toBeNull();
+    expect(sql(`select count(*) from storage.objects where bucket_id = 'documents' and name like '${org.id}/%'`)).toBe("0");
+    // A link document goes through.
+    const { error } = await op.from("documents").insert({
       organisation_id: org.id, site_id: site, electrical_installation_id: installation,
-      category: "photo", title: "x", original_filename: "x.jpg", mime_type: "image/jpeg", size_bytes: 10,
+      category: "manual", title: "Juhend", external_url: "https://example.com/juhend.pdf",
     });
-    expect(image.error?.message).toBe("image_uploads_disabled");
-    const { data: pdf, error } = await op.from("documents").insert({
-      organisation_id: org.id, site_id: site, electrical_installation_id: installation,
-      category: "manual", title: "Juhend", original_filename: "juhend.pdf", mime_type: "application/pdf", size_bytes: 9,
-    }).select("id, storage_path").single();
     expect(error).toBeNull();
-    // Image bytes are refused at the registered path; the PDF uploads and finalizes.
-    const asPng = await op.storage.from("documents").upload(pdf!.storage_path, new Blob(["%PDF-1.4\n"], { type: "image/png" }), { contentType: "image/png" });
-    expect(asPng.error).not.toBeNull();
-    const asPdf = await op.storage.from("documents").upload(pdf!.storage_path, new Blob(["%PDF-1.4\n"], { type: "application/pdf" }), { contentType: "application/pdf" });
-    expect(asPdf.error).toBeNull();
-    expect((await op.rpc("finalize_document", { p_document_id: pdf!.id })).data).toBe("ready");
-    expect(sql(`select count(*) from public.documents where organisation_id = '${org.id}' and mime_type like 'image/%'`)).toBe("0");
   });
 });
 
-test.describe("Varem üles laaditud pildid", () => {
+test.describe("Varem üles laaditud failid", () => {
   test("an operator deletes an old deficiency photo: file and visibility gone, trace stays @responsive", async ({ page }) => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
     const deficiency = sql(`insert into public.deficiencies (organisation_id, site_id, electrical_installation_id, title, description, severity, created_by)
       values ('${org.id}', '${site}', '${installation}', 'Lahtine klemm', 'x', 'high', '${org.users.operator.id}') returning id;`);
-    const photo = await legacyImage(org, { site, installation, deficiency }, org.users.operator, "Klemm X3");
+    const photo = await legacyFile(org, { site, installation, deficiency }, org.users.operator, "Klemm X3");
     await login(page, org.users.operator, `/o/${org.slug}/puudused/${deficiency}`);
 
     await expect(page.getByRole("list", { name: "Fotod" }).getByRole("img", { name: "Klemm X3" })).toBeVisible();
@@ -132,9 +149,9 @@ test.describe("Varem üles laaditud pildid", () => {
       void dialog.accept();
     });
     await button.click();
-    await expect(page.getByText("Pilt on kustutatud.")).toBeVisible();
+    await expect(page.getByText("Fail on kustutatud.")).toBeVisible();
     await expect(page.getByRole("img", { name: "Klemm X3" })).toHaveCount(0);
-    await expect(page.getByRole("list", { name: "Kustutatud pildid" })).toContainText(`Pilt kustutatud — ${org.users.operator.fullName}`);
+    await expect(page.getByRole("list", { name: "Kustutatud failid" })).toContainText(`Pilt kustutatud — ${org.users.operator.fullName}`);
     await expectNoHorizontalScroll(page);
 
     expect(objectCount(photo.path)).toBe("0");
@@ -152,14 +169,14 @@ test.describe("Varem üles laaditud pildid", () => {
     const installation = await createInstallation(org, site, "Kilp");
     const entry = sql(`insert into public.log_entries (organisation_id, site_id, electrical_installation_id, entry_type, description, created_by)
       values ('${org.id}', '${site}', '${installation}', 'inspection', 'Kanne', '${org.users.operator.id}') returning id;`);
-    const photo = await legacyImage(org, { site, installation, logEntry: entry }, org.users.operator, "Kilbi foto");
+    const photo = await legacyFile(org, { site, installation, logEntry: entry }, org.users.operator, "Kilbi foto");
 
     await login(page, org.users.viewer, `/o/${org.slug}/paigaldised/${installation}/paevik/${entry}`);
     await expect(page.getByRole("img", { name: "Kilbi foto" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Kustuta pilt/ })).toHaveCount(0);
 
     for (const client of [await apiAs(org.users.viewer), await apiAs(other.users.owner)]) {
-      const { error } = await client.rpc("delete_document_image", { p_document_id: photo.id });
+      const { error } = await client.rpc("delete_document_file", { p_document_id: photo.id });
       expect(error?.message).toBe("not_found");
       await client.storage.from("documents").remove([photo.path]);
     }
@@ -171,10 +188,10 @@ test.describe("Varem üles laaditud pildid", () => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
-    const photo = await legacyImage(org, { site, installation }, org.users.admin, "Kilbi üldfoto");
+    const photo = await legacyFile(org, { site, installation }, org.users.admin, "Kilbi üldfoto");
     // Step 1 happened (marked deleted) but the Storage removal never ran.
     const admin = await apiAs(org.users.admin);
-    expect((await admin.rpc("delete_document_image", { p_document_id: photo.id })).data).toBe(photo.path);
+    expect((await admin.rpc("delete_document_file", { p_document_id: photo.id })).data).toBe(photo.path);
     expect(tombstone(photo.id)).toBe(`true/false/${org.users.admin.fullName}`);
 
     await login(page, org.users.admin, `/o/${org.slug}/dokumendid/${photo.id}`);
@@ -183,7 +200,7 @@ test.describe("Varem üles laaditud pildid", () => {
     await expect(page.getByRole("link", { name: "Laadi alla" })).toHaveCount(0);
     page.once("dialog", (dialog) => void dialog.accept());
     await page.getByRole("button", { name: "Lõpeta kustutamine" }).click();
-    await expect(page.getByText("Pilt on kustutatud.")).toBeVisible();
+    await expect(page.getByText("Fail on kustutatud.")).toBeVisible();
     await expect(page.getByRole("button", { name: "Lõpeta kustutamine" })).toHaveCount(0);
     expect(objectCount(photo.path)).toBe("0");
     expect(tombstone(photo.id)).toBe(`true/true/${org.users.admin.fullName}`);
@@ -191,7 +208,7 @@ test.describe("Varem üles laaditud pildid", () => {
     // The documents list keeps the trace without a file link.
     await page.goto(`/o/${org.slug}/dokumendid`);
     const row = page.getByRole("listitem").filter({ hasText: "Kilbi üldfoto" });
-    await expect(row).toContainText("Pilt kustutatud");
+    await expect(row).toContainText("Fail kustutatud");
     await expect(row.getByRole("link", { name: /Ava/ })).toHaveCount(0);
   });
 
@@ -199,7 +216,7 @@ test.describe("Varem üles laaditud pildid", () => {
     const org = await createOrg();
     const site = await createSite(org, "Objekt");
     const installation = await createInstallation(org, site, "Kilp");
-    const photo = await legacyImage(org, { site, installation }, org.users.admin, "Kilbi vaade");
+    const photo = await legacyFile(org, { site, installation }, org.users.admin, "Kilbi vaade");
     await login(page, org.users.operator, `/o/${org.slug}/dokumendid/${photo.id}`);
     await expect(page.getByRole("heading", { name: "Kilbi vaade" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Kustuta pilt/ })).toHaveCount(0);

@@ -268,11 +268,12 @@ caller's own registered pending path; no UPDATE policy (no overwrite/upsert); re
 `ready` rows visible under RLS. Tested: foreign download/sign/upload/upsert/remove refused or
 without effect; public URL does not exist; SVG and HTML uploads refused by the bucket and by
 the row check. Upload abuse limits (per user/company counters, failed attempts count) are
-database-enforced (pgTAP 170). Since 2026-10-08 (migration `photo_links`) no images are
-accepted at all (picker, action, insert trigger, bucket type list); photos are external https
-links rendered with `rel="noopener noreferrer"`. Earlier images can be deleted only through
-`delete_document_image` (role-checked, tenant-scoped, tombstone kept) and a Storage removal
-with the user's session (pgTAP 230, mutation-tested). Other allowed types are stored as uploaded.
+database-enforced (pgTAP 170). Since 2026-10-08 (migrations `photo_links`, `document_links`)
+**no user files are accepted at all**: no upload code or file inputs, the insert trigger
+refuses file rows, and there is no Storage INSERT policy. Documents and photos are external
+https links rendered with `rel="noopener noreferrer"`. Earlier files can be deleted only
+through `delete_document_file` (role-checked, tenant-scoped, tombstone kept) and a Storage
+removal with the user's session (pgTAP 080/230, mutation-tested).
 
 ## 22. Signed URLs
 

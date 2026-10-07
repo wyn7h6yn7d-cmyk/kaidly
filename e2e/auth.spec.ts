@@ -32,6 +32,8 @@ test.describe("Autentimine", () => {
   test("sign up, confirm by email, land in the app @responsive", async ({ page }) => {
     const email = `${uniqueId("signup")}@example.ee`;
     await page.goto("/auth/sign-up");
+    // The form is controlled: type only once React is interactive (dev hydration can lag under load).
+    await page.waitForLoadState("networkidle");
     await field(page, "fullName").fill("Uus Kasutaja");
     await field(page, "email").fill(email);
     await field(page, "password").fill("Pikk-parool-123");
@@ -49,6 +51,8 @@ test.describe("Autentimine", () => {
     const email = `${uniqueId("signup-en")}@example.ee`;
     await page.context().addCookies([{ name: "kaidly_locale", value: "en", url: "http://localhost:3100" }]);
     await page.goto("/auth/sign-up");
+    // The form is controlled: type only once React is interactive (dev hydration can lag under load).
+    await page.waitForLoadState("networkidle");
     await field(page, "fullName").fill("New User");
     await field(page, "email").fill(email);
     await field(page, "password").fill("Long-password-123");
@@ -65,6 +69,8 @@ test.describe("Autentimine", () => {
 
   test("short password and mismatched passwords are caught before sign-up", async ({ page }) => {
     await page.goto("/auth/sign-up");
+    // The form is controlled: type only once React is interactive (dev hydration can lag under load).
+    await page.waitForLoadState("networkidle");
     await field(page, "fullName").fill("Test");
     await field(page, "email").fill(`${uniqueId("x")}@example.ee`);
     await field(page, "password").fill("lyhike");

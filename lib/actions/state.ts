@@ -35,5 +35,3 @@ export function invalidInput(error: ZodError, messages: Record<string, ErrorCode
   };
 }
 
-/** A record saved by a form that still has files to upload to it (see useSaveThenUpload). */
-export type SavedRecord = { id: string; href: string };
