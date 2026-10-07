@@ -15,9 +15,9 @@ Production must never point at the development project, and the development proj
 (Preview users, test companies, audit rows) is never copied to production. Project refs are
 configuration (environment variables), never hard-coded in application code.
 
-> **Status 2026-10-07 — controlled pre-launch live on https://kaidly.ee:** 26 migrations
-> (latest `20261007100000_subscription_plans`); Production deployed from `main` (`5b930a0`
-> on 2026-10-07 — the deployed commit is always `/api/health` → `version`). Auth e-mail via
+> **Status 2026-10-07 — controlled pre-launch live on https://kaidly.ee:** 27 migrations
+> (latest `20261008100000_photo_links`, applied to Development and Production on 2026-10-07
+> after a fresh Production backup); Production deployed from `main` (the deployed commit is always `/api/health` → `version`). Auth e-mail via
 > custom SMTP (Resend), reminder e-mails on, Secure password change on, Google/Bing set up,
 > manual backups taken. Not a public commercial launch; v1.0.0 not tagged
 > (LAUNCH_STATUS.md). Releases: RELEASE_RUNBOOK.md.

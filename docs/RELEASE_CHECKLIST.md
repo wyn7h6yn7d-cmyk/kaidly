@@ -40,7 +40,7 @@ blocks engineering, QA or Preview work.
 | Status | Item |
 |---|---|
 | GREEN | Separate Production project, built from zero from the migrations; no development data copied, no seed |
-| GREEN | 27 migrations, latest `20261008100000_photo_links`. Development verified 2026-10-07; Production migrated in the 2026-10-06/07 releases (re-check with `migration list` at the next Production DB step) |
+| GREEN | 27 migrations, latest `20261008100000_photo_links`. Applied to Development and Production on 2026-10-07 (`migration list`: all 27 on both; Production backup `20261007T180615Z` + Storage mirror taken first) |
 | GREEN | Flow: Development first → dry-run → Production (backup first) → CLI relinked to Development at once (RELEASE_RUNBOOK.md §3–4); `npm run db:target` labels the link |
 | GREEN | pgTAP suite pins tables, definer functions and callable RPCs (`000_security_baseline`); every table change ships with role-matrix and cross-tenant tests |
 | GREEN | Supabase's own `ensure_rls` / `rls_auto_enable()` reviewed and kept |
