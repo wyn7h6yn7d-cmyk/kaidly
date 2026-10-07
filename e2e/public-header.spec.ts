@@ -58,10 +58,11 @@ test.describe("Avalik päis ja sektsioonilingid", () => {
       expect(signIn.x - (pricing.x + pricing.width)).toBeGreaterThan(200);
       expect(Math.abs(howItWorks.y + howItWorks.height / 2 - (signIn.y + signIn.height / 2))).toBeLessThan(4);
     } else {
-      // Below 1024 px: logo, language and the menu button; everything else is in the menu.
+      // Below 1024 px: logo, "Logi sisse", language and the menu button; the rest is in the menu.
+      await expect(right.getByRole("link", { name: "Logi sisse", exact: true })).toBeVisible();
       await expect(right.getByRole("combobox", { name: "Keel" })).toBeVisible();
       await expect(right.getByRole("button", { name: "Menüü" })).toBeVisible();
-      for (const name of ["Kuidas töötab?", "Hinnakiri", "Logi sisse", "Registreeru"]) {
+      for (const name of ["Kuidas töötab?", "Hinnakiri", "Registreeru"]) {
         await expect(banner.getByRole("link", { name, exact: true })).toBeHidden();
       }
     }
@@ -155,9 +156,43 @@ test.describe("Mobiilimenüü @responsive @cross-browser", () => {
     await openLanding(page);
   });
 
-  const ITEMS = ["Kuidas töötab?", "Hinnakiri", "Logi sisse", "Registreeru"];
+  const ITEMS = ["Kuidas töötab?", "Hinnakiri", "Registreeru"];
 
-  test("opens with all four destinations, Registreeru as the primary button, no overflow", async ({ page }) => {
+  test("Logi sisse stays in the closed bar at 320, 375 and 430 px, on one row, in ET/EN/RU", async ({ page, context }) => {
+    const labels = [
+      ["et", "Logi sisse", "Menüü"],
+      ["en", "Sign in", "Menu"],
+      ["ru", "Войти", "Меню"],
+    ] as const;
+    for (const [locale, signIn, menu] of labels) {
+      await context.addCookies([{ name: "kaidly_locale", value: locale, url: "http://localhost:3100" }]);
+      for (const width of [320, 375, 430]) {
+        await page.setViewportSize({ width, height: 800 });
+        await openLanding(page);
+        const right = page.getByTestId("site-header-right");
+        const button = right.getByRole("button", { name: menu, exact: true });
+        await expect(button).toHaveAttribute("aria-expanded", "false");
+        const link = right.getByRole("link", { name: signIn, exact: true });
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAttribute("href", "/auth/login");
+        await expect(right.getByRole("combobox")).toBeVisible();
+        // One row: logo, sign-in, language and menu share a line and nothing overlaps.
+        const boxes = await Promise.all(
+          [page.getByTestId("site-header-left").getByRole("link", { name: "KAIDLY" }), link, right.getByRole("combobox"), button].map(
+            async (l) => (await l.boundingBox())!,
+          ),
+        );
+        for (let i = 1; i < boxes.length; i++) {
+          expect(boxes[i].x, `${locale} ${width}px item ${i}`).toBeGreaterThanOrEqual(boxes[i - 1].x + boxes[i - 1].width - 1);
+          expect(Math.abs(boxes[i].y + boxes[i].height / 2 - (boxes[0].y + boxes[0].height / 2))).toBeLessThan(6);
+        }
+        expect(boxes.at(-1)!.x + boxes.at(-1)!.width).toBeLessThanOrEqual(width);
+        await expectNoHorizontalScroll(page);
+      }
+    }
+  });
+
+  test("opens with the section links and Registreeru as the primary button, no overflow", async ({ page }) => {
     const banner = page.getByRole("banner");
     const button = banner.getByRole("button", { name: "Menüü" });
     await expect(button).toBeVisible();
@@ -171,7 +206,8 @@ test.describe("Mobiilimenüü @responsive @cross-browser", () => {
     await expect(page.locator(`#${await button.getAttribute("aria-controls")}`)).toBeVisible();
     for (const name of ITEMS) await expect(menu.getByRole("link", { name, exact: true })).toBeVisible();
     await expect(menu.getByRole("link", { name: "Registreeru", exact: true })).toHaveClass(/bg-k-volt/);
-    await expect(menu.getByRole("link", { name: "Logi sisse", exact: true })).toHaveAttribute("href", "/auth/login");
+    // "Logi sisse" is in the bar itself, not repeated in the menu.
+    await expect(menu.getByRole("link", { name: "Logi sisse", exact: true })).toHaveCount(0);
     await expect(menu.getByRole("link", { name: "Registreeru", exact: true })).toHaveAttribute("href", "/auth/sign-up");
     for (const name of ITEMS) {
       const box = (await menu.getByRole("link", { name, exact: true }).boundingBox())!;
@@ -228,7 +264,7 @@ test.describe("Mobiilimenüü @responsive @cross-browser", () => {
     await expectNoHorizontalScroll(page);
   });
 
-  test("a click outside closes it; Logi sisse and Registreeru open their pages", async ({ page }) => {
+  test("a click outside closes it; Registreeru and Logi sisse open their pages", async ({ page }) => {
     const button = page.getByRole("button", { name: "Menüü" });
     await button.click();
     // Below the panel: the bottom of the screen is page content.
@@ -242,21 +278,21 @@ test.describe("Mobiilimenüü @responsive @cross-browser", () => {
     await page.goBack();
     await page.waitForLoadState("networkidle");
     await expect(page.getByRole("button", { name: "Menüü" })).toHaveAttribute("aria-expanded", "false");
-    await page.getByRole("button", { name: "Menüü" }).click();
-    await page.getByRole("banner").getByRole("link", { name: "Logi sisse", exact: true }).click();
+    await page.getByTestId("site-header-right").getByRole("link", { name: "Logi sisse", exact: true }).click();
     await expect(page).toHaveURL(/\/auth\/login$/);
   });
 
   test("language switch: the menu follows ET → EN → RU", async ({ page }) => {
     const banner = page.getByRole("banner");
     const labels = {
-      en: { menu: "Menu", items: ["How does it work?", "Pricing", "Sign in", "Sign up"] },
-      ru: { menu: "Меню", items: ["Как это работает?", "Цены", "Войти", "Регистрация"] },
+      en: { menu: "Menu", signIn: "Sign in", items: ["How does it work?", "Pricing", "Sign up"] },
+      ru: { menu: "Меню", signIn: "Войти", items: ["Как это работает?", "Цены", "Регистрация"] },
     } as const;
     for (const locale of ["en", "ru"] as const) {
       await banner.getByRole("combobox").selectOption(locale);
       const button = banner.getByRole("button", { name: labels[locale].menu, exact: true });
       await expect(button).toBeVisible();
+      await expect(banner.getByRole("link", { name: labels[locale].signIn, exact: true })).toBeVisible();
       await button.click();
       for (const name of labels[locale].items) {
         await expect(banner.getByRole("navigation").getByRole("link", { name, exact: true })).toBeVisible();

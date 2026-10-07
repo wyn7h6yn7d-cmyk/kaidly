@@ -76,7 +76,7 @@ export function LanguageSelector({
           value={t.locale}
           disabled={pending}
           onChange={(event) => choose(event.target.value)}
-          className="h-11 appearance-none rounded-sm bg-transparent pl-2 pr-6 text-sm font-semibold uppercase text-k-ink"
+          className="h-11 appearance-none rounded-sm bg-transparent pl-2 pr-6 text-sm font-semibold uppercase text-k-ink max-[359px]:pl-1 max-[359px]:pr-5"
         >
           {LOCALES.map((locale) => (
             <option key={locale} value={locale} lang={locale} title={LOCALE_NAMES[locale]}>

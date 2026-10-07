@@ -13,8 +13,9 @@ const ITEM =
 
 /**
  * Public navigation below 1024 px: a disclosure button that opens a panel under the header
- * (not a modal, so focus is never trapped). It closes on a chosen link, Escape (focus back
- * on the button) and a click outside it. The header must be `relative`.
+ * with the section links and sign-up ("Logi sisse" stays visible in the bar itself). Not a
+ * modal, so focus is never trapped. It closes on a chosen link, Escape (focus back on the
+ * button) and a click outside it. The header must be `relative`.
  */
 export function MobileNav() {
   const t = useT();
@@ -77,9 +78,6 @@ export function MobileNav() {
               {t.landing.nav[link.key]}
             </SectionLink>
           ))}
-          <Link href="/auth/login" onClick={close} className={ITEM}>
-            {t.common.signIn}
-          </Link>
           <Button asChild size="lg" className="mt-2 w-full">
             <Link href="/auth/sign-up" onClick={close}>
               {t.landing.nav.signUp}
