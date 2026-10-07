@@ -261,6 +261,24 @@ in `generateMetadata()`. Behaviour and security are unaffected (every app route 
 per-request because of the session). *Performance debt:* per-locale cached shells
 (`use cache` keyed by locale for public pages) would restore CDN-served landing pages.
 
+*Investigated 2026-10-07* (the "blocking prerender" lines in `next dev` / E2E logs, first
+noticed on `app/o/[org]/paigaldised/[installation]/paevik/page.tsx`): it is not one route.
+In a full E2E run the dev server prints two kinds — `blocking-prerender-metadata-runtime`
+(root `generateMetadata`, `getT()` → `cookies()`) and `blocking-prerender-runtime` (page
+components awaiting `getT()` at the top, ~45 routes: landing, legal pages, auth, `/konto`,
+`/otsing`, `/teavitused`, every `/o/[org]/…` page, every `/admin` page, and
+`OrganisationFrame` in `app/o/[org]/layout.tsx`). They come from the experimental
+*instant navigation* validation (`experimental.instantInsights`, default level `warning`):
+**development only, the build is unaffected** (`next build` passes, no route opts out).
+Production impact: none on correctness, security or caching — pages render per request
+behind the root `<Suspense>`, which is what tenant data and cookie-based language require;
+the only cost is that client navigations show the nearest fallback (the org layout's
+`ShellSkeleton`, `app/o/[org]/loading.tsx`) instead of an instant per-page shell. A real fix
+means moving `getT()` and data reads below per-page `<Suspense>` boundaries in every route —
+an architectural refactor, deliberately not done before launch. Do not silence it with
+`instant = false` on the root layout or `validationLevel: 'manual-warning'`: that would also
+hide future, genuinely new findings. Revisit with the per-locale cached shell above.
+
 ## 6a. Next.js 16 behaviours that shaped the UI code
 
 - **Hidden pages stay mounted.** With Cache Components, Next keeps up to three visited

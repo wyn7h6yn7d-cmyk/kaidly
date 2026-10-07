@@ -1,52 +1,49 @@
-# KAIDLY — Backup and recovery
+# KAIDLY — Backup and recovery (overview)
 
-Status: production project `xakpbtmksxvjmsbipwmj` exists (2026-10-02); **its backup plan is not confirmed yet**, so no backup is assumed.
-Nothing in this document claims a backup that has not been verified in the dashboard.
+Status **2026-10-07**. The procedures live in two documents; this page is the map.
+
+| Document | Use it for |
+|---|---|
+| [PRODUCTION_BACKUP_RECOVERY.md](PRODUCTION_BACKUP_RECOVERY.md) | Making a backup (database + Storage), storing it encrypted off-site, retention, restoring into a **new** project, the configuration that is not in a backup |
+| [RECOVERY_RUNBOOK.md](RECOVERY_RUNBOOK.md) | Scenarios: what lives where, database/Storage out of step, accidental CLI link to Production |
+| [RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md) §4 | The mandatory backup before every Production migration |
+
+## Current protection
+
+| | |
+|---|---|
+| Supabase backups (daily / PITR) | **None** for Production (`xakpbtmksxvjmsbipwmj`): plan without daily backups, PITR off. Upgrade path = paid plan (owner decision) |
+| KAIDLY manual backups | `scripts/backup-database.sh` (pg_dump through the CLI: auth, public, private, Storage metadata) + `scripts/backup-storage.mjs` (incremental mirror of the `documents` bucket with a database ↔ Storage cross-check). Real Production backups have been taken |
+| Restore | Rehearsed on the local stack (2026-10-06): all tables and content fingerprints identical, restored users sign in, RLS and the append-only log intact, files byte-identical. Restore tooling never writes to Production: `restore-storage.mjs` refuses the production ref, `restore.sql` refuses any database that already has user accounts |
+| Schema | Always rebuildable from git (`supabase/migrations`) |
+| Application | Vercel keeps previous deployments (instant rollback, DEPLOYMENT.md §7) |
+
+Worst case with weekly manual backups: what was entered since the last backup. Routine
+(PRODUCTION_BACKUP_RECOVERY.md §3): weekly database + Storage backup, plus a database backup
+before every Production migration; keep the 4 most recent weekly backups and the
+pre-migration backups of the last 3 months; quarterly restore rehearsal. Backups contain
+customer data and password hashes — only in the encrypted image, with a second off-site copy;
+never in git (`/backups/` is gitignored and the scripts refuse other paths inside the repo).
 
 ## What must be protected
 
-| Data | Where | In Supabase database backups? |
+| Data | Where | In the database backup? |
 |---|---|---|
-| Accounts (auth users, sessions) | Supabase Auth (`auth` schema) | yes |
-| Companies, sites, installations, operating log, plan, deficiencies, notifications, access, admin log | Postgres (`public`, `private`) | yes |
-| Document and photo **files** | Supabase Storage bucket `documents` | **no** — database backups contain only the file metadata rows |
+| Accounts (auth users, identities) | Supabase Auth (`auth` schema) | yes |
+| Companies, sites, installations, log, plan, deficiencies, notifications, history | Postgres `public` | yes |
+| Access/plans/trials, platform admins, admin audit, upload counters, e-mail outbox | Postgres `private` | yes |
+| Document and photo **files** | Storage bucket `documents` | **no** — only by `backup-storage.mjs` |
+| Secrets and dashboard settings (Vault key, Auth/SMTP settings, templates, Vercel env) | dashboards | **no** — inventory in PRODUCTION_BACKUP_RECOVERY.md §4 |
 
-## Supabase capabilities (verify for the chosen plan before launch)
+## First response to an incident
 
-| Plan | Database backups | Point-in-time recovery |
-|---|---|---|
-| Free | none usable for restore — not acceptable for customer data | no |
-| Pro | daily backups, 7 days retention (restore from the dashboard) | optional paid add-on |
-| Team / Enterprise | longer retention | optional / included |
-
-**Launch decision (manual, paid):** production should run on **Pro or higher** so daily
-backups exist; PITR is optional. Record the actual plan, retention and PITR status here
-after creating the project: _plan: …, retention: …, PITR: …, verified on: …_.
-
-**Storage files are not covered** by database backups. Until a file-backup job exists, a
-lost bucket cannot be restored by Supabase backups. Mitigation for launch: files are
-immutable once attached (append-only evidence), the bucket is private, deletions are not
-possible through the app (documents are archived, not deleted). A periodic off-site copy
-of the bucket (e.g. `supabase storage` CLI or S3-compatible sync to EU object storage) is a
-post-launch task.
-
-## Recovery runbook
-
-1. **Stop the damage:** if a bad deploy writes wrong data, roll back the app first
-   (DEPLOYMENT.md §7) — do not touch the database yet.
-2. **Assess:** which tables/companies are affected and since when (admin log,
-   `activity_history`, `created_at`/`updated_at`).
-3. **Small, scoped damage** (one company, few rows): fix forward with a reviewed SQL script
-   or migration, using `activity_history` (old/new values of every change) as the source.
-   Operating-log entries are append-only — correct with correction entries, never edits.
-4. **Large damage / data loss:** restore a daily backup (or PITR point) **into a new
-   project** first, verify, then copy the affected rows back. Restoring over production
-   loses everything written after the backup — only with an explicit decision.
-5. **After recovery:** re-run the pgTAP suite against a local copy of the migrations,
-   check `/api/health`, run the smoke test (RELEASE_CHECKLIST.md), note the incident.
-
-## Not restorable today
-
-- Files deleted from Storage outside the app (no file backup yet).
-- Anything older than the backup retention of the chosen plan.
-- Auth emails already sent (links in them expire).
+1. **Stop the damage:** a bad deploy → promote the previous deployment first; do not touch
+   the database yet.
+2. **Assess:** which companies and tables, since when (`/admin/audit`, `activity_history`,
+   timestamps).
+3. **Small, scoped damage:** fix forward with a reviewed migration or script, using
+   `activity_history` (old/new values). Operating-log entries are corrected with correction
+   entries, never edits.
+4. **Large damage / data loss:** restore the newest backup into a **new** project, verify,
+   then decide (copy rows back, or switch over). Never restore over Production.
+5. **After:** `/api/health`, MANUAL_SMOKE_TEST.md, note the incident.

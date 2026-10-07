@@ -90,6 +90,10 @@ cancelled (attempt n, category)` — no addresses, no content, never the key.
 
 ## 6. Turning sending on (Production) — MANUAL
 
+> **Status 2026-10-07: ON in Production** since 2026-10-06 (Vault secret set, `enabled = true`,
+> first real mail delivered). The steps below are for a new project or after a restore
+> (PRODUCTION_BACKUP_RECOVERY.md §4: Vault secret last, then enable).
+
 Sending is **off** after the migration: `private.email_settings.enabled = false` and no key.
 
 1. Resend → API Keys → create a key with **Sending access** only, domain `kaidly.ee`.

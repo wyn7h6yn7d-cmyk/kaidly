@@ -126,6 +126,11 @@ Supabase has one sender per project, so the security notifications also come fro
 
 ## 6. Install in Production (manual — dashboard)
 
+> **Status 2026-10-07:** installed in Production; custom SMTP (Resend, `no-reply@kaidly.ee`)
+> on; password-changed and e-mail-changed notifications enabled; **Secure password change
+> ON**. Repeat these steps only for a new project or after a dashboard reset, and keep the
+> per-release regression guard below.
+
 No Management API token is configured for this repository, and `supabase config push` would
 also push local values (e.g. `site_url = http://localhost:3000`), so **do not** use it.
 
@@ -151,7 +156,7 @@ Production project **`xakpbtmksxvjmsbipwmj`** → Authentication → Emails:
      matching `*_notification.html` but leave them **disabled**.
 3. Check Authentication → URL Configuration: Site URL `https://kaidly.ee` (the links are built
    from it).
-4. Test (needs working SMTP; with the built-in sender only team-member addresses receive mail):
+4. Test (custom SMTP must be on — Supabase's built-in sender only reaches team-member addresses):
    - sign up on kaidly.ee with a test address in EN → English mail, link opens kaidly.ee and
      lands in `/o`;
    - "Unustasid parooli?" → Estonian mail → link opens "Uus parool";

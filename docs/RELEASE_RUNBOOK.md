@@ -2,17 +2,23 @@
 
 Development `gdpzavhkblbcxivoaqax` · Production `xakpbtmksxvjmsbipwmj` (**msbi**, never "msbl").
 Production is deployed by pushing `main`; the database is migrated by hand **before** the
-push when a release has migrations. No v1.0.0 tag until the launch gate is green.
+push when a release has migrations. No v1.0.0 tag until the launch gate is green
+(RELEASE_CHECKLIST.md, LAUNCH_STATUS.md). Order, always: **tests → Development DB → backup →
+Production DB → CLI back to Development → push `main` → smoke**.
 
 ## 1. Pre-release tests (local stack running)
 
 ```bash
 git status                       # must be clean
+npm run db:target                # must print DEVELOPMENT (a crash can leave Production linked)
 npm ci && npx supabase db reset
-npm run lint && npm run typecheck && npm test && npm run test:db && npm run build
-npx playwright test --workers=2  # full E2E (2 workers on a busy machine)
-npm run test:e2e:browsers        # optional: Chromium + WebKit (+ Firefox where it runs)
+npm run check                    # lint, typecheck, unit, pgTAP + e-mail/plan concurrency, build
+npx supabase db reset            # fresh data again: the E2E suite and some pgTAP counts expect it
+npx playwright test --workers=2  # FULL E2E from the beginning; retries are off (playwright.config.ts)
+npm run test:e2e:browsers        # Chromium + WebKit (+ Firefox where it runs) when UI/forms changed
 ```
+The final E2E result must be one complete run with zero failures — never a selective rerun.
+If a run is interrupted (crash, sleep), run the whole suite again.
 
 ## 2. Pending migrations
 
@@ -33,7 +39,8 @@ npx supabase db push
 ## 4. Production database (only after all tests are green)
 
 ```bash
-scripts/backup-database.sh       # backup BEFORE every Production migration (docs/PRODUCTION_BACKUP_RECOVERY.md)
+scripts/backup-database.sh       # database backup BEFORE every Production migration (docs/PRODUCTION_BACKUP_RECOVERY.md)
+node scripts/backup-storage.mjs --db "$(ls -d ~/KAIDLY-backups/db/*-production | tail -1)"   # Storage mirror + cross-check
 echo "PRODUCTION = xakpbtmksxvjmsbipwmj"
 npx supabase link --project-ref xakpbtmksxvjmsbipwmj
 cat supabase/.temp/project-ref   # must be exactly xakpbtmksxvjmsbipwmj — otherwise STOP
@@ -45,6 +52,7 @@ npx supabase link --project-ref gdpzavhkblbcxivoaqax   # IMMEDIATELY back to dev
 npm run db:target                                      # must print DEVELOPMENT
 ```
 Never `db reset`, `--include-seed` or `qa:fixtures` against a linked remote project.
+Releases without migrations skip §3–§4 entirely (no Production link at all).
 
 ## 5. Application
 
@@ -57,8 +65,9 @@ git push origin main:phase-2-3-organisations-sites   # then keep the branch leve
 
 ## 6. Smoke
 
-- Public + headers: `docs/MANUAL_SMOKE_TEST.md` (public part takes ~3 min).
-- Authenticated and admin: same file (Kenneth's own account).
+- Public + headers: `docs/MANUAL_SMOKE_TEST.md` §1 (~3 min).
+- Signed-in, account security, admin, access: same file §2–§5 (Kenneth's accounts).
+- One Production Auth e-mail with the KAIDLY template (EMAIL_TEMPLATES.md "Regression guard").
 - Logs: `npx vercel logs --environment production --since 15m --level error` and
   `--status-code 5xx` — both must be empty.
 

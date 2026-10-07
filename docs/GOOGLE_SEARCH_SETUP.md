@@ -11,6 +11,19 @@ without a cookie always get Estonian, also right after EN/RU requests).
 Application pages (`/o`, `/admin`, `/auth`, `/konto`, …) and the draft legal pages are
 `noindex` and out of the sitemap; they are protected by sign-in regardless of crawler rules.
 
+> **Status 2026-10-07:** Google Search Console domain property verified, sitemap accepted,
+> homepage indexed. Bing Webmaster Tools configured (§5). Do not change either setup without
+> a reason; the checks are in MANUAL_SMOKE_TEST.md §1.
+
+What crawlers get (code: `app/robots.ts`, `app/sitemap.ts`, `lib/site.ts`, `next.config.ts`):
+
+| | |
+|---|---|
+| `robots.txt` | allows `/`, `/privaatsus`, `/kasutustingimused`; disallows `/o`, `/admin`, `/konto`, `/auth`, `/invite`, `/otsing`, `/teavitused`, `/api`; `Sitemap: https://kaidly.ee/sitemap.xml`. Preview/development: `Disallow: /` |
+| `sitemap.xml` | only `https://kaidly.ee/` while the legal pages are drafts (`legalReady()` adds them later) |
+| Noindex | `X-Robots-Tag: noindex, nofollow` on app/auth/admin/API routes; `<meta robots noindex>` on draft legal pages and the 404 page; everything noindex outside Production |
+| Unknown URLs | real 404 (not a login redirect) |
+
 ## 1. Search Console (manual — needs Kenneth's Google account)
 
 1. Open <https://search.google.com/search-console> → **Add property** → **Domain** →
@@ -58,7 +71,14 @@ the käidukorraldus service itself. Terminology used across these sources: *käi
 *käidukorraldus*, *käidukorraldaja*, *käidukava*, *käidupäevik*, *hooldus*, *kontroll*.
 No search-volume figures are claimed.
 
-## 5. Later (not now)
+## 5. Bing Webmaster Tools
+
+Configured (Kenneth's account). Live URL inspection of `https://kaidly.ee/` reports
+**indexable**. Site Scan reports `robots.txt` blocking `/auth/login` and `/auth/sign-up` —
+**intentional** (application pages are never indexed); do not "fix" it. Re-submit the
+sitemap only if its URL changes.
+
+## 6. Later (not now)
 
 Separate language URLs (`/en`, `/ru`) with `hreflang` would only matter for non-Estonian
 search; they need routing changes and are not justified for the Estonian launch

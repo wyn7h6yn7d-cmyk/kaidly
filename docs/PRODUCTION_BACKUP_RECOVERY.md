@@ -10,7 +10,7 @@ RELEASE_RUNBOOK.md (releases).
 |---|---|
 | Supabase daily backups | **none** — `npx supabase backups list --project-ref xakpbtmksxvjmsbipwmj` → `"backups": []`, `"pitr_enabled": false` (plan without backups) |
 | Point-in-time recovery | none (paid add-on, not enabled) |
-| **KAIDLY manual backups** (this document) | database dump + Storage mirror, run by Kenneth, stored encrypted off-site |
+| **KAIDLY manual backups** (this document) | database dump + Storage mirror, run by Kenneth, stored encrypted off-site — real Production backups taken (status 2026-10-07) |
 | Schema | always rebuildable from git (`supabase/migrations`) |
 | Application | Vercel keeps previous deployments (instant rollback) |
 
@@ -118,6 +118,8 @@ the new project is verified. Order matters:
    ```
    (No local `psql`? `docker run --rm -i postgres:17 psql "<connection string>" -v ON_ERROR_STOP=1 < restore.sql`.)
    The connection string contains the new project's database password — type it, don't save it.
+   `restore.sql` refuses to run (nothing changed) if the target already has any user account,
+   so it cannot empty Production or another project in use by mistake.
 3. **Files.**
    ```bash
    node scripts/restore-storage.mjs --mirror ~/KAIDLY-backups/storage/production \

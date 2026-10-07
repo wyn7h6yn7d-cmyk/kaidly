@@ -386,13 +386,17 @@ Separate from application security: Production has **no restorable database back
 resilience risk, not a confidentiality or authorisation vulnerability. Do not add real
 customer data until resolved (RELEASE_CHECKLIST.md).
 
+*Update 2026-10-07:* manual Production database + Storage backups now exist (tooling, local
+restore rehearsal, real backups taken — BACKUP_RECOVERY.md); Supabase-side daily backups/PITR
+remain off (owner decision).
+
 ## 34. Findings table
 
 | ID | Severity | Finding | Affected area | Status | Fix |
 |---|---|---|---|---|---|
 | KSA-01 | Low | CSV export did not neutralise cells starting with a carriage return / line feed (formula injection variant) | `lib/reports/csv.ts` | FIXED | this audit (commit below) |
 | KSA-02 | Low | Server error log line contained the raw request path, which for `/invite/<token>` includes the invitation token | `instrumentation.ts` | FIXED | this audit |
-| KSA-03 | Low | Supabase "secure password change" is off: a stolen, still-valid access token could change the password via the Auth API without the current password (the app itself requires it) | Supabase Auth config | ACCEPTED PRE-LAUNCH RISK / MANUAL (enable with SMTP) | — |
+| KSA-03 | Low | Supabase "secure password change" is off: a stolen, still-valid access token could change the password via the Auth API without the current password (the app itself requires it) | Supabase Auth config | ACCEPTED PRE-LAUNCH RISK / MANUAL (enable with SMTP) — *update 2026-10-07: RESOLVED, custom SMTP and Secure password change ON in Production; app reauthentication flow E2E-tested* | — |
 | KSA-I1 | Info | CSP allows `'unsafe-inline'` scripts | headers | ACCEPTED (no sinks) | — |
 | KSA-I2 | Info | Invitation tokens travel in the URL path (`/invite/<token>`), so they appear in Vercel access logs and browser history; tokens are hashed at rest, single-use, expiring and email-bound | invitations | ACCEPTED | — |
 | KSA-I3 | Info | `GET /teavitused/<id>` marks one's own notification read (needs the UUID; no other effect) | notifications | ACCEPTED | — |

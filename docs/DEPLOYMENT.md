@@ -15,12 +15,12 @@ Production must never point at the development project, and the development proj
 (Preview users, test companies, audit rows) is never copied to production. Project refs are
 configuration (environment variables), never hard-coded in application code.
 
-> **Status 2026-10-03 — pre-launch test build live:** production database at all 22
-> migrations (latest `20261003100000_company_import`, applied after a clean dry-run; CLI
-> re-linked to development). Vercel Production env verified without printing values
-> (production URL — no "msbl" typo — production publishable key, `KAIDLY_SITE_URL`,
-> `KAIDLY_CONTACT_EMAIL`). `main` `7d0ef41` deployed (`dpl_B2WJfNHVP1RcjdKLjawjfBLEGHMK`) and
-> served on https://kaidly.ee. Not a public launch; v1.0.0 not tagged.
+> **Status 2026-10-07 — controlled pre-launch live on https://kaidly.ee:** 26 migrations
+> (latest `20261007100000_subscription_plans`); Production deployed from `main` (`5b930a0`
+> on 2026-10-07 — the deployed commit is always `/api/health` → `version`). Auth e-mail via
+> custom SMTP (Resend), reminder e-mails on, Secure password change on, Google/Bing set up,
+> manual backups taken. Not a public commercial launch; v1.0.0 not tagged
+> (LAUNCH_STATUS.md). Releases: RELEASE_RUNBOOK.md.
 
 Check which project the CLI targets before any `--linked` command: `npm run db:target`
 (development is the default; production is linked only for a release step and re-linked
@@ -53,10 +53,10 @@ production ref, then delete the file.
 0. **Build guard** (`lib/env-guard.ts`, run by `next.config.ts`): a Production build fails
    unless `NEXT_PUBLIC_SUPABASE_URL` is the production project; a Preview build fails if it
    is. Refs: development `gdpzavhkblbcxivoaqax`, production `xakpbtmksxvjmsbipwmj`.
-1. Supabase Dashboard → **New project** → name `kaidly-production`, **EU region** (e.g.
-   Frankfurt `eu-central-1`; the development project is `eu-west-2` London), strong DB
-   password stored in a password manager. Plan: see BACKUP_RECOVERY.md (Pro recommended for
-   daily backups).
+1. Supabase Dashboard → **New project** → **EU region** (the existing Production project is
+   eu-west-1 Ireland; development is eu-west-2 London), strong DB password stored in a
+   password manager. Plan: see BACKUP_RECOVERY.md (a paid plan adds daily backups). For a
+   recovery, the new project is filled from a backup (PRODUCTION_BACKUP_RECOVERY.md §5).
 2. Record the ref in this file (§1) and RELEASE_CHECKLIST.md.
 3. Link and dry-run — **check the ref twice, it must be PRODUCTION**:
    ```bash
@@ -102,25 +102,23 @@ sent by the app.
 
 ## 5. Email delivery
 
-Supabase's built-in email sender is rate-limited (a few emails per hour) and meant for
-testing — **not suitable for production** sign-ups and password resets. Configure custom
-SMTP in Dashboard → Authentication → SMTP Settings (production project):
+Two senders, both through Resend with the verified domain `kaidly.ee` (SPF, DKIM
+`resend._domainkey`, DMARC; click/open tracking off):
 
-| Field | Value |
-|---|---|
-| Sender email | e.g. `no-reply@kaidly.ee` (domain must be verified at the provider: SPF, DKIM, DMARC) |
-| Sender name | `KAIDLY` |
-| Host / Port | from the chosen provider (e.g. port 465 or 587) |
-| Username / Password | provider credentials (secret — enter only in the dashboard) |
+| Mail | Sent by | Sender | Configuration |
+|---|---|---|---|
+| Auth: confirmation, recovery, e-mail change, reauthentication code, security notices | Supabase Auth over **custom SMTP** (Authentication → SMTP Settings) | `KAIDLY <no-reply@kaidly.ee>` | host `smtp.resend.com`; password = Resend key (dashboard only). Templates: EMAIL_TEMPLATES.md §6 |
+| Optional deadline reminder | Database outbox → Resend API (pg_net, cron every 5 min) | `KAIDLY <notifications@kaidly.ee>` | Vault secret `RESEND_API_KEY`, `private.email_settings.enabled` (EMAIL_NOTIFICATIONS.md §6) |
 
-KAIDLY itself sends no email; invitations are copyable links.
+The application server sends no e-mail and holds no e-mail secret; invitations are copyable
+links. Supabase's built-in sender (rate-limited, team addresses only) must never be the
+Production sender again — the release smoke checks the KAIDLY template.
 
 ## 5a. Pre-launch drafts
 
 Until the operating company exists (operator facts TBA, owner decision 2026-10-03) the legal
-pages are pre-launch drafts (noindex, out of the sitemap; `lib/legal/operator.ts`). Without
-custom SMTP, customer-facing auth emails are not delivered (RELEASE_CHECKLIST.md) — fine for
-internal/beta testing with team-member addresses, not for open sign-up.
+pages are pre-launch drafts (noindex, out of the sitemap; `lib/legal/operator.ts`). The
+sitemap adds them automatically once `legalReady()` is true (all operator facts present).
 
 ## 6. Health and logs
 

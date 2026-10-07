@@ -3,7 +3,8 @@
 Read with BACKUP_RECOVERY.md and **PRODUCTION_BACKUP_RECOVERY.md** (how to make and restore
 backups). Supabase keeps **no** backups of Production (PITR off, plan without daily backups);
 protection is the manual weekly database + Storage backup (`scripts/backup-database.sh`,
-`scripts/backup-storage.mjs`), stored encrypted off-site.
+`scripts/backup-storage.mjs`), stored encrypted off-site — real Production backups exist
+(status 2026-10-07, BACKUP_RECOVERY.md).
 
 ## 1. What lives where
 
@@ -38,8 +39,9 @@ Lessons: run the restore in **one transaction** (an aborted restore otherwise le
 data); filter migration-created rows; Storage tables cannot be cleaned with SQL.
 
 **What this proves:** the schema can be rebuilt from git, and a data dump restores into it
-with all invariants intact. **What it does not prove:** that Production backups exist (they
-don't), that Storage files can be recovered (they can't yet), or restore timing at real size.
+with all invariants intact. The later full rehearsal with the backup scripts (2026-10-06,
+PRODUCTION_BACKUP_RECOVERY.md §6) also covered Storage files. **Not proven:** loading into a
+hosted Supabase project and restore timing at real Production size.
 
 ## 3. Database and Storage out of step
 
@@ -61,12 +63,11 @@ in the environment or the CLI link and only ever writes to the local container; 
 guard refuses a Production build against development and vice versa. `supabase db reset`
 without `--linked` only touches the local stack — never add `--linked` to a reset.
 
-## 5. Required before the first real customer
+## 5. Before the first real customer
 
-1. Production plan with **daily database backups** (Pro or higher), or an explicit, written
-   acceptance of the risk by the owner.
-2. A **Storage file backup** (periodic copy of the `documents` bucket to separate EU storage)
-   and a tested restore of a few files.
-3. A restore drill on Production-like data (a new project restored from backup, then verified
-   as in §2).
-4. Named responsibility for recovery decisions.
+| | Status (2026-10-07) |
+|---|---|
+| Database backups | Manual weekly + pre-migration backups (tooling done, real Production backups taken). Daily Supabase backups would need a paid plan — owner decision; until then the weekly risk is accepted consciously |
+| Storage file backup | Done: `backup-storage.mjs` mirror with cross-check; file restore rehearsed locally |
+| Restore drill | Done on the local stack with production-like scale; a drill into a hosted new project is not done (needs a new project — owner decision) |
+| Named responsibility for recovery decisions | Kenneth (owner) — confirm in writing when the company exists |

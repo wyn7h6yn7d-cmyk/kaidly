@@ -1,152 +1,123 @@
 # KAIDLY v1.0.0 — Release checklist
 
-The launch source of truth, reconciled with the verified state on **2026-10-03**.
-Runbooks: [DEPLOYMENT.md](DEPLOYMENT.md), [BACKUP_RECOVERY.md](BACKUP_RECOVERY.md),
+The item-by-item launch gate, reconciled with the verified state on **2026-10-07**.
+Summary for humans: [LAUNCH_STATUS.md](LAUNCH_STATUS.md). How to release:
+[RELEASE_RUNBOOK.md](RELEASE_RUNBOOK.md). Runbooks: [DEPLOYMENT.md](DEPLOYMENT.md),
+[PRODUCTION_BACKUP_RECOVERY.md](PRODUCTION_BACKUP_RECOVERY.md),
+[RECOVERY_RUNBOOK.md](RECOVERY_RUNBOOK.md), [SUPPORT_RUNBOOK.md](SUPPORT_RUNBOOK.md),
 [PRIVACY_PROCESS.md](PRIVACY_PROCESS.md).
 
-Status legend: **GREEN** done and verified · **MANUAL REQUIRED** needs the owner ·
-**EXCEPTION** known limitation, launch possible only if the owner explicitly accepts it ·
-**BLOCKING** must be resolved before `main` is merged / Production is deployed ·
-**NOT STARTED** happens during the launch itself.
+Status legend: **GREEN** done and verified · **MANUAL** needs the owner · **EXCEPTION** known
+limitation accepted for now · **LAUNCH BLOCKER** blocks the public commercial launch.
 
 | | |
 |---|---|
-| DEVELOPMENT | `gdpzavhkblbcxivoaqax` (Preview, feature branches) |
+| DEVELOPMENT | `gdpzavhkblbcxivoaqax` (Preview, feature branches, local `npm run dev`) |
 | PRODUCTION | `xakpbtmksxvjmsbipwmj` — note "**msbi**", eu-west-1 (Ireland) |
-| Domain | `https://kaidly.ee` (canonical); `www.kaidly.ee` → 308 → `kaidly.ee` |
-| Release | v1.0.0 — tag only after the production smoke test on kaidly.ee |
+| Domain | `https://kaidly.ee` (canonical); `www.kaidly.ee` and `http://` → 308 → `https://kaidly.ee` |
+| Deployed commit | always `https://kaidly.ee/api/health` → `version` |
+| Release | v1.0.0 — tagged only when the launch blockers below are resolved |
 
-## Summary (owner decision 2026-10-03)
+## Summary
 
-KAIDLY is to be made **technically and functionally complete first**, then tested extensively,
-dogfooded in a controlled beta, and only then launched publicly. "Technically complete" is
-**not** a public launch. Missing legal-entity facts, SMTP, the contact mailbox and backups
-do **not** block engineering, QA, Preview or production-like testing; they block the
-**public commercial launch with real customers**.
-
-| Category | Items |
-|---|---|
-| **TECHNICALLY COMPLETE** | Core product (all modules), security hardening, production database built from zero (21 migrations), environment guard, CSP/headers, noindex/canonical, health, error handling, platform admin (bootstrapped in production 2026-10-03) |
-| **TESTING** | Ongoing: extensive QA, bug/UX fixes, field/mobile usability, controlled beta/dogfooding, production-like smoke tests |
-| **PRE-LAUNCH MANUAL** | Legal operator details — **TBA** (company not founded yet): legal name, registry code, address, privacy contact, effective date; then final privacy/terms text and review · Custom SMTP + verified sender (postponed) · Working mailbox behind `KAIDLY_CONTACT_EMAIL` · Production backup plan · Paste email templates into the dashboard · (optional) uptime monitor |
-| **LAUNCH BLOCKER** (public launch only) | Legal operator facts + finalized, reviewed privacy/terms · Production backups resolved — or the risk explicitly accepted by the owner at launch time · Transactional email (SMTP) working for real users — or self-service sign-up deliberately limited · Production smoke test on kaidly.ee passed |
-
-**Pre-launch test build deployed 2026-10-03** (owner-authorised controlled deployment, not a
-public launch): `main` = `7d0ef41`, Vercel Production `dpl_B2WJfNHVP1RcjdKLjawjfBLEGHMK`
-serves https://kaidly.ee; production database at all 22 migrations. **v1.0.0 is not tagged**
-until the launch blockers are resolved. **Do not add real customer data until the backup
-decision is resolved.**
+KAIDLY is technically complete and runs on kaidly.ee as a **controlled pre-launch** (owner
+decision 2026-10-03: complete → test → dogfood/beta → public launch). The remaining blockers
+are legal (operator entity, final privacy/terms) and the owner's manual checks; none of them
+blocks engineering, QA or Preview work.
 
 ## APPLICATION
 | Status | Item |
 |---|---|
-| GREEN | Feature freeze; clean full verification on the feature branch (see IMPLEMENTATION_PLAN.md for the latest totals) |
-| GREEN | Error pages (translated `error.tsx`, trilingual `global-error.tsx`, 404); no SQL, stack traces, keys or provider messages to users |
-| GREEN | Upload abuse limits (database-enforced), user-facing message ET/EN/RU |
+| GREEN | All modules: companies, sites, installations, käidupäevik, käidukava with reminders, puudused, documents/photos, notifications, search, PDF/CSV reports, CSV import, Platform Admin |
+| GREEN | Plans Start / Team / Pro / Business / Custom with database-enforced user and active-installation limits (SUBSCRIPTIONS.md); customers see plan and usage only |
+| GREEN | Personal 14-day trial (one per user; 1 user, 5 active installations; deleting a company never resets it) |
+| GREEN | Public header: left logo + "Kuidas töötab?" + "Hinnakiri", right "Logi sisse" + "Registreeru" + language; section links never leave `#…` in the URL |
+| GREEN | Error pages (translated `error.tsx`, trilingual `global-error.tsx`, 404 also for unknown public URLs); no SQL, stack traces, keys or provider messages to users |
+| GREEN | Upload abuse limits (database-enforced), messages ET/EN/RU |
 | GREEN | Account deletion request on /konto (validated mailto; plain text when no usable address) |
-| GREEN | Landing: final hero background (static SVG, decorative, masked behind text), title `KAIDLY \| Elektripaigaldise digitaalne käidupäevik`, favicon set |
 
 ## DATABASE
 | Status | Item |
 |---|---|
-| GREEN | Separate production project; verified empty before migration; no development data copied |
-| GREEN | Production built from zero: 20 migrations in order, no seed; catalog identical to a local build (17 tables with RLS, 2 views, 80 functions, 41 triggers, 87 indexes, 32 policies, private bucket + 3 policies, pg_cron + pg_trgm) |
+| GREEN | Separate Production project, built from zero from the migrations; no development data copied, no seed |
+| GREEN | 26 migrations, latest `20261007100000_subscription_plans`. Development verified 2026-10-07; Production migrated in the 2026-10-06/07 releases (re-check with `migration list` at the next Production DB step) |
+| GREEN | Flow: Development first → dry-run → Production (backup first) → CLI relinked to Development at once (RELEASE_RUNBOOK.md §3–4); `npm run db:target` labels the link |
+| GREEN | pgTAP suite pins tables, definer functions and callable RPCs (`000_security_baseline`); every table change ships with role-matrix and cross-tenant tests |
 | GREEN | Supabase's own `ensure_rls` / `rls_auto_enable()` reviewed and kept |
-| GREEN | Upload-limit and session-check functions byte-identical in production and the repository |
-| GREEN | Migration `20261002200000_session_guard_inserts` (live session required to create/join a company) applied to development and production after dry-runs |
-| GREEN | Migration `20261003100000_company_import` (CSV import) applied to development and production (2026-10-03) after dry-runs showing only that migration and no seed; production verified: 22 migrations, RLS on all 12 public tables, import function definer with pinned search_path, not executable by anon (also refused over the API), batch table private; CLI re-linked to development right after |
-| GREEN | CLI default target is development; `npm run db:target` labels the linked project |
 
-## AUTH
+## AUTH AND E-MAIL
 | Status | Item |
 |---|---|
-| GREEN | Production Auth Site URL `https://kaidly.ee`; Redirect URLs only `https://kaidly.ee/**` (owner-configured) |
-| GREEN | App redirect allowlist and open-redirect tests |
-| GREEN | Flows covered by E2E: sign-up/confirm, login, logout, forgot/reset, password change, email change, invitation, direct URL, disabled account, session revocation, ET/EN/RU |
-| GREEN | Revoked sessions / disabled accounts: no company reads or writes from the next request on; cannot create or join companies either. What remains until the access token expires (≤ `jwt_expiry`, default 1 h): the signed-in frame and the user's own profile row |
-| PRE-LAUNCH MANUAL | Install the KAIDLY auth templates and security notifications in Production — mapping and test steps in docs/EMAIL_TEMPLATES.md §6 (validated by unit tests and locally against real Supabase Auth; installation not verifiable from here) |
-| GREEN | Production account kennethalto95@gmail.com exists and is confirmed — the only production user, exactly one match (verified 2026-10-03) |
-
-## EMAIL
-| Status | Item |
-|---|---|
-| PRE-LAUNCH MANUAL | **Custom SMTP intentionally postponed** (real-user readiness item, not a development blocker). Production uses Supabase's built-in sender, which only delivers to the project's team-member addresses and is rate-limited to a few emails per hour. Concretely: **sign-up confirmation** emails to customers will not arrive (customers can't confirm accounts — sign-up is effectively unavailable unless users are created/confirmed by an admin), **password reset** and **email change** emails to customers won't arrive. Invitations are unaffected (KAIDLY invitations are copyable links, no email). Fix: SMTP + verified sender (DEPLOYMENT.md §5) |
-| PRE-LAUNCH MANUAL | Mailbox behind `KAIDLY_CONTACT_EMAIL` (`info@kaidly.ee`) — not assumed to work; the app only builds a validated mailto link (safe fallback text without a usable address) |
-
-| RELEASE CHECK | Trigger a Production Auth e-mail and visually confirm the KAIDLY-branded template (docs/EMAIL_TEMPLATES.md "Regression guard") |
-| PRE-LAUNCH MANUAL | Deadline reminder e-mails: Vault secret `RESEND_API_KEY` + `update private.email_settings set enabled = true` (docs/EMAIL_NOTIFICATIONS.md §6); until then reminders are in-app only |
-| PRE-LAUNCH MANUAL | Secure password change ON after one real reauthentication code test (docs/EMAIL_TEMPLATES.md §6) |
+| GREEN | Auth Site URL `https://kaidly.ee`; Redirect URLs only `https://kaidly.ee/**` |
+| GREEN | Custom SMTP: Resend, sender `KAIDLY <no-reply@kaidly.ee>` (SPF/DKIM/DMARC on kaidly.ee) |
+| GREEN | KAIDLY Auth templates and security notifications installed (EMAIL_TEMPLATES.md §6); confirmation, recovery, e-mail change and password-changed mails verified |
+| GREEN | **Secure password change ON** after a real reauthentication-code test |
+| GREEN | Deadline reminder e-mails live: Vault secret `RESEND_API_KEY`, `private.email_settings.enabled = true`, sender `notifications@kaidly.ee`, tracking off; first real mail delivered 2026-10-06 (EMAIL_NOTIFICATIONS.md) |
+| GREEN | App redirect allowlist and open-redirect tests; sign-out / revocation / disabled accounts end data access on the next request |
+| RELEASE CHECK | Every release: trigger one Production Auth e-mail and visually confirm the KAIDLY template (EMAIL_TEMPLATES.md "Regression guard"; MANUAL_SMOKE_TEST.md §3) |
+| MANUAL | Mailbox behind `KAIDLY_CONTACT_EMAIL` (`info@kaidly.ee`) — confirm it receives mail |
 
 ## STORAGE
 | Status | Item |
 |---|---|
-| GREEN | One private bucket `documents`, 25 MB, MIME allowlist, tenant-scoped policies, signed URLs only — verified in production |
+| GREEN | One private bucket `documents`, 25 MB, MIME allowlist, tenant-scoped policies, signed URLs (60 s) only |
 
 ## SECURITY
 | Status | Item |
 |---|---|
-| GREEN | Headers: CSP (derived per build from `NEXT_PUBLIC_SUPABASE_URL` — production build allows only `xakpbtmksxvjmsbipwmj.supabase.co`, Preview only development), HSTS, nosniff, `X-Frame-Options: DENY` + `frame-ancestors 'none'`, Referrer-Policy, Permissions-Policy, no `X-Powered-By` |
-| GREEN | Build guard: a Production build fails if it targets development (or anything but the production ref); a Preview build fails if it targets production |
-| GREEN | Database audit: all 36 user-callable SECURITY DEFINER functions pin `search_path=''`, check authorization explicitly, none executable by `anon` |
-| GREEN | Secret audit (files, git history, build output): nothing found |
-| GREEN | `npm audit --omit=dev`: 0 vulnerabilities; pdfmake/pdfkit server-only |
+| GREEN | Headers: CSP (only this origin + the build's Supabase project), HSTS, nosniff, `X-Frame-Options: DENY` + `frame-ancestors 'none'`, Referrer-Policy, Permissions-Policy, no `X-Powered-By` |
+| GREEN | Build guard: Production build only against the production ref; Preview never against it |
+| GREEN | No service-role key in the app, scripts or env files; all user-callable SECURITY DEFINER functions pin `search_path=''` and check authorization; none executable by `anon` |
+| GREEN | `npm audit --omit=dev`: 0 vulnerabilities (2026-10-07). Dev-only advisories (Tailwind 3 / ESLint toolchain: braces, postcss-selector-parser) do not reach the runtime; fixing needs the Tailwind 4 migration — EXCEPTION, revisit with the next planned upgrade |
 
-## PRIVACY
+## PRIVACY AND LEGAL
 | Status | Item |
 |---|---|
 | GREEN | Manual privacy-request process (PRIVACY_PROCESS.md); no automatic deletion |
-| GREEN | Cookies: essential only; no tracking → no banner needed |
-| PRE-LAUNCH MANUAL | Legal operator facts are **TBA** — the operating company does not exist yet (owner decision 2026-10-03): legal name TBA, registry code TBA, legal/business address TBA, final privacy contact TBA, effective date TBA (data region known: EU, Ireland). Not a development blocker; a public-launch blocker. Until supplied and reviewed, `/privaatsus` and `/kasutustingimused` are pre-launch drafts: restrained notice ("… täiendatakse enne teenuse avalikku käivitamist"), fact-dependent paragraphs say "published before launch", `noindex`, excluded from the sitemap, no invented facts and no "TBA" text on the pages |
+| GREEN | Essential cookies only; no analytics or tracking → no banner needed |
+| LAUNCH BLOCKER | Legal operator facts missing (company not founded): legal name, registry code, address, privacy contact, effective date. Never invented; `/privaatsus` and `/kasutustingimused` stay pre-launch drafts (notice, `noindex`, not in the sitemap) until supplied and reviewed |
+| LAUNCH BLOCKER | Final, reviewed privacy policy and terms; commercial paid launch legally cleared |
 | EXCEPTION | Retention periods / automated erasure — open legal decision, not invented |
 
-## DOMAIN / VERCEL
+## DOMAIN, VERCEL, SEARCH
 | Status | Item |
 |---|---|
-| GREEN | `kaidly.ee` → Production; `www.kaidly.ee` → 308 → `kaidly.ee`; both "Valid Configuration" (owner-confirmed) |
-| GREEN | Production env: production Supabase URL (typo fixed by owner) and publishable key, `KAIDLY_SITE_URL=https://kaidly.ee`, `KAIDLY_CONTACT_EMAIL` |
-| GREEN | Preview env: development Supabase, no `KAIDLY_SITE_URL` → noindex everywhere |
-| GREEN | Production build simulated locally with production settings: canonical `https://kaidly.ee`, sitemap/robots on kaidly.ee, app routes noindex, CSP production-only |
-| GREEN | Production deployed from `main` `7d0ef41` (2026-10-03, pre-launch test build): `/api/health` app/auth/storage ok with version `7d0ef4175e67`; www and http → 308 → https://kaidly.ee; no runtime errors or 5xx in the logs |
-| NOTE | The landing page is indexable on kaidly.ee (canonical, sitemap with `/` only); app, auth, admin and the draft legal pages are noindex. There is no separate pre-launch switch — accepted for the controlled test phase |
+| GREEN | Production env: production Supabase URL and publishable key, `KAIDLY_SITE_URL=https://kaidly.ee`, `KAIDLY_CONTACT_EMAIL`; Preview env: development Supabase, no `KAIDLY_SITE_URL` → noindex everywhere |
+| GREEN | Indexing only on Production with `KAIDLY_SITE_URL`: canonical `https://kaidly.ee`, OG/Twitter card, JSON-LD (no operator facts); app, auth, admin and draft legal pages `noindex` |
+| GREEN | `robots.txt` allows `/`, `/privaatsus`, `/kasutustingimused`, disallows `/o`, `/admin`, `/konto`, `/auth`, `/invite`, `/otsing`, `/teavitused`, `/api`; `sitemap.xml` lists only `https://kaidly.ee/` while the legal pages are drafts |
+| GREEN | Google Search Console (domain property) verified, sitemap accepted, homepage indexed (GOOGLE_SEARCH_SETUP.md) |
+| GREEN | Bing Webmaster Tools configured; Live URL indexable; Site Scan reports only the intentional `/auth/login`, `/auth/sign-up` robots block — do not "fix" |
 
 ## OBSERVABILITY
 | Status | Item |
 |---|---|
 | GREEN | `/api/health` (app/auth/storage/version, no keys, URLs or project refs) |
-| GREEN | Structured server error logs (`instrumentation.ts`) |
-| MANUAL REQUIRED | (optional) uptime monitor on `https://kaidly.ee/api/health` |
+| GREEN | Structured server error logs with digest (`instrumentation.ts`); SUPPORT_RUNBOOK.md maps symptoms to checks |
+| MANUAL | (optional) uptime monitor on `https://kaidly.ee/api/health` |
 
-## BACKUP/RECOVERY
+## BACKUP AND RECOVERY
 | Status | Item |
 |---|---|
-| PRE-LAUNCH MANUAL → LAUNCH BLOCKER | Production has **no restorable backups** (verified: backups list empty, PITR off). Does not block coding or testing; must be resolved (plan with daily backups) before real customer data is entrusted to production, unless the owner explicitly accepts the risk at launch time |
-| EXCEPTION | Storage files are not in database backups; no file backup job yet |
+| GREEN | Manual Production backups: `scripts/backup-database.sh` + `scripts/backup-storage.mjs` (database dump + Storage mirror), restore rehearsed locally (all tables, content fingerprints, sign-in, RLS, files); real Production backups taken |
+| GREEN | Restore never targets Production (restore scripts write only locally / refuse the production ref; restore.sql refuses a database that already has users) |
+| MANUAL | Weekly routine (+ before every Production migration), encrypted image, second off-site copy, quarterly restore rehearsal (PRODUCTION_BACKUP_RECOVERY.md §3) |
+| EXCEPTION | Supabase itself keeps no backups for Production (no daily backups, PITR off) — worst case loses what was entered since the last manual backup; a paid plan with daily backups is the upgrade path (owner decision) |
 
 ## PLATFORM ADMIN
 | Status | Item |
 |---|---|
-| GREEN | Database-backed (`private.platform_admins` by user id); company roles never grant it |
-| GREEN | Bootstrapped 2026-10-03 via `private.bootstrap_platform_admin` (exact user id; 1 active platform admin; audit `platform_admin_granted` targeting that id, `{"via": "bootstrap"}`; no company memberships). Database check as that user: `am_platform_admin` true, admin overview/system/access/audit readable, normal RLS shows no companies |
-| MANUAL REQUIRED | `/admin` in the browser on kaidly.ee as Kenneth (needs his sign-in); a non-admin denied (covered by local/Preview tests; no extra production account was created) |
+| GREEN | Database-backed (`private.platform_admins` by user id), bootstrapped 2026-10-03; company roles never grant it; non-admins get the ordinary 404 |
+| GREEN | Tellimused: list, search/filter, plan detail, Custom, preview → confirm, history, internal note (admin only) |
+| MANUAL | Visual smoke of `/admin` and Tellimused on kaidly.ee (MANUAL_SMOKE_TEST.md §4) |
 
-## SMOKE TEST (production, kaidly.ee)
-
-**Automated 2026-10-03 — GREEN:** landing at 375/1440/1920 (hero grid, "Kuidas töötab"
-anchor, reminder explanation, scroll-to-top, no overflow), ET/EN/RU, title, canonical,
-favicon, robots/sitemap, privacy/terms draft notice + noindex, login/sign-up/forgot-password
-render in three languages, password-reset submit shows the neutral confirmation (SMTP
-limitation, no crash), security headers and production-only CSP, no console/CSP errors, no
-5xx, health without secrets.
-
-**Manual — Kenneth (no password available to automation; no auth bypass):** with company
-"KAIDLY Prelaunch Test" (keep it minimal; deactivate afterwards if it has history):
-Public pages, language switch, metadata/canonical, favicon, privacy/terms · login, logout,
-direct authenticated URL (password reset only once SMTP works) · company/trial, site,
-installation, log, plan, deficiency, document, notification, search, PDF, CSV, CSV import (Seaded → Andmete import, small template file) · /admin pages ·
-non-admin denied /admin, cross-tenant 404, expired company read-only · no 5xx, logs clean ·
-remove or (with history) deactivate the test company.
+## SMOKE TEST (Production)
+| Status | Item |
+|---|---|
+| GREEN | Public part automated/verified at each release (landing, header, pricing, ET/EN/RU, headers, robots, sitemap, health, logs) |
+| MANUAL | Signed-in part by Kenneth: MANUAL_SMOKE_TEST.md §2–§5 (fresh user, account security, platform admin, access) |
+| MANUAL | Russian native terminology review (electrical professional) |
 
 ## ROLLBACK
 | Status | Item |
 |---|---|
-| GREEN | DEPLOYMENT.md §7: promote previous deployment; forward-only database; emergency auth switches |
+| GREEN | DEPLOYMENT.md §7 / RELEASE_RUNBOOK.md §7: promote the previous deployment; database forward-only (additive migrations); emergency auth switches |

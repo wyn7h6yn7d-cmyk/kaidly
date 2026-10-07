@@ -2,6 +2,11 @@
 
 Date: 2026-10-05 · start `b50a9a3` · 24 migrations (local = Development = Production).
 
+> **Historical report (2026-10-05).** Kept as the record of that pass. Its §11–§13 lists are
+> superseded: SMTP, Secure password change, reminder e-mails and Production backups have since
+> been done. Current state: [LAUNCH_STATUS.md](LAUNCH_STATUS.md) and
+> [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md); support: [SUPPORT_RUNBOOK.md](SUPPORT_RUNBOOK.md).
+
 ## 1. Browsers
 
 New `e2e/cross-browser.spec.ts` (`@cross-browser`): public pages (scroll-to-top, language
