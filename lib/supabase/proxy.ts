@@ -18,6 +18,7 @@ const PUBLIC_PATHS = new Set([
   "/auth/error",
   "/privaatsus",
   "/kasutustingimused",
+  "/andmetootlusleping",
   "/robots.txt",
   "/sitemap.xml",
   "/api/health",

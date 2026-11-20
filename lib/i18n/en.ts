@@ -237,7 +237,7 @@ export const en: Messages = {
       exampleCta: "View activity",
       note: "Notifications are in KAIDLY, under the bell.",
     },
-    legal: { privacy: "Privacy", terms: "Terms of use", label: "Legal" },
+    legal: { privacy: "Privacy", terms: "Terms of use", dpa: "Data processing agreement", label: "Legal" }, // TÕLGE ÜLE VAADATA
     metaTitle: "KAIDLY – digital operating log and operating plan for electrical installations", // TÕLGE ÜLE VAADATA
     metaDescription: // TÕLGE ÜLE VAADATA
       "Operating log, operating plan, deficiencies and documents in one place. For operations managers and electrical companies. Ready for the periodic audit.",

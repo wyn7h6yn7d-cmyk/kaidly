@@ -1,3 +1,4 @@
+// JURISTI ÜLEVAATUS VAJALIK — kasutustingimused. Text: lib/legal/content.ts.
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/legal-page";
 import { getT } from "@/lib/i18n/server";

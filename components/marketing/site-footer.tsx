@@ -28,6 +28,9 @@ export async function SiteFooter() {
             <Link href="/kasutustingimused" className="focus-on-dark inline-flex h-11 items-center underline-offset-4 hover:text-white hover:underline">
               {t.landing.legal.terms}
             </Link>
+            <Link href="/andmetootlusleping" className="focus-on-dark inline-flex h-11 items-center underline-offset-4 hover:text-white hover:underline">
+              {t.landing.legal.dpa}
+            </Link>
           </nav>
         </div>
         <div className="flex min-w-0 flex-col gap-4 lg:items-end">

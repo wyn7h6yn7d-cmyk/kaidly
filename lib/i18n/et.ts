@@ -233,7 +233,7 @@ export const et = {
       exampleCta: "Vaata tegevust",
       note: "Teavitused on KAIDLYs, kellukese all.",
     },
-    legal: { privacy: "Privaatsus", terms: "Kasutustingimused", label: "Õiguslik teave" },
+    legal: { privacy: "Privaatsus", terms: "Kasutustingimused", dpa: "Andmetöötlusleping", label: "Õiguslik teave" },
     metaTitle: "KAIDLY – digitaalne käidupäevik ja käidukava elektripaigaldistele",
     metaDescription:
       "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas. Käidukorraldajatele ja elektrifirmadele. Valmis korraliseks auditiks.",

@@ -18,9 +18,16 @@ export const LEGAL = {
   effectiveDate: null as string | null, // TBA — YYYY-MM-DD the documents take effect
   /** Data-processing region of the PRODUCTION Supabase project, e.g. "EU (Frankfurt)". */
   hostingRegion: "EU (Ireland, eu-west-1)" as string | null, // verified: production project region
+  /** Public contact (lib/company.ts). */
+  contactEmail: COMPANY.email as string | null,
+  /** Vercel Functions region of Production, e.g. "EU (Frankfurt, fra1)". TÄIDAB KENNETH */
+  appRegion: null as string | null,
+  /** Resend region of the sending account, e.g. "EU (Ireland, eu-west-1)". TÄIDAB KENNETH */
+  emailRegion: null as string | null,
   /** Set to true only after the texts have been reviewed and approved. */
   approved: false,
 };
 
 export const legalReady = () =>
-  LEGAL.approved && [LEGAL.operatorName, LEGAL.registryCode, LEGAL.address, LEGAL.privacyEmail, LEGAL.effectiveDate, LEGAL.hostingRegion].every(Boolean);
+  LEGAL.approved &&
+  [LEGAL.operatorName, LEGAL.registryCode, LEGAL.address, LEGAL.privacyEmail, LEGAL.effectiveDate, LEGAL.hostingRegion, LEGAL.appRegion, LEGAL.emailRegion].every(Boolean);

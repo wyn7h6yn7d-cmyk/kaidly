@@ -71,7 +71,7 @@ test.describe("Väljalase", () => {
     await page.getByRole("contentinfo").getByRole("link", { name: "Privaatsus" }).click();
     await expect(page.getByRole("heading", { name: "Privaatsus", level: 1 })).toBeVisible();
     await expect(page.getByRole("note")).toHaveText("Eelversioon. KAIDLY privaatsustingimused täiendatakse enne teenuse avalikku käivitamist.");
-    await expect(page.getByText("Teenuse osutaja andmed avaldatakse enne teenuse ametlikku käivitamist.").first()).toBeVisible();
+    await expect(page.getByText("See osa avaldatakse enne teenuse ametlikku käivitamist.").first()).toBeVisible();
     await expect(page.getByRole("main").getByText(/\[|TODO|null/)).toHaveCount(0);
     // Robots meta as a crawler sees it: a full page load (after a client-side navigation
     // Next 16.4 can briefly keep the previous page's tag in the DOM next to the new one).
@@ -85,6 +85,17 @@ test.describe("Väljalase", () => {
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.getByText(/TBA/)).toHaveCount(0);
     await expect(page.getByText(/14-päevane prooviperiood/)).toBeVisible();
+    // Terms link to the data processing agreement, which is a pre-launch draft too.
+    await page.getByRole("main").getByRole("link", { name: "andmetöötluslepingus" }).click();
+    await expect(page).toHaveURL(/\/andmetootlusleping$/);
+    await expect(page.getByRole("heading", { name: "Andmetöötlusleping", level: 1 })).toBeVisible();
+    await expect(page.getByRole("note")).toHaveText("Eelversioon. KAIDLY andmetöötlusleping täiendatakse enne teenuse avalikku käivitamist.");
+    for (const heading of ["Andmesubjektid", "Turvameetmed", "Auditiõigus"]) {
+      await expect(page.getByRole("heading", { name: heading, level: 2 })).toBeVisible();
+    }
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(1);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(page.getByRole("contentinfo").getByRole("link", { name: "Andmetöötlusleping" })).toBeVisible();
   });
 
   test("account deletion request explains the process; no broken link without a contact address", async ({ page }) => {

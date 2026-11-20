@@ -22,4 +22,4 @@ export function isIndexable(): boolean {
 }
 
 /** Public pages search engines may list; everything else is the application. */
-export const PUBLIC_PAGES = ["/", "/privaatsus", "/kasutustingimused"] as const;
+export const PUBLIC_PAGES = ["/", "/privaatsus", "/kasutustingimused", "/andmetootlusleping"] as const;

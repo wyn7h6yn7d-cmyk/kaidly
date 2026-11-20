@@ -1,14 +1,30 @@
+import Link from "next/link";
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { ScrollToTop } from "@/components/marketing/scroll-to-top";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { getT } from "@/lib/i18n/server";
-import { LEGAL_CONTENT } from "@/lib/legal/content";
+import { LEGAL_CONTENT, type LegalDocKey } from "@/lib/legal/content";
 import { LEGAL, legalReady } from "@/lib/legal/operator";
 
-type Field = "operatorName" | "registryCode" | "address" | "privacyEmail" | "effectiveDate" | "hostingRegion";
+type Field = "operatorName" | "registryCode" | "address" | "privacyEmail" | "effectiveDate" | "hostingRegion" | "contactEmail" | "appRegion" | "emailRegion";
+
+// [label](/path) → an internal link (only same-site paths; the texts are static).
+function withLinks(text: string) {
+  const parts = text.split(/(\[[^\]]+\]\(\/[a-z-]+\))/g);
+  return parts.map((part, i) => {
+    const m = /^\[([^\]]+)\]\((\/[a-z-]+)\)$/.exec(part);
+    return m ? (
+      <Link key={i} href={m[2]} className="font-semibold text-k-green underline underline-offset-4">
+        {m[1]}
+      </Link>
+    ) : (
+      part
+    );
+  });
+}
 
 /** Renders a legal document; any operator fact still missing is shown as such, never invented. */
-export async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
+export async function LegalPage({ doc }: { doc: LegalDocKey }) {
   const t = await getT();
   const content = LEGAL_CONTENT[t.locale];
   const d = content[doc];
@@ -17,7 +33,7 @@ export async function LegalPage({ doc }: { doc: "privacy" | "terms" }) {
   const fill = (text: string) => {
     const fields = [...text.matchAll(/\{([a-zA-Z]+)\}/g)].map((m) => m[1] as Field);
     if (fields.some((f) => !LEGAL[f])) return <span className="italic text-k-muted">{content.pending}</span>;
-    return text.replace(/\{([a-zA-Z]+)\}/g, (_, f: Field) => LEGAL[f] ?? "");
+    return withLinks(text.replace(/\{([a-zA-Z]+)\}/g, (_, f: Field) => String(LEGAL[f] ?? "")));
   };
   return (
     <div className="flex min-h-svh flex-col bg-k-paper text-k-ink">
