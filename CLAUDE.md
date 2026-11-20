@@ -14,6 +14,54 @@ Read before working:
 
 Work one phase at a time. Don't start a phase that hasn't been approved.
 
+## Omaniku töökord ja sisureeglid (kehtivad alates 2026-11-20, on ülimuslikud)
+
+- Enne iga muudatust näita plaani ja oota omaniku kinnitust.
+- Iga tekstimuudatus tehakse kõigis kolmes keeles (et, en, ru). Eesti tekst on alus. Inglise
+  ja vene tõlke juurde lisa koodikommentaar `// TÕLGE ÜLE VAADATA`, kuni omanik on need kinnitanud.
+- Ära lisa väljamõeldud andmeid: kliendiarvamusi, kliendilogosid, kasutajate arvu, statistikat
+  ega silte nagu "kõige populaarsem".
+- Õiguslikud väited kirjuta täpselt omaniku antud sõnastuses, ära neid laienda.
+- Ära väida veebilehel funktsiooni kohta, mida rakenduses veel pole.
+- Ära lisa uusi sõltuvusi ilma omanikult küsimata.
+- Pärast muudatust käivita build ja testid ning anna lühike kokkuvõte: mida muutsid ja mida
+  omanik peab ise brauseris kontrollima.
+
+## Ülevaade (seis 2026-11-20)
+
+1. **Tehnoloogiapinu.** Next.js 16 (App Router, Turbopack, `proxy.ts`), React 19, TypeScript,
+   Tailwind 3 + Radix/shadcn, lucide-react ikoonid. Andmebaas: Supabase Postgres (RLS, pg_cron).
+   Autentimine: Supabase Auth (e-post + parool, `@supabase/ssr` küpsised). Hosting: Vercel
+   (`main` → Production + PRODUCTION Supabase; harud → Preview + DEVELOPMENT Supabase). E-post:
+   Supabase Auth mallid + Resend SMTP. **Makseintegratsiooni pole** (teadlikult väljas);
+   paketid ja tasulised perioodid määrab platvormi admin käsitsi (`/admin/tellimused`).
+2. **Avaleht, hinnad, tõlked.** Avaleht `app/page.tsx` + `components/marketing/*`; hinnatabel
+   `components/marketing/pricing.tsx` (`#hinnad`). Paketinumbrid: `lib/plans.ts` (kuvamine) ja
+   `private.subscription_plans` (jõustamine); `tests/unit/plans.test.ts` hoiab need võrdsed.
+   Tõlked: `lib/i18n/et.ts` (alus), `en.ts`, `ru.ts` sama kujuga; keel tuleb küpsisest
+   `kaidly_locale` (vaikimisi et), URL keelega ei muutu. Õiguslehed: `lib/legal/content.ts` +
+   `lib/legal/operator.ts`. Admin-konsool ainult eesti keeles (`lib/admin/strings.ts`).
+3. **Paketipiirangud** on jõustatud andmebaasis: `private.organisation_access.user_limit` /
+   `installation_limit`, lukustavad BEFORE-triggerid `invitation_seat_limit`,
+   `organisation_member_before_insert`, `installation_plan_limit` (migratsioon
+   `20261007100000_subscription_plans.sql`). Kasutajad = kõik liikmed + ootel kutsed
+   (`private.seats_used`); arhiveeritud paigaldisi ei loeta. Prooviperiood on isiklik
+   (`private.user_trials`). `null` = piiranguta (vanad ettevõtted).
+4. **Rollid ja õigused.** `org_role`: owner > admin > operator > viewer, kogu ettevõttele
+   (`organisation_members`); objektipõhist ligipääsu praegu pole. Andmebaas: RLS läbi
+   `private.org_ids(min_role)` (arvestab ka ligipääsu olekut ja seanssi). Server: `OrgPage`
+   (minRole), `actionContext(formData, minRole)`. Platvormi admin eraldi (`private.platform_admins`).
+5. **Aruanded ja teavitused.** `lib/reports`: `build.ts` (struktureeritud andmed), `pdf.ts`
+   (pdfmake serveris), `csv.ts` (UTF-8 BOM, `;`, valemikaitse); eksport
+   `app/o/[org]/aruanded/[report]/eksport/route.ts`, RLS-kliendiga, ei salvestata. Teavitused:
+   tabel `notifications`, loob ainult `private.generate_activity_reminders()` (pg_cron + trigger,
+   lävendid `scheduled_activities.reminder_days`); rakenduses kelluke / `/teavitused`; valikuline
+   e-kiri `private.email_outbox` kaudu.
+6. **Testid ja build** — vt "Commands" allpool: `npm test` (unit), `npm run test:db` (pgTAP,
+   vajab kohalikku Supabase'i/Dockerit), `npm run test:e2e` (Playwright), `npm run build`,
+   kõik koos `npm run check`.
+7. **Git.** Repo on GitHubis (`wyn7h6yn7d-cmyk/kaidly`), Vercel projekt `kaidly` on seotud.
+
 ## Next.js 16 — read the bundled docs
 
 This project uses Next.js 16 (App Router, Turbopack, `proxy.ts` instead of middleware,
