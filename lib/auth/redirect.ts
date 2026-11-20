@@ -15,6 +15,7 @@ const ALLOWED_PATHS: RegExp[] = [
   /^\/otsing$/, // global search
   new RegExp(`^/admin(/${SEGMENT})*$`), // platform administration (404 unless platform admin)
   /^\/auth\/update-password$/, // after a password recovery link
+  /^\/auth\/kaheastmeline$/, // two-step sign-in (docs/MFA.md)
   new RegExp(`^/invite/${SEGMENT}$`), // invitation landing (Phase 2)
   new RegExp(`^/vaataja-kutse/${SEGMENT}$`), // site viewer invitation
   new RegExp(`^/vaade(/${SEGMENT})?$`), // site viewer pages

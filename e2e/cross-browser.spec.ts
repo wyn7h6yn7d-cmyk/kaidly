@@ -125,7 +125,7 @@ test.describe("Brauserid", () => {
     await expectNoHorizontalScroll(page);
 
     const admin = await createUser("Brauseri Admin");
-    sql(`insert into private.platform_admins (user_id) values ('${admin.id}');`);
+    sql(`insert into private.platform_admins (user_id, mfa_required) values ('${admin.id}', false);`);
     await page.context().clearCookies();
     await login(page, admin, "/admin");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

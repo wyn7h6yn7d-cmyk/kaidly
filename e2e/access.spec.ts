@@ -117,7 +117,7 @@ test.describe("Prooviperiood ja ligipääs", () => {
   test("platform admin: extend trial, activate a plan, expire — audited", async ({ page, browser }) => {
     test.setTimeout(120_000);
     const admin = await createUser(`Platvorm ${uniqueId("p")}`);
-    sql(`select private.bootstrap_platform_admin('${admin.email}');`);
+    sql(`select private.bootstrap_platform_admin('${admin.email}'); update private.platform_admins set mfa_required = false where user_id = '${admin.id}'; -- MFA: e2e/mfa.spec.ts`);
     const name = `Kliendi ${uniqueId("k")} OÜ`;
     const org = await createOrg(name);
     expire(org);

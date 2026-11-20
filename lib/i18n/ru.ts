@@ -497,6 +497,23 @@ export const ru: Messages = {
       sentTitle: "Проверьте почту",
       sentDescription: "Если аккаунт с этим адресом существует, мы отправили на него ссылку для нового пароля.",
     },
+    // TÕLGE ÜLE VAADATA (twoStep)
+    twoStep: {
+      title: "Двухэтапный вход",
+      verifyDescription: "Введите 6-значный код из приложения-аутентификатора.",
+      setupDescription:
+        "Добавьте KAIDLY в приложение-аутентификатор (например, Google Authenticator, Microsoft Authenticator или 1Password): отсканируйте QR-код или введите ключ вручную. Затем введите 6-значный код, который показывает приложение.",
+      adminRequired: "Для консоли администрирования KAIDLY двухэтапный вход обязателен.",
+      qrAlt: "QR-код для добавления в приложение-аутентификатор",
+      secret: "Ключ для ввода вручную",
+      code: "Код",
+      submit: "Подтвердить",
+      submitting: "Проверяю…",
+      enabled: "Двухэтапный вход включён.",
+      continue: "Продолжить",
+      signOut: "Выйти",
+      loading: "Загрузка…",
+    },
     updatePassword: {
       title: "Новый пароль",
       description: "Введите новый пароль.",
@@ -509,6 +526,7 @@ export const ru: Messages = {
     },
   },
   errors: {
+    mfa_code_invalid: "Код не подходит. Проверьте время на телефоне и попробуйте новый код.", // TÕLGE ÜLE VAADATA
     import_name_required: "Не указано название.",
     import_site_missing: "Объект не указан или объекта с таким названием нет в этой организации. Сначала импортируйте объекты.",
     import_site_ambiguous: "Объектов с таким названием несколько. Дайте объектам разные названия.",
@@ -1607,6 +1625,14 @@ export const ru: Messages = {
       passwordSubmit: "Сменить пароль",
       passwordChanged: "Пароль изменён. На других устройствах сеанс завершится не позднее чем через час.",
       forgotPassword: "Забыли текущий пароль?",
+      twoStepTitle: "Двухэтапный вход", // TÕLGE ÜLE VAADATA
+      twoStepBody: "Помимо пароля, при входе запрашивается код из приложения-аутентификатора.", // TÕLGE ÜLE VAADATA
+      twoStepOn: "Включён", // TÕLGE ÜLE VAADATA
+      twoStepOff: "Выключен", // TÕLGE ÜLE VAADATA
+      twoStepEnable: "Включить", // TÕLGE ÜLE VAADATA
+      twoStepDisable: "Выключить", // TÕLGE ÜLE VAADATA
+      twoStepDisableConfirm: "Выключить двухэтапный вход?", // TÕLGE ÜLE VAADATA
+      twoStepAdminNote: "Для консоли администрирования он должен быть включён.", // TÕLGE ÜLE VAADATA
       sessionsTitle: "Входы",
       sessionsBody: "Если вы вошли на устройстве, которым больше не пользуетесь, выйдите на всех других устройствах. На этом устройстве вход сохранится; на других сеанс завершится не позднее чем через час.",
       signOutOthers: "Выйти на других устройствах",

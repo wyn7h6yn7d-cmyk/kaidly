@@ -12,6 +12,8 @@ import { ConfirmForm } from "@/components/forms/confirm-form";
 import { ProfileForm } from "@/components/organisations/profile-form";
 import { signOutOtherSessions } from "@/lib/actions/account";
 import { contactMailto } from "@/lib/access";
+import { TwoStepSection } from "@/components/account/two-step-section";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
@@ -57,6 +59,13 @@ function Section({ id, title, body, children }: { id: string; title: string; bod
   );
 }
 
+async function TwoStep() {
+  await requireUser();
+  const supabase = await createServerClient();
+  const { data } = await supabase.rpc("my_admin_mfa_status");
+  return <TwoStepSection isAdmin={data === "ok" || data === "required"} />;
+}
+
 async function DeletionRequest() {
   const [user, t] = await Promise.all([requireUser(), getT()]);
   const copy = t.app.account;
@@ -90,6 +99,11 @@ export default async function AccountPage() {
       </Section>
       <Section id="password" title={t.app.account.passwordTitle} body={t.app.account.passwordBody}>
         <PasswordChangeForm />
+      </Section>
+      <Section id="kaheastmeline" title={t.app.account.twoStepTitle} body={t.app.account.twoStepBody}>
+        <Suspense fallback={<LoadingBlock lines={1} />}>
+          <TwoStep />
+        </Suspense>
       </Section>
       <Section id="language" title={t.common.language} body={t.app.account.languageHint}>
         <LanguageSelector className="-ml-2" />

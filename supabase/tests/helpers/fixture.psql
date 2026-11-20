@@ -49,7 +49,8 @@ declare
 begin
   select * into strict v_user from test_users where name = p_name;
   perform set_config('request.jwt.claims',
-    json_build_object('sub', v_user.id, 'role', 'authenticated', 'email', v_user.email)::text,
+    -- aal2: test sessions count as two-step verified (admin_mfa); 250_admin_mfa covers aal1.
+    json_build_object('sub', v_user.id, 'role', 'authenticated', 'email', v_user.email, 'aal', 'aal2')::text,
     true);
   perform set_config('role', 'authenticated', true);
 end;

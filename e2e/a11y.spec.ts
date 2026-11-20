@@ -82,7 +82,7 @@ test("main pages pass axe (WCAG 2.1 AA) and fit the screen @responsive", async (
 test("account, company settings and the KAIDLY Admin console pass axe and fit the screen @responsive", async ({ page }) => {
   test.setTimeout(300_000);
   const org = await createOrg(`Admin a11y ${uniqueId("x")}`);
-  sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
+  sql(`select private.bootstrap_platform_admin('${org.users.owner.email}'); update private.platform_admins set mfa_required = false where user_id = '${org.users.owner.id}'; -- MFA: e2e/mfa.spec.ts`);
   await login(page, org.users.owner, "/konto");
   const site = await createSite(org, "Tallinna tehas");
   const installation = await createInstallation(org, site, "Peakilp", "PK-01");

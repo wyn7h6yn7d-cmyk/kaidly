@@ -367,7 +367,7 @@ test.describe("Turvalisus API tasemel", () => {
     await expect(page.locator("main").getByText("<script>window.__xss=1</script>").first()).toBeVisible();
     // Platform admin metadata screens.
     const admin = await createUser("Platvormi Admin");
-    sql(`insert into private.platform_admins (user_id) values ('${admin.id}');`);
+    sql(`insert into private.platform_admins (user_id, mfa_required) values ('${admin.id}', false);`);
     await page.context().clearCookies();
     await login(page, admin, "/admin/companies");
     await page.goto(`/admin/companies/${A.org.id}`);

@@ -12,7 +12,7 @@ import {
 
 async function platformAdmin(): Promise<TestUser> {
   const user = await createUser(`Platvormi Admin ${uniqueId("a")}`);
-  sql(`select private.bootstrap_platform_admin('${user.email}');`);
+  sql(`select private.bootstrap_platform_admin('${user.email}'); update private.platform_admins set mfa_required = false where user_id = '${user.id}'; -- MFA: e2e/mfa.spec.ts`);
   return user;
 }
 

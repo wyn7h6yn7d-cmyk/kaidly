@@ -7,7 +7,7 @@ import { createOrg, createUser, expect, field, login, sql, test, uniqueId, type 
 
 async function platformAdmin(): Promise<TestUser> {
   const admin = await createUser(`Platvorm ${uniqueId("p")}`);
-  sql(`select private.bootstrap_platform_admin('${admin.email}');`);
+  sql(`select private.bootstrap_platform_admin('${admin.email}'); update private.platform_admins set mfa_required = false where user_id = '${admin.id}'; -- MFA: e2e/mfa.spec.ts`);
   return admin;
 }
 

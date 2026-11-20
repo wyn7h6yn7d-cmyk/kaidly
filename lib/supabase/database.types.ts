@@ -1451,6 +1451,8 @@ export type Database = {
         Returns: Json
       }
       invitation_preview: { Args: { p_token: string }; Returns: Json }
+      my_admin_mfa_status: { Args: never; Returns: string }
+      my_mfa_pending: { Args: never; Returns: boolean }
       my_notifications: {
         Args: { p_limit?: number; p_offset?: number; p_unread_only?: boolean }
         Returns: Json

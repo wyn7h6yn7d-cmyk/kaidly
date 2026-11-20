@@ -1,5 +1,5 @@
 import "server-only";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { getCurrentUser, requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -20,7 +20,14 @@ export const isPlatformAdmin = cache(async (): Promise<boolean> => {
 /** For /admin pages: anyone who isn't a platform admin gets the ordinary 404. */
 export async function requirePlatformAdmin() {
   const user = await requireUser();
-  if (!(await isPlatformAdmin())) notFound();
+  if (!(await isPlatformAdmin())) {
+    // An admin whose session has not passed the second step is sent to complete it;
+    // everyone else gets the ordinary 404 (the status RPC says nothing about others).
+    const supabase = await createClient();
+    const { data } = await supabase.rpc("my_admin_mfa_status");
+    if (data === "required") redirect("/auth/kaheastmeline?next=/admin");
+    notFound();
+  }
   return user;
 }
 

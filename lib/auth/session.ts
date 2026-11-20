@@ -9,6 +9,8 @@ export type CurrentUser = {
   email: string | null;
   fullName: string | null;
   preferredLocale: Locale | null;
+  /** Two-step sign-in switched on but this session has only passed the password (docs/MFA.md). */
+  mfaPending: boolean;
 };
 
 /**
@@ -22,23 +24,28 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (error || !data?.claims) return null;
 
   const id = data.claims.sub;
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email, full_name, preferred_locale")
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data: profile }, { data: mfaPending }] = await Promise.all([
+    supabase.from("profiles").select("email, full_name, preferred_locale").eq("id", id).maybeSingle(),
+    supabase.rpc("my_mfa_pending"),
+  ]);
 
   return {
     id,
     email: profile?.email ?? data.claims.email ?? null,
     fullName: profile?.full_name ?? null,
     preferredLocale: isLocale(profile?.preferred_locale) ? profile.preferred_locale : null,
+    mfaPending: mfaPending === true,
   };
 });
 
-/** Like getCurrentUser, but redirects to login when there is no session. */
+/**
+ * Like getCurrentUser, but redirects to login when there is no session, and to the second
+ * step when two-step sign-in is on and not yet completed in this session (the database
+ * refuses company data to such a session anyway: private.session_active()).
+ */
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
+  if (user.mfaPending) redirect("/auth/kaheastmeline");
   return user;
 }

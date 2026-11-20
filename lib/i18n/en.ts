@@ -484,6 +484,23 @@ export const en: Messages = {
       sentTitle: "Check your email",
       sentDescription: "If an account exists for this address, we've sent it a link to set a new password.",
     },
+    // TÕLGE ÜLE VAADATA (twoStep)
+    twoStep: {
+      title: "Two-step sign-in",
+      verifyDescription: "Enter the 6-digit code from your authenticator app.",
+      setupDescription:
+        "Add KAIDLY to an authenticator app (e.g. Google Authenticator, Microsoft Authenticator or 1Password): scan the QR code or enter the key manually. Then enter the 6-digit code the app shows.",
+      adminRequired: "Two-step sign-in is required for the KAIDLY admin console.",
+      qrAlt: "QR code for adding to an authenticator app",
+      secret: "Key for manual entry",
+      code: "Code",
+      submit: "Confirm",
+      submitting: "Checking…",
+      enabled: "Two-step sign-in is on.",
+      continue: "Continue",
+      signOut: "Sign out",
+      loading: "Loading…",
+    },
     updatePassword: {
       title: "New password",
       description: "Enter your new password.",
@@ -496,6 +513,7 @@ export const en: Messages = {
     },
   },
   errors: {
+    mfa_code_invalid: "The code is not valid. Check that your phone's clock is correct and try a new code.", // TÕLGE ÜLE VAADATA
     import_name_required: "Name is missing.",
     import_site_missing: "The site is missing or no site with this name exists in this company. Import the sites first.",
     import_site_ambiguous: "Several sites have this name. Give the sites distinct names.",
@@ -1592,6 +1610,14 @@ export const en: Messages = {
       passwordSubmit: "Change password",
       passwordChanged: "Password changed. Other devices are signed out within an hour at the latest.",
       forgotPassword: "Forgot your current password?",
+      twoStepTitle: "Two-step sign-in", // TÕLGE ÜLE VAADATA
+      twoStepBody: "Besides your password, signing in asks for a code from an authenticator app.", // TÕLGE ÜLE VAADATA
+      twoStepOn: "On", // TÕLGE ÜLE VAADATA
+      twoStepOff: "Off", // TÕLGE ÜLE VAADATA
+      twoStepEnable: "Turn on", // TÕLGE ÜLE VAADATA
+      twoStepDisable: "Turn off", // TÕLGE ÜLE VAADATA
+      twoStepDisableConfirm: "Turn two-step sign-in off?", // TÕLGE ÜLE VAADATA
+      twoStepAdminNote: "It must be on to use the admin console.", // TÕLGE ÜLE VAADATA
       sessionsTitle: "Sign-ins",
       sessionsBody: "If you are signed in on a device you no longer use, sign out all other devices. This device stays signed in; on the others the sign-in ends within an hour at the latest.",
       signOutOthers: "Sign out other devices",

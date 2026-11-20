@@ -140,7 +140,7 @@ test.describe("Paigutus", () => {
   test("platform admin pages hold their layout from 320 to 1440 px", async ({ page }) => {
     test.setTimeout(240_000);
     const { org } = await layoutFixture();
-    sql(`select private.bootstrap_platform_admin('${org.users.owner.email}');`);
+    sql(`select private.bootstrap_platform_admin('${org.users.owner.email}'); update private.platform_admins set mfa_required = false where user_id = '${org.users.owner.id}'; -- MFA: e2e/mfa.spec.ts`);
     await login(page, org.users.owner, "/admin");
     await checkPages(
       page,

@@ -476,6 +476,22 @@ export const et = {
       sentDescription:
         "Kui selle aadressiga konto on olemas, saatsime sinna lingi uue parooli määramiseks.",
     },
+    twoStep: {
+      title: "Kaheastmeline sisselogimine",
+      verifyDescription: "Sisesta autentimisrakenduse 6-kohaline kood.",
+      setupDescription:
+        "Lisa KAIDLY autentimisrakendusse (nt Google Authenticator, Microsoft Authenticator või 1Password): skaneeri QR-kood või sisesta võti käsitsi. Seejärel sisesta rakenduse näidatud 6-kohaline kood.",
+      adminRequired: "KAIDLY halduskonsooli kasutamiseks on kaheastmeline sisselogimine kohustuslik.",
+      qrAlt: "QR-kood autentimisrakendusse lisamiseks",
+      secret: "Võti käsitsi sisestamiseks",
+      code: "Kood",
+      submit: "Kinnita",
+      submitting: "Kontrollin…",
+      enabled: "Kaheastmeline sisselogimine on sees.",
+      continue: "Jätka",
+      signOut: "Logi välja",
+      loading: "Laadin…",
+    },
     updatePassword: {
       title: "Uus parool",
       description: "Sisesta oma uus parool.",
@@ -489,6 +505,7 @@ export const et = {
   },
   /** Safe, application-controlled messages. Keys are the only thing that travels in URLs. */
   errors: {
+    mfa_code_invalid: "Kood ei sobi. Kontrolli, et telefoni kellaaeg on õige, ja proovi uue koodiga.",
     import_name_required: "Nimi puudub.",
     import_site_missing: "Objekt puudub või sellenimelist objekti ei ole selles ettevõttes. Impordi enne objektid.",
     import_site_ambiguous: "Selle nimega objekte on mitu. Muuda objektide nimed eristatavaks.",
@@ -1589,6 +1606,14 @@ export const et = {
       passwordSubmit: "Muuda parooli",
       passwordChanged: "Parool muudetud. Teistes seadmetes lõpeb sisselogimine hiljemalt tunni jooksul.",
       forgotPassword: "Unustasid praeguse parooli?",
+      twoStepTitle: "Kaheastmeline sisselogimine",
+      twoStepBody: "Lisaks paroolile küsitakse sisselogimisel autentimisrakenduse koodi.",
+      twoStepOn: "Sees",
+      twoStepOff: "Väljas",
+      twoStepEnable: "Lülita sisse",
+      twoStepDisable: "Lülita välja",
+      twoStepDisableConfirm: "Lülitada kaheastmeline sisselogimine välja?",
+      twoStepAdminNote: "Halduskonsooli kasutamiseks peab see olema sees.",
       sessionsTitle: "Sisselogimised",
       sessionsBody: "Kui oled sisse loginud seadmes, mida sa enam ei kasuta, logi kõik teised seadmed välja. See seade jääb sisse logituks; teistes seadmetes lõpeb sisselogimine hiljemalt tunni jooksul.",
       signOutOthers: "Logi teistest seadmetest välja",
