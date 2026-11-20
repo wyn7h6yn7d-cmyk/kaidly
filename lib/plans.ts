@@ -44,7 +44,7 @@ export const TRIAL_DAYS = TRIAL.days;
 export const SITE_VIEWERS_COUNT_AS_USERS = false;
 
 /** Founder offer banner above the pricing table. Set to false to hide it. */
-export const FOUNDER_OFFER_ENABLED = true;
+export const FOUNDER_OFFER_ENABLED = false;
 
 export const isPlan = (value: unknown): value is Plan =>
   value === "custom" || (FIXED_PLANS as readonly unknown[]).includes(value);

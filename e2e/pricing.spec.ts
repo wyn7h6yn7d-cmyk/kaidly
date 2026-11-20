@@ -42,11 +42,9 @@ test.describe("Hinnakiri (avalik leht)", () => {
     await expect(page.locator("body")).not.toContainText(/Kõige populaarsem/i);
     await expect(pricing.getByText("2 kuud tasuta")).toHaveCount(0);
 
-    // Founder offer (FOUNDER_OFFER_ENABLED) above the table, VAT note below it.
-    await expect(pricing.getByTestId("founder-offer")).toHaveText(
-      "Asutajapakkumine: esimesed 10 ettevõtet saavad 12 kuud 50% soodsamalt. Kirjuta info@kaidly.ee.",
-    );
-    await expect(pricing.getByTestId("founder-offer").getByRole("link", { name: "info@kaidly.ee" })).toHaveAttribute("href", /^mailto:info@kaidly\.ee\?/);
+    // Founder offer switched off (FOUNDER_OFFER_ENABLED = false); VAT note below the table.
+    await expect(pricing.getByTestId("founder-offer")).toHaveCount(0);
+    await expect(page.locator("body")).not.toContainText("Asutajapakkumine");
     await expect(pricing.getByTestId("vat-note")).toHaveText("Hinnad ei sisalda käibemaksu.");
 
     // Ettevõte: by agreement, 300+, contact.

@@ -48,7 +48,7 @@ test("pricing 2026-11: Start 19/190/1/10, Team 49/490/3/40, Pro 99/990/8/120, Bu
   for (const plan of FIXED_PLANS) assert.equal(PLAN_DETAILS[plan].annualPrice, PLAN_DETAILS[plan].monthlyPrice * 10, plan);
   assert.equal(ENTERPRISE_PLAN.installationsFrom, PLAN_DETAILS.business.installations);
   assert.equal(RECOMMENDED_PLAN, "pro");
-  assert.equal(FOUNDER_OFFER_ENABLED, true);
+  assert.equal(FOUNDER_OFFER_ENABLED, false, "founder offer switched off (owner, 2026-11-21)");
 });
 
 test("trial: 14 days, 1 user, 10 active installations — in the config and in the database", () => {
