@@ -69,8 +69,13 @@ test.describe("Väljalase", () => {
     await expect(page.getByRole("note")).toHaveText("Eelversioon. KAIDLY privaatsustingimused täiendatakse enne teenuse avalikku käivitamist.");
     await expect(page.getByText("Teenuse osutaja andmed avaldatakse enne teenuse ametlikku käivitamist.").first()).toBeVisible();
     await expect(page.getByRole("main").getByText(/\[|TODO|null/)).toHaveCount(0);
+    // Robots meta as a crawler sees it: a full page load (after a client-side navigation
+    // Next 16.4 can briefly keep the previous page's tag in the DOM next to the new one).
+    await page.goto("/privaatsus");
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(1);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await page.goto("/kasutustingimused");
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Kasutustingimused", level: 1 })).toBeVisible();
     await expect(page.getByRole("note")).toHaveText("Eelversioon. KAIDLY kasutustingimused täiendatakse enne teenuse avalikku käivitamist.");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
