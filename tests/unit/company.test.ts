@@ -11,9 +11,8 @@ test("company facts: nothing invented — name, registry code, address and found
   assert.equal(COMPANY.name, null);
   assert.equal(COMPANY.registryCode, null);
   assert.equal(COMPANY.address, null);
-  assert.equal(COMPANY.founderName, null);
   assert.equal(COMPANY.email, "info@kaidly.ee");
-  assert.equal(COMPANY.showAbout, false);
+  assert.equal(COMPANY.showAbout, true);
   assert.deepEqual(COMPANY.testimonials, [], "no sample testimonials");
   const source = readFileSync(new URL("../../lib/company.ts", import.meta.url), "utf8");
   for (const field of ["name", "registryCode", "address"]) {
@@ -42,17 +41,16 @@ test("footer line shows only the filled fields", () => {
   assert.equal(companyLine({ name: "A", registryCode: "1", address: null }, en.landing.company.registryCode), "A, registry code 1");
 });
 
-test("'Meist' is shown only when switched on and the name is known", () => {
-  assert.equal(aboutVisible({ showAbout: false, founderName: "X" }), false);
-  assert.equal(aboutVisible({ showAbout: true, founderName: null }), false);
-  assert.equal(aboutVisible({ showAbout: true, founderName: "  " }), false);
-  assert.equal(aboutVisible({ showAbout: true, founderName: "Mari Maasikas" }), true);
-  assert.equal(aboutVisible(COMPANY), false, "hidden by default");
+test("'Meist' follows its flag and names no person", () => {
+  assert.equal(aboutVisible({ showAbout: false }), false);
+  assert.equal(aboutVisible({ showAbout: true }), true);
+  assert.equal(aboutVisible(COMPANY), true);
   assert.equal(
-    et.landing.about.body("[NIMI]"),
-    "KAIDLY on loonud [NIMI], A-klassi elektriala pädevusega elektriinsener, kellel on kogemus suurte energiavarade käidu ja hoolduse korraldamisel. Tööriist sündis vajadusest pidada käidupäevikut nii, et kõik oleks kirjas, mitte kellegi peas.",
+    et.landing.about.body,
+    "KAIDLY on loonud elektriinsener, kellel on ligi 10 aastat kogemust käidujuhtimises ning suurte energiavarade käidu ja hoolduse korraldamisel. Tööriist sündis vajadusest pidada käidupäevikut nii, et kõik oleks kirjas, mitte kellegi peas.",
   );
-  for (const m of [en, ru]) assert.match(m.landing.about.body("X Y"), /X Y/);
+  assert.ok(!("founderName" in COMPANY), "no personal name in the configuration");
+  for (const m of [et, en, ru]) assert.doesNotMatch(m.landing.about.body, /\[NIMI\]|\$\{|A-klassi|A-class|класса A/);
 });
 
 test("'Kellele KAIDLY sobib': the owner's exact text, four audiences", () => {

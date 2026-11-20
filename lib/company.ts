@@ -17,10 +17,8 @@ export const COMPANY = {
   address: null as string | null, // TÄIDAB KENNETH — registered/contact address
   /** Public contact address (footer, pricing "Võta ühendust", founder offer). */
   email: "info@kaidly.ee",
-  /** Name shown in "Meist" ([NIMI]). TÄIDAB KENNETH */
-  founderName: null as string | null,
-  /** "Meist" section on the landing page; also needs founderName. */
-  showAbout: false,
+  /** "Meist" section on the landing page (owner 2026-11-20: shown, without a personal name). */
+  showAbout: true,
   /** Real, approved customer quotes only. Empty = the section is not shown. */
   testimonials: [] as Testimonial[],
 };
@@ -41,6 +39,5 @@ export function companyLine(
   return parts.length ? parts.join(", ") : null;
 }
 
-/** "Meist" is shown only when switched on AND the name is known — never "[NIMI]". */
-export const aboutVisible = (company: { showAbout: boolean; founderName: string | null }) =>
-  company.showAbout && Boolean(company.founderName?.trim());
+/** "Meist" is shown when switched on (the text names no person — owner decision). */
+export const aboutVisible = (company: { showAbout: boolean }) => company.showAbout;

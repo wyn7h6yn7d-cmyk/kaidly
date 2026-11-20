@@ -40,8 +40,11 @@ test.describe("Avaleht: kellele sobib, ettevõtte andmed", () => {
     else expect(Math.abs(boxes[1]!.y - boxes[0]!.y)).toBeLessThan(2);
     await expectNoHorizontalScroll(page);
 
-    // Hidden until real content exists: no "Meist", no testimonials, no placeholders.
-    await expect(page.locator('[data-section="about"]')).toHaveCount(0);
+    // "Meist" is shown without a personal name; testimonials stay hidden (empty list).
+    const about = page.getByRole("region", { name: "Meist" });
+    await expect(about).toContainText("KAIDLY on loonud elektriinsener, kellel on ligi 10 aastat kogemust käidujuhtimises");
+    const aboutTop = await about.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    expect(aboutTop).toBeGreaterThan(tops.pricing);
     await expect(page.locator('[data-section="testimonials"]')).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/\[NIMI\]|TÄIDAB KENNETH/);
 

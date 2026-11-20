@@ -253,7 +253,7 @@ export default async function Home() {
 
         <Pricing />
 
-        {/* "Meist" — hidden until COMPANY.showAbout and the name are set */}
+        {/* "Meist" — COMPANY.showAbout */}
         <About />
 
         {/* Final call to action */}

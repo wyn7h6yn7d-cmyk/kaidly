@@ -321,8 +321,7 @@ export const et = {
     },
     about: {
       title: "Meist",
-      body: (name: string) =>
-        `KAIDLY on loonud ${name}, A-klassi elektriala pädevusega elektriinsener, kellel on kogemus suurte energiavarade käidu ja hoolduse korraldamisel. Tööriist sündis vajadusest pidada käidupäevikut nii, et kõik oleks kirjas, mitte kellegi peas.`,
+      body: "KAIDLY on loonud elektriinsener, kellel on ligi 10 aastat kogemust käidujuhtimises ning suurte energiavarade käidu ja hoolduse korraldamisel. Tööriist sündis vajadusest pidada käidupäevikut nii, et kõik oleks kirjas, mitte kellegi peas.",
     },
     testimonials: { title: "Klientide kogemused" },
     company: { registryCode: "registrikood", contact: "Kontakt" },

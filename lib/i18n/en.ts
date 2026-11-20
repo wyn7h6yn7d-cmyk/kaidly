@@ -328,8 +328,7 @@ export const en: Messages = {
     },
     about: {
       title: "About us",
-      body: (name: string) =>
-        `KAIDLY was created by ${name}, an electrical engineer with A-class electrical competence and experience in organising the operation and maintenance of large energy assets. The tool was born from the need to keep an operating log in which everything is written down, not in someone's head.`,
+      body: "KAIDLY was created by an electrical engineer with almost 10 years of experience in operations management and in organising the operation and maintenance of large energy assets. The tool was born from the need to keep an operating log in which everything is written down, not in someone's head.",
     },
     testimonials: { title: "Customer experiences" },
     company: { registryCode: "registry code", contact: "Contact" },
