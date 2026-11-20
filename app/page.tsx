@@ -7,6 +7,7 @@ import { HeroVisual } from "@/components/marketing/hero-visual";
 import { TaglineConnector } from "@/components/marketing/tagline-connector";
 import { LogPreview } from "@/components/marketing/log-preview";
 import { PhonePreview } from "@/components/marketing/phone-preview";
+import { Audiences } from "@/components/marketing/audiences";
 import { Pricing } from "@/components/marketing/pricing";
 import { RegulationSections } from "@/components/marketing/regulation-sections";
 import { ReminderExample } from "@/components/marketing/reminder-example";
@@ -15,6 +16,7 @@ import { SectionHashCleanup, SectionLink } from "@/components/marketing/section-
 import { SiteFooter } from "@/components/marketing/site-footer";
 import { SiteHeader } from "@/components/marketing/site-header";
 import { SystemDiagram } from "@/components/marketing/system-diagram";
+import { About, Testimonials } from "@/components/marketing/trust";
 import { Button } from "@/components/ui/button";
 import { getT } from "@/lib/i18n/server";
 import { siteUrl } from "@/lib/site";
@@ -23,11 +25,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return {
     title: { absolute: t.landing.metaTitle },
+    description: t.landing.metaDescription,
     alternates: { canonical: "/" },
     // The page's own Open Graph set (Next.js replaces, not merges, the object per page).
     openGraph: {
       title: t.landing.metaTitle,
-      description: t.meta.description,
+      description: t.landing.metaDescription,
       siteName: t.brand.name,
       type: "website",
       url: "/",
@@ -56,7 +59,7 @@ function structuredData(t: Awaited<ReturnType<typeof getT>>) {
         inLanguage: t.locale,
         applicationCategory: "BusinessApplication",
         operatingSystem: "Web",
-        description: t.meta.description,
+        description: t.landing.metaDescription,
       },
     ],
   };
@@ -218,6 +221,12 @@ export default async function Home() {
           </div>
         </section>
 
+        {/* Who KAIDLY is for — after "Kuidas toimib", before pricing */}
+        <Audiences />
+
+        {/* Real customer quotes only; renders nothing while the list is empty */}
+        <Testimonials />
+
         {/* Mobile entry: written where the work was done */}
         <section className="k-grain bg-k-ink text-white">
           <div className="k-container k-section grid grid-cols-1 items-center gap-14 lg:grid-cols-12 lg:gap-16">
@@ -243,6 +252,9 @@ export default async function Home() {
         </section>
 
         <Pricing />
+
+        {/* "Meist" — hidden until COMPANY.showAbout and the name are set */}
+        <About />
 
         {/* Final call to action */}
         <section className="bg-k-volt text-k-ink">

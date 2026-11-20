@@ -7,10 +7,13 @@
  * `approved` is false, both pages are pre-launch drafts: a restrained notice, fact-dependent
  * paragraphs replaced by one "published before launch" sentence, `noindex`, not in the sitemap.
  */
+import { COMPANY } from "../company.ts";
+
 export const LEGAL = {
-  operatorName: null as string | null, // TBA — legal entity not founded yet
-  registryCode: null as string | null, // TBA — Estonian business registry code
-  address: null as string | null, // TBA — registered/contact address
+  // Operator facts come from the one company configuration (lib/company.ts).
+  operatorName: COMPANY.name,
+  registryCode: COMPANY.registryCode,
+  address: COMPANY.address,
   privacyEmail: null as string | null, // TBA — final privacy contact
   effectiveDate: null as string | null, // TBA — YYYY-MM-DD the documents take effect
   /** Data-processing region of the PRODUCTION Supabase project, e.g. "EU (Frankfurt)". */

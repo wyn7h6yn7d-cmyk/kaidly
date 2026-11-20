@@ -17,7 +17,11 @@ test.describe("Väljalase", () => {
     expect((await (await request.get("/robots.txt")).text())).toMatch(/Disallow: \//);
     await page.goto("/");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    await expect(page).toHaveTitle("KAIDLY | Elektripaigaldise digitaalne käidupäevik");
+    await expect(page).toHaveTitle("KAIDLY – digitaalne käidupäevik ja käidukava elektripaigaldistele");
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas. Käidukorraldajatele ja elektrifirmadele. Valmis korraliseks auditiks.",
+    );
     // The hero background is decoration only: hidden from assistive tech, never focusable.
     const backdrop = page.locator('[aria-hidden="true"]:has(> svg[focusable="false"])').first();
     await expect(backdrop).toBeAttached();

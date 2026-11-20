@@ -234,7 +234,9 @@ export const et = {
       note: "Teavitused on KAIDLYs, kellukese all.",
     },
     legal: { privacy: "Privaatsus", terms: "Kasutustingimused", label: "Õiguslik teave" },
-    metaTitle: "KAIDLY | Elektripaigaldise digitaalne käidupäevik",
+    metaTitle: "KAIDLY – digitaalne käidupäevik ja käidukava elektripaigaldistele",
+    metaDescription:
+      "Käidupäevik, käidukava, puudused ja dokumendid ühes kohas. Käidukorraldajatele ja elektrifirmadele. Valmis korraliseks auditiks.",
     nav: {
       label: "Põhimenüü",
       howItWorks: "Kuidas töötab?",
@@ -296,6 +298,34 @@ export const et = {
       figureNotes: ["kontroll tehtud", "mõõtmine 04/2027", "järgmine hooldus", "puudus kõrvaldatud"],
       figureDate: "12.03.",
     },
+    audiences: {
+      title: "Kellele KAIDLY sobib",
+      items: {
+        operators: {
+          title: "Käidukorraldajad ja elektrifirmad",
+          body: "Kõik objektid, tähtajad ja sissekanded ühes kohas. Iga tehtud töö on nime ja ajaga kirjas.",
+        },
+        parks: {
+          title: "Päikese- ja akupargid",
+          body: "Kontrollid, lülitamised ja puudused on kirjas ka keskpingel liitunud pargis.",
+        },
+        buildings: {
+          title: "Ärihooned ja tootmine",
+          body: "Kilbid, hooldused ja auditi tähtajad ühes kohas, mitte kellegi peas.",
+        },
+        housing: {
+          title: "Korteriühistud ja haldusfirmad",
+          body: "Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata.",
+        },
+      },
+    },
+    about: {
+      title: "Meist",
+      body: (name: string) =>
+        `KAIDLY on loonud ${name}, A-klassi elektriala pädevusega elektriinsener, kellel on kogemus suurte energiavarade käidu ja hoolduse korraldamisel. Tööriist sündis vajadusest pidada käidupäevikut nii, et kõik oleks kirjas, mitte kellegi peas.`,
+    },
+    testimonials: { title: "Klientide kogemused" },
+    company: { registryCode: "registrikood", contact: "Kontakt" },
     whoNeeds: {
       title: "Kes vajab käidukorraldajat?",
       intro: "Elektripaigaldise omanik peab määrama käidukorraldaja ja korraldama paigaldise käitu käidukava järgi, kui tegemist on näiteks:",

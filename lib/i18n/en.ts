@@ -238,7 +238,9 @@ export const en: Messages = {
       note: "Notifications are in KAIDLY, under the bell.",
     },
     legal: { privacy: "Privacy", terms: "Terms of use", label: "Legal" },
-    metaTitle: "KAIDLY | Electrical installation operation, simply",
+    metaTitle: "KAIDLY – digital operating log and operating plan for electrical installations", // TÕLGE ÜLE VAADATA
+    metaDescription: // TÕLGE ÜLE VAADATA
+      "Operating log, operating plan, deficiencies and documents in one place. For operations managers and electrical companies. Ready for the periodic audit.",
     nav: {
       label: "Main menu",
       howItWorks: "How does it work?",
@@ -302,6 +304,35 @@ export const en: Messages = {
       figureNotes: ["inspection done", "measurement 04/2027", "next service", "deficiency cleared"],
       figureDate: "12.03.",
     },
+    // TÕLGE ÜLE VAADATA (audiences, about, testimonials, company)
+    audiences: {
+      title: "Who KAIDLY is for",
+      items: {
+        operators: {
+          title: "Operations managers and electrical companies",
+          body: "All sites, deadlines and entries in one place. Every job done is recorded with a name and time.",
+        },
+        parks: {
+          title: "Solar and battery parks",
+          body: "Inspections, switching operations and deficiencies are recorded, also in a park connected at medium voltage.",
+        },
+        buildings: {
+          title: "Commercial buildings and production",
+          body: "Switchboards, maintenance and audit deadlines in one place, not in someone's head.",
+        },
+        housing: {
+          title: "Apartment associations and property managers",
+          body: "An operating log you can show during the audit and at the general meeting.",
+        },
+      },
+    },
+    about: {
+      title: "About us",
+      body: (name: string) =>
+        `KAIDLY was created by ${name}, an electrical engineer with A-class electrical competence and experience in organising the operation and maintenance of large energy assets. The tool was born from the need to keep an operating log in which everything is written down, not in someone's head.`,
+    },
+    testimonials: { title: "Customer experiences" },
+    company: { registryCode: "registry code", contact: "Contact" },
     // TÕLGE ÜLE VAADATA (whoNeeds, auditReady — legal statements, translated without additions)
     whoNeeds: {
       title: "Who needs an operations manager?",
