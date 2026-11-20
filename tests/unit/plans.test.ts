@@ -1,16 +1,19 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { FIXED_PLANS, PLAN_DETAILS, POPULAR_PLAN, TRIAL_DAYS } from "../../lib/plans.ts";
+import { readdirSync, readFileSync } from "node:fs";
+import { ENTERPRISE_PLAN, FIXED_PLANS, FOUNDER_OFFER_ENABLED, PLAN_DETAILS, RECOMMENDED_PLAN, TRIAL, TRIAL_DAYS } from "../../lib/plans.ts";
 import { en } from "../../lib/i18n/en.ts";
 import { et } from "../../lib/i18n/et.ts";
 import { ru } from "../../lib/i18n/ru.ts";
 
 // The public prices and the database catalogue (what is enforced) must never drift apart.
+// The latest migration that sets the catalogue is the source of the database values.
+const CATALOGUE_MIGRATION = "../../supabase/migrations/20261120100000_pricing_2026_11.sql";
+
 test("plan display values equal the database catalogue", () => {
-  const migration = readFileSync(new URL("../../supabase/migrations/20261007100000_subscription_plans.sql", import.meta.url), "utf8");
+  const migration = readFileSync(new URL(CATALOGUE_MIGRATION, import.meta.url), "utf8");
   const rows = Object.fromEntries(
-    [...migration.matchAll(/\('(start|team|pro|business)', (\d+), (\d+), (\d+), \d+\)/g)].map((m) => [m[1], m.slice(2, 5).map(Number)]),
+    [...migration.matchAll(/\('(start|team|pro|business)', (\d+), (\d+), (\d+)\)/g)].map((m) => [m[1], m.slice(2, 5).map(Number)]),
   );
   assert.deepEqual(Object.keys(rows).sort(), [...FIXED_PLANS].sort());
   for (const plan of FIXED_PLANS) {
@@ -19,15 +22,46 @@ test("plan display values equal the database catalogue", () => {
   }
 });
 
-test("launch plans: Start 19/1/5, Team 29/3/10, Pro 39/5/25, Business 89/15/100; Pro is the popular one; 14-day trial", () => {
+test("no later migration changes the catalogue or the trial limits without updating this test", () => {
+  const dir = new URL("../../supabase/migrations/", import.meta.url);
+  const later = readdirSync(dir).filter((f) => f > "20261120100000_pricing_2026_11.sql");
+  for (const file of later) {
+    const sql = readFileSync(new URL(file, dir), "utf8");
+    assert.doesNotMatch(sql, /subscription_plans|organisation_access_on_create/, `${file} touches plans: update CATALOGUE_MIGRATION`);
+  }
+});
+
+test("pricing 2026-11: Start 19/190/1/10, Team 49/490/3/40, Pro 99/990/8/120, Business 199/1990/20/300", () => {
   assert.deepEqual(
-    FIXED_PLANS.map((p) => [PLAN_DETAILS[p].name, PLAN_DETAILS[p].monthlyPrice, PLAN_DETAILS[p].users, PLAN_DETAILS[p].installations]),
-    [["Start", 19, 1, 5], ["Team", 29, 3, 10], ["Pro", 39, 5, 25], ["Business", 89, 15, 100]],
+    FIXED_PLANS.map((p) => {
+      const d = PLAN_DETAILS[p];
+      return [d.name, d.monthlyPrice, d.annualPrice, d.users, d.installations];
+    }),
+    [
+      ["Start", 19, 190, 1, 10],
+      ["Team", 49, 490, 3, 40],
+      ["Pro", 99, 990, 8, 120],
+      ["Business", 199, 1990, 20, 300],
+    ],
   );
-  assert.equal(POPULAR_PLAN, "pro");
+  // "2 kuud tasuta" must stay true: a year costs exactly 10 months.
+  for (const plan of FIXED_PLANS) assert.equal(PLAN_DETAILS[plan].annualPrice, PLAN_DETAILS[plan].monthlyPrice * 10, plan);
+  assert.equal(ENTERPRISE_PLAN.installationsFrom, PLAN_DETAILS.business.installations);
+  assert.equal(RECOMMENDED_PLAN, "pro");
+  assert.equal(FOUNDER_OFFER_ENABLED, true);
+});
+
+test("trial: 14 days, 1 user, 10 active installations — in the config and in the database", () => {
+  assert.deepEqual(TRIAL, { days: 14, users: 1, installations: 10 });
   assert.equal(TRIAL_DAYS, 14);
-  const migration = readFileSync(new URL("../../supabase/migrations/20261002170000_organisation_access.sql", import.meta.url), "utf8");
+  const migration = readFileSync(new URL(CATALOGUE_MIGRATION, import.meta.url), "utf8");
+  assert.match(migration, /v_trial\.ends_at, 1, 10\)/);
   assert.match(migration, /now\(\) \+ interval '14 days'/);
+  for (const m of [et, en, ru]) {
+    assert.match(m.landing.pricing.trialBody, /\b10\b/);
+    assert.match(m.app.createOrganisation.trialNew, /\b10\b/);
+    assert.match(m.app.plan.trialInstallationsFull, /\b10\b/);
+  }
 });
 
 test("pricing copy: exact Estonian wording and natural plural forms", () => {
@@ -44,15 +78,41 @@ test("pricing copy: exact Estonian wording and natural plural forms", () => {
     assert.doesNotMatch(JSON.stringify(messages), /krediitkaart|credit card|банковск\S* карт/i);
   }
   assert.equal(en.landing.pricing.trial, "14 days free");
-  assert.equal(ru.landing.pricing.trial, "14 дней бесплатно");  assert.equal(p.popular, "Kõige populaarsem");
+  assert.equal(ru.landing.pricing.trial, "14 дней бесплатно");
   assert.equal(p.perMonth, "€ / kuu + KM");
-  assert.deepEqual([1, 3, 5, 15].map(p.users), ["1 kasutaja", "3 kasutajat", "5 kasutajat", "15 kasutajat"]);
-  assert.equal(p.installations(25), "25 aktiivset elektripaigaldist");
-  assert.equal(p.customTitle, "Vajad rohkem?");
-  assert.equal(p.customCta, "Võta ühendust");
-  assert.deepEqual([1, 3, 5, 15].map(en.landing.pricing.users), ["1 user", "3 users", "5 users", "15 users"]);
-  assert.deepEqual([1, 3, 5, 15].map(ru.landing.pricing.users), ["1 пользователь", "3 пользователя", "5 пользователей", "15 пользователей"]);
-  assert.deepEqual([5, 10, 25, 100].map(ru.landing.pricing.installations), [
-    "5 активных электроустановок", "10 активных электроустановок", "25 активных электроустановок", "100 активных электроустановок",
+  assert.equal(p.perYear, "€ / aasta + KM");
+  assert.equal(p.annualFree, "2 kuud tasuta");
+  assert.equal(p.annualInvoice, "arve alusel");
+  assert.equal(p.recommended, "Soovitatud");
+  assert.equal(p.enterpriseName, "Ettevõte");
+  assert.equal(p.enterprisePrice, "Kokkuleppel");
+  assert.equal(p.contactCta, "Võta ühendust");
+  assert.equal(p.vatNote, "Hinnad ei sisalda käibemaksu.");
+  assert.equal(
+    `${p.founderOffer.before}info@kaidly.ee${p.founderOffer.after}`,
+    "Asutajapakkumine: esimesed 10 ettevõtet saavad 12 kuud 50% soodsamalt. Kirjuta info@kaidly.ee.",
+  );
+  assert.deepEqual(p.audience, {
+    start: "Üksik käidukorraldaja",
+    team: "Väike elektrifirma",
+    pro: "Käidukorraldusega tegelev ettevõte",
+    business: "Suurem hooldusettevõte",
+    enterprise: "Suured portfellid",
+  });
+  assert.equal(
+    p.trialBody,
+    "Proovi KAIDLYt 14 päeva kõigi funktsioonidega: prooviperioodil 1 kasutaja ja kuni 10 aktiivset elektripaigaldist. Seejärel vali sobiv pakett — arve saadame e-postiga.",
+  );
+  // Owner rule: no "most popular" label in any language.
+  for (const messages of [et, en, ru]) {
+    assert.doesNotMatch(JSON.stringify(messages), /populaarsem|most popular|самый популярный/i);
+  }
+  assert.deepEqual([1, 3, 8, 20].map(p.users), ["1 kasutaja", "3 kasutajat", "8 kasutajat", "20 kasutajat"]);
+  assert.equal(p.installations(120), "120 aktiivset elektripaigaldist");
+  assert.equal(p.installationsFrom(300), "300+ aktiivset elektripaigaldist");
+  assert.deepEqual([1, 3, 8, 20].map(en.landing.pricing.users), ["1 user", "3 users", "8 users", "20 users"]);
+  assert.deepEqual([1, 3, 8, 20].map(ru.landing.pricing.users), ["1 пользователь", "3 пользователя", "8 пользователей", "20 пользователей"]);
+  assert.deepEqual([10, 40, 120, 300].map(ru.landing.pricing.installations), [
+    "10 активных электроустановок", "40 активных электроустановок", "120 активных электроустановок", "300 активных электроустановок",
   ]);
 });

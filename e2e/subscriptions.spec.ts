@@ -55,10 +55,10 @@ test.describe("Tellimused (platvormi admin)", () => {
     const plan = page.getByLabel("Pakett", { exact: true });
     const values = page.getByTestId("fixed-plan-values");
     for (const [value, text] of [
-      ["start", "19 € / kuu + KM · kasutajaid 1 · aktiivseid paigaldisi 5"],
-      ["team", "29 € / kuu + KM · kasutajaid 3 · aktiivseid paigaldisi 10"],
-      ["pro", "39 € / kuu + KM · kasutajaid 5 · aktiivseid paigaldisi 25"],
-      ["business", "89 € / kuu + KM · kasutajaid 15 · aktiivseid paigaldisi 100"],
+      ["start", "19 € / kuu + KM · kasutajaid 1 · aktiivseid paigaldisi 10"],
+      ["team", "49 € / kuu + KM · kasutajaid 3 · aktiivseid paigaldisi 40"],
+      ["pro", "99 € / kuu + KM · kasutajaid 8 · aktiivseid paigaldisi 120"],
+      ["business", "199 € / kuu + KM · kasutajaid 20 · aktiivseid paigaldisi 300"],
     ]) {
       await plan.selectOption(value);
       await expect(values).toHaveText(text);
@@ -75,16 +75,16 @@ test.describe("Tellimused (platvormi admin)", () => {
     const until6 = dayPlusMonths(6);
     await expect(summary).toContainText("Aktiveerimine");
     await expect(summary).toContainText("Pro");
-    await expect(summary).toContainText("39 € / kuu + KM");
-    await expect(summary).toContainText("Kasutajad: 5");
-    await expect(summary).toContainText("Paigaldised: 25");
+    await expect(summary).toContainText("99 € / kuu + KM");
+    await expect(summary).toContainText("Kasutajad: 8");
+    await expect(summary).toContainText("Paigaldised: 120");
     await expect(summary).toContainText("Periood: 6 kuud");
     await expect(summary).toContainText(`Kehtib kuni: ${until6}`);
     await apply(page);
     const current = page.getByRole("region", { name: "Praegune tellimus" });
     await expect(current).toContainText("Täiskasutus");
     await expect(current).toContainText(until6);
-    await expect(current).toContainText("4 / 5");
+    await expect(current).toContainText("4 / 8");
 
     // Extending an active subscription counts from its paid-until day.
     await page.locator("#sub-period").selectOption("3");
@@ -119,7 +119,7 @@ test.describe("Tellimused (platvormi admin)", () => {
     // History: previous → new plan, paid-until, limits, who.
     const history = page.getByRole("region", { name: "Muudatuste ajalugu" });
     await expect(history.getByRole("row").filter({ hasText: "Paketita → Pro" })).toContainText(admin.fullName);
-    await expect(history.getByRole("row").filter({ hasText: "Pro → Raamleping 2027 (Custom)" })).toContainText("5 / 25 → 8 / 40");
+    await expect(history.getByRole("row").filter({ hasText: "Pro → Raamleping 2027 (Custom)" })).toContainText("8 / 120 → 8 / 40");
     await expect(history.getByRole("row").filter({ hasText: `${until6} → ${until9}` })).toHaveCount(1);
 
     // Shortcut from the company card.
@@ -145,7 +145,7 @@ test.describe("Tellimused (platvormi admin)", () => {
 });
 
 test.describe("Prooviperiood", () => {
-  test("a company created in the app: 14 days, every feature, 1 user and 5 active installations @responsive", async ({ page }) => {
+  test("a company created in the app: 14 days, every feature, 1 user and 10 active installations @responsive", async ({ page }) => {
     const user = await createUser("Proovi Omanik");
     await login(page, user);
     await page.getByRole("link", { name: "Loo ettevõte" }).first().click();
@@ -157,24 +157,24 @@ test.describe("Prooviperiood", () => {
     const orgId = sql(`select id from public.organisations where slug = '${slug}'`);
     expect(sql(`select extract(day from trial_ends_at - trial_started_at) from private.organisation_access where organisation_id = '${orgId}'`)).toBe("14");
 
-    // Settings → Pakett: trial, the owner is the one user, 0 / 5 installations.
+    // Settings → Pakett: trial, the owner is the one user, 0 / 10 installations.
     await page.goto(`/o/${slug}/seaded`);
     const plan = page.getByRole("region", { name: "Pakett" });
     await expect(plan).toContainText("Prooviperiood");
     await expect(plan).toContainText("1 / 1");
-    await expect(plan).toContainText("0 / 5");
+    await expect(plan).toContainText("0 / 10");
 
     // No second user during the trial.
     await page.goto(`/o/${slug}/seaded/liikmed`);
     await expect(page.getByText("Prooviperioodil kasutab KAIDLYt üks kasutaja")).toBeVisible();
     await expect(page.getByRole("button", { name: "Loo kutse link" })).toHaveCount(0);
 
-    // Five installations, then the sixth is refused; archiving frees a slot.
+    // Ten installations, then the eleventh is refused; archiving frees a slot.
     const site = sql(`insert into public.sites (organisation_id, name) values ('${orgId}', 'Proovi objekt') returning id;`);
     sql(`insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
-         select '${orgId}', '${site}', 'Kilp ' || g, 'switchboard' from generate_series(1, 5) g;`);
+         select '${orgId}', '${site}', 'Kilp ' || g, 'switchboard' from generate_series(1, 10) g;`);
     await page.goto(`/o/${slug}/paigaldised/uus`);
-    await expect(page.getByText("Prooviperioodil saab olla kuni 5 aktiivset elektripaigaldist")).toBeVisible();
+    await expect(page.getByText("Prooviperioodil saab olla kuni 10 aktiivset elektripaigaldist")).toBeVisible();
     expect(() =>
       sql(`insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
            values ('${orgId}', '${site}', 'Kuues', 'switchboard');`),

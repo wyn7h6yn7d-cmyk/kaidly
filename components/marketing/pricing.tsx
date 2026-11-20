@@ -2,19 +2,39 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { contactMailto } from "@/lib/access";
+import { COMPANY } from "@/lib/company";
+import { INTL_LOCALE } from "@/lib/i18n/locales";
 import { getT } from "@/lib/i18n/server";
-import { FIXED_PLANS, PLAN_DETAILS, POPULAR_PLAN } from "@/lib/plans";
-import { cn } from "@/lib/utils";
+import { ENTERPRISE_PLAN, FIXED_PLANS, FOUNDER_OFFER_ENABLED, PLAN_DETAILS, RECOMMENDED_PLAN } from "@/lib/plans";
+import { PricingTable, type PricingRow } from "./pricing-table";
 
 /**
  * Public pricing (landing page, #hinnad). One ruled sheet, like the system drawing above
  * it — not a row of floating cards. Plans differ only by limits; the feature list applies
- * to all of them. The free trial is stated next to the prices, not as a plan.
+ * to all of them. The free trial is stated next to the prices, not as a plan. Prices and
+ * limits come from lib/plans.ts (the same configuration the app and database use).
  */
 export async function Pricing() {
   const t = await getT();
   const p = t.landing.pricing;
-  const contact = contactMailto(process.env.KAIDLY_CONTACT_EMAIL, p.customSubject);
+  const enterpriseHref = contactMailto(COMPANY.email, p.enterpriseSubject);
+  const founderHref = contactMailto(COMPANY.email, p.founderSubject);
+  // Prices always grouped ("1 990", "1,990"), also for four digits.
+  const price = new Intl.NumberFormat(INTL_LOCALE[t.locale], { useGrouping: "always" });
+  const rows: PricingRow[] = FIXED_PLANS.map((plan) => {
+    const d = PLAN_DETAILS[plan];
+    return {
+      plan,
+      name: d.name,
+      audience: p.audience[plan],
+      monthlyPrice: price.format(d.monthlyPrice),
+      annualPrice: price.format(d.annualPrice),
+      users: p.users(d.users),
+      installations: p.installations(d.installations),
+      recommended: plan === RECOMMENDED_PLAN,
+      annualHref: contactMailto(COMPANY.email, p.annualSubject(d.name)),
+    };
+  });
 
   return (
     <section id="hinnad" tabIndex={-1} aria-labelledby="hinnad-title" className="scroll-mt-4 outline-none border-b border-k-line bg-k-paper">
@@ -39,61 +59,59 @@ export async function Pricing() {
           </div>
         </div>
 
-        <div className="mt-12 border border-k-ink/70 bg-k-paper sm:mt-16">
-          <ul className="grid grid-cols-1 divide-y divide-k-ink/20 sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4">
-            {FIXED_PLANS.map((plan, i) => {
-              const d = PLAN_DETAILS[plan];
-              const popular = plan === POPULAR_PLAN;
-              return (
-                <li
-                  key={plan}
-                  aria-labelledby={`plan-${plan}`}
-                  className={cn(
-                    "relative flex min-w-0 flex-col gap-5 p-6 lg:p-8",
-                    // Rules between the columns of the sheet.
-                    i % 2 === 1 && "sm:border-l sm:border-k-ink/20",
-                    i >= 2 && "sm:border-t sm:border-k-ink/20 lg:border-t-0",
-                    i === 2 && "lg:border-l lg:border-k-ink/20",
-                    popular && "bg-k-paper-2",
-                  )}
-                >
-                  {popular && <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-k-volt" />}
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 id={`plan-${plan}`} className="font-display text-2xl font-extrabold uppercase tracking-wide">
-                      {d.name}
-                    </h3>
-                    {popular && (
-                      <span className="bg-k-volt px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-k-ink">{p.popular}</span>
-                    )}
-                  </div>
-                  <p className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="font-display text-5xl font-extrabold tabular-nums">{d.monthlyPrice}</span>
-                    <span className="text-base font-semibold text-k-muted">{p.perMonth}</span>
-                  </p>
-                  <ul className="divide-y divide-k-line border-y border-k-line text-[17px]">
-                    <li className="py-2.5">{p.users(d.users)}</li>
-                    <li className="py-2.5">{p.installations(d.installations)}</li>
-                  </ul>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="flex flex-col gap-4 border-t border-k-ink/70 p-6 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-            <div className="min-w-0">
-              <h3 className="font-display text-2xl font-extrabold">{p.customTitle}</h3>
-              <p className="mt-1 max-w-2xl text-k-muted">{p.customBody}</p>
-            </div>
-            {contact ? (
-              <Button asChild size="lg" variant="outline" className="shrink-0">
-                <a href={contact}>{p.customCta}</a>
-              </Button>
+        {FOUNDER_OFFER_ENABLED && (
+          <p className="mt-12 border-l-4 border-k-volt bg-k-paper-2 px-5 py-4 text-[17px] font-semibold sm:mt-16" data-testid="founder-offer">
+            {p.founderOffer.before}
+            {founderHref ? (
+              <a href={founderHref} className="underline underline-offset-4">
+                {COMPANY.email}
+              </a>
             ) : (
-              <Button asChild size="lg" variant="outline" className="shrink-0">
-                <Link href="/auth/sign-up">{p.startCta}</Link>
-              </Button>
+              COMPANY.email
             )}
+            {p.founderOffer.after}
+          </p>
+        )}
+
+        <PricingTable
+          rows={rows}
+          labels={{
+            billingLabel: p.billingLabel,
+            billingMonthly: p.billingMonthly,
+            billingAnnual: p.billingAnnual,
+            perMonth: p.perMonth,
+            perYear: p.perYear,
+            annualFree: p.annualFree,
+            annualInvoice: p.annualInvoice,
+            recommended: p.recommended,
+            contactCta: p.contactCta,
+          }}
+        />
+
+        <div
+          className="flex flex-col gap-4 border-x border-b border-k-ink/70 bg-k-paper p-6 sm:flex-row sm:items-center sm:justify-between lg:px-8"
+          data-plan="enterprise"
+          aria-labelledby="plan-enterprise"
+        >
+          <div className="min-w-0">
+            <h3 id="plan-enterprise" className="font-display text-2xl font-extrabold uppercase tracking-wide">
+              {p.enterpriseName}
+            </h3>
+            <p className="mt-1 text-k-muted">{p.audience.enterprise}</p>
+            <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[17px]">
+              <span className="font-semibold">{p.enterprisePrice}</span>
+              <span>{p.installationsFrom(ENTERPRISE_PLAN.installationsFrom)}</span>
+            </p>
           </div>
+          {enterpriseHref && (
+            <Button asChild size="lg" variant="outline" className="shrink-0">
+              <a href={enterpriseHref}>{p.contactCta}</a>
+            </Button>
+          )}
         </div>
+        <p className="mt-4 text-sm font-semibold" data-testid="vat-note">
+          {p.vatNote}
+        </p>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">

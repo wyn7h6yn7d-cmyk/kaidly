@@ -251,19 +251,42 @@ export const en: Messages = {
       title: "Simple pricing. Everything you need is in every plan.",
       body: "Every plan includes the operating log, operating plan, deficiencies, documents, notifications, reports and search. Plans differ only by team size and the number of active electrical installations.",
       trial: "14 days free",
-      trialBody: "Try every KAIDLY feature for 14 days: the trial includes 1 user and up to 5 active electrical installations. Then choose the plan that fits — we invoice by email.",
+      trialBody: "Try every KAIDLY feature for 14 days: the trial includes 1 user and up to 10 active electrical installations. Then choose the plan that fits — we invoice by email.", // TÕLGE ÜLE VAADATA
       perMonth: "€ / month + VAT",
+      perYear: "€ / year + VAT", // TÕLGE ÜLE VAADATA
+      billingLabel: "Billing period", // TÕLGE ÜLE VAADATA
+      billingMonthly: "Monthly", // TÕLGE ÜLE VAADATA
+      billingAnnual: "Yearly", // TÕLGE ÜLE VAADATA
+      annualFree: "2 months free", // TÕLGE ÜLE VAADATA
+      annualInvoice: "invoiced", // TÕLGE ÜLE VAADATA
       users: (n: number) => (n === 1 ? "1 user" : `${n} users`),
       installations: (n: number) => (n === 1 ? "1 active electrical installation" : `${n} active electrical installations`),
-      popular: "Most popular",
-      customTitle: "Need more?",
-      customBody: "A larger team or more installations? We'll put together a plan that fits.",
-      customCta: "Contact us",
-      customSubject: "KAIDLY plan: I need more",
+      installationsFrom: (n: number) => `${n}+ active electrical installations`, // TÕLGE ÜLE VAADATA
+      recommended: "Recommended", // TÕLGE ÜLE VAADATA
+      // TÕLGE ÜLE VAADATA
+      audience: {
+        start: "Independent operations manager",
+        team: "Small electrical company",
+        pro: "Company providing operations management",
+        business: "Larger maintenance company",
+        enterprise: "Large portfolios",
+      },
+      enterpriseName: "Enterprise", // TÕLGE ÜLE VAADATA
+      enterprisePrice: "By agreement", // TÕLGE ÜLE VAADATA
+      contactCta: "Contact us",
+      enterpriseSubject: "KAIDLY plan: Enterprise", // TÕLGE ÜLE VAADATA
+      annualSubject: (plan: string) => `KAIDLY annual plan: ${plan}`, // TÕLGE ÜLE VAADATA
+      // TÕLGE ÜLE VAADATA
+      founderOffer: {
+        before: "Founder offer: the first 10 companies get 50% off for 12 months. Write to ",
+        after: ".",
+      },
+      founderSubject: "KAIDLY founder offer", // TÕLGE ÜLE VAADATA
+      vatNote: "Prices exclude VAT.", // TÕLGE ÜLE VAADATA
       startCta: "Start free",
       featuresTitle: "In every plan",
       features: ["Operating log", "Operating plan and notifications", "Deficiencies", "Document register and photo links", "PDF and CSV reports", "Search", "Roles and permissions", "Estonian, English and Russian"],
-      note: "Prices exclude VAT. Every member, including the owner, and every pending invitation counts as a user. Archived installations don't count.",
+      note: "Every member, including the owner, and every pending invitation counts as a user. Archived installations don't count.",
     },
     hero: {
       eyebrow: "Digital operating log for electrical installations",
@@ -575,7 +598,7 @@ export const en: Messages = {
       registryCode: "Registry code",
       submit: "Create organisation",
       submitting: "Creating…",
-      trialNew: "The new company gets a 14-day free trial with every feature (1 user, up to 5 active electrical installations).",
+      trialNew: "The new company gets a 14-day free trial with every feature (1 user, up to 10 active electrical installations).", // TÕLGE ÜLE VAADATA
       trialShared: (date: string) => `Your free trial is valid until ${date}. The new company uses the same trial.`,
       trialUsed: "Your free trial has been used. The new company is read-only until KAIDLY activates a plan — please get in touch.",
     },
@@ -1412,7 +1435,7 @@ export const en: Messages = {
       installationsFullBody: "No new installation can be added. Existing installations and data keep working. Archive an installation or choose a larger plan.",
       trialSeatsFull: "During the free trial KAIDLY has one user",
       trialSeatsFullBody: "To invite colleagues, choose a plan (Team, Pro or Business) — all your data stays.",
-      trialInstallationsFull: "The free trial allows up to 5 active electrical installations",
+      trialInstallationsFull: "The free trial allows up to 10 active electrical installations", // TÕLGE ÜLE VAADATA
       trialInstallationsFullBody: "Archive an installation or choose a plan to add more. Existing installations and data keep working.",
     },
     account: {

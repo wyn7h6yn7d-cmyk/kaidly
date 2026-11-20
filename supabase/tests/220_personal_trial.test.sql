@@ -63,8 +63,8 @@ select ok((pg_temp.trial('outsider')).user_id is not null, 'creating the first c
 select is((pg_temp.trial('outsider')).ends_at - (pg_temp.trial('outsider')).started_at, interval '14 days', 'personal trial: 14 days');
 select is((pg_temp.trial('outsider')).first_organisation_id, pg_temp.o('first'), 'it records the first company');
 select is((pg_temp.access(pg_temp.o('first'))).trial_ends_at, (pg_temp.trial('outsider')).ends_at, 'the company trial ends with the personal trial');
-select is(array[(pg_temp.access(pg_temp.o('first'))).user_limit, (pg_temp.access(pg_temp.o('first'))).installation_limit], array[1, 5],
-  'trial limits: 1 user, 5 active installations');
+select is(array[(pg_temp.access(pg_temp.o('first'))).user_limit, (pg_temp.access(pg_temp.o('first'))).installation_limit], array[1, 10],
+  'trial limits: 1 user, 10 active installations');
 select is(pg_temp.status(pg_temp.o('first')), 'trial', 'the company is on trial');
 
 -- The client cannot see or forge it.
@@ -153,8 +153,8 @@ insert into orgs values ('full', pg_temp.create_as('a_operator', 'Täis OÜ'));
 insert into public.sites (id, organisation_id, name) values ('5f000000-0000-4000-8000-0000000000f1', pg_temp.o('full'), 'Täis objekt');
 insert into public.sites (id, organisation_id, name) values ('5f000000-0000-4000-8000-0000000000f2', pg_temp.o('full'), 'Teine objekt');
 insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
-select pg_temp.o('full'), '5f000000-0000-4000-8000-0000000000f1', 'Kilp ' || g, 'switchboard' from generate_series(1, 5) g;
-select is(private.installations_active(pg_temp.o('full')), 5, 'at the installation limit (5 / 5)');
+select pg_temp.o('full'), '5f000000-0000-4000-8000-0000000000f1', 'Kilp ' || g, 'switchboard' from generate_series(1, 10) g;
+select is(private.installations_active(pg_temp.o('full')), 10, 'at the installation limit (10 / 10)');
 select is(private.seats_used(pg_temp.o('full')), 1, 'and the user limit (1 / 1)');
 select pg_temp.login('a_operator');
 select lives_ok($$ update public.organisations set name = 'Täis OÜ (uus nimi)', contact_email = 'info@example.ee' where id = pg_temp.o('full') $$,
@@ -166,7 +166,7 @@ select lives_ok($$ update public.electrical_installations set name = name || ' (
 select lives_ok($$ update public.electrical_installations set site_id = '5f000000-0000-4000-8000-0000000000f2' where organisation_id = pg_temp.o('full') and name like 'Kilp 2%' $$,
   'moving an installation to another site uses no slot');
 select pg_temp.root();
-select is(private.installations_active(pg_temp.o('full')), 5, 'still 5 / 5 after the edits');
+select is(private.installations_active(pg_temp.o('full')), 10, 'still 10 / 10 after the edits');
 select pg_temp.login('a_operator');
 select lives_ok($$ update public.electrical_installations set archived_at = now() where organisation_id = pg_temp.o('full') and name like 'Kilp 3%' $$,
   'archiving at the limit works');

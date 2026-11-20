@@ -9,7 +9,7 @@ create extension if not exists pgtap with schema extensions;
 \ir helpers/fixture.psql
 \ir helpers/sites.psql
 
-select plan(122);
+select plan(123);
 
 insert into test_users (name, id, email) values ('platform', 'c0000000-0000-4000-8000-0000000000ad', 'platvorm@example.ee');
 insert into auth.users (id, email, email_confirmed_at, aud, role)
@@ -76,7 +76,7 @@ select ok((pg_temp.access(pg_temp.org('c'))).plan is null and (pg_temp.access(pg
           and (pg_temp.access(pg_temp.org('c'))).installation_limit is null, 'owner-created / existing companies: no plan and no limits');
 
 -- ===========================================================================
--- Trial: a company created by a user has every feature, 1 user and 5 active installations
+-- Trial: a company created by a user has every feature, 1 user and 10 active installations
 -- ===========================================================================
 
 select pg_temp.login('outsider');
@@ -89,8 +89,8 @@ grant execute on function pg_temp.t() to authenticated;
 select is(pg_temp.status(pg_temp.t()), 'trial', 'a new company starts its trial');
 select is((select trial_ends_at - trial_started_at from private.organisation_access where organisation_id = pg_temp.t()),
   interval '14 days', 'the trial lasts 14 days');
-select is(array[(pg_temp.access(pg_temp.t())).user_limit, (pg_temp.access(pg_temp.t())).installation_limit], array[1, 5],
-  'trial limits: 1 user, 5 active installations');
+select is(array[(pg_temp.access(pg_temp.t())).user_limit, (pg_temp.access(pg_temp.t())).installation_limit], array[1, 10],
+  'trial limits: 1 user, 10 active installations');
 select is((pg_temp.access(pg_temp.t())).plan, null, 'no plan during the trial');
 select is(private.seats_used(pg_temp.t()), 1, 'the owner is the one user');
 select pg_temp.login('outsider');
@@ -102,11 +102,10 @@ create function pg_temp.trial_install(p_name text) returns uuid language sql as 
   select pg_temp.t(), s.id, p_name, 'switchboard' from public.sites s where s.organisation_id = pg_temp.t() limit 1
   returning id $$;
 grant execute on function pg_temp.trial_install(text) to authenticated;
-select lives_ok($$ select pg_temp.trial_install('P1'); select pg_temp.trial_install('P2'); select pg_temp.trial_install('P3');
-                   select pg_temp.trial_install('P4'); select pg_temp.trial_install('P5') $$, 'trial: 5 active installations');
-select throws_ok($$ select pg_temp.trial_install('P6') $$, 'P0001', 'plan_installation_limit', 'trial: the 6th is refused');
+select lives_ok($$ select pg_temp.trial_install('P' || g) from generate_series(1, 10) g $$, 'trial: 10 active installations');
+select throws_ok($$ select pg_temp.trial_install('P11') $$, 'P0001', 'plan_installation_limit', 'trial: the 11th is refused');
 update public.electrical_installations set archived_at = now() where organisation_id = pg_temp.t() and name = 'P1';
-select lives_ok($$ select pg_temp.trial_install('P6') $$, 'trial: archiving frees a slot');
+select lives_ok($$ select pg_temp.trial_install('P11') $$, 'trial: archiving frees a slot');
 -- Every feature works in the trial (here: operating log, plan, deficiency).
 select lives_ok($$
   insert into public.log_entries (organisation_id, site_id, electrical_installation_id, entry_type, description)
@@ -118,7 +117,7 @@ select lives_ok($$
 $$, 'trial: log, plan and deficiencies all work (no feature gating)');
 select pg_temp.root();
 select pg_temp.sub(pg_temp.t(), 'team');
-select is(array[(pg_temp.access(pg_temp.t())).user_limit, (pg_temp.access(pg_temp.t())).installation_limit], array[3, 10],
+select is(array[(pg_temp.access(pg_temp.t())).user_limit, (pg_temp.access(pg_temp.t())).installation_limit], array[3, 40],
   'assigning a plan replaces the trial limits');
 select is(pg_temp.status(pg_temp.t()), 'trial', '(the trial period itself is unchanged by a plan-only change)');
 select pg_temp.login('outsider');
@@ -131,17 +130,17 @@ select pg_temp.root();
 
 select pg_temp.sub(pg_temp.org('b'), 'start', null, null, 'ignored', 1, 999, 999);
 select is(array[(pg_temp.access(pg_temp.org('b'))).monthly_price, (pg_temp.access(pg_temp.org('b'))).user_limit,
-                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[19, 1, 5]::numeric[], 'Start: 19 € / 1 user / 5 installations');
+                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[19, 1, 10]::numeric[], 'Start: 19 € / 1 user / 10 installations');
 select is((pg_temp.access(pg_temp.org('b'))).plan_label, null, 'fixed plans carry no custom label');
 select pg_temp.sub(pg_temp.org('b'), 'team');
 select is(array[(pg_temp.access(pg_temp.org('b'))).monthly_price, (pg_temp.access(pg_temp.org('b'))).user_limit,
-                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[29, 3, 10]::numeric[], 'Team: 29 € / 3 / 10');
+                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[49, 3, 40]::numeric[], 'Team: 49 € / 3 / 40');
 select pg_temp.sub(pg_temp.org('b'), 'pro');
 select is(array[(pg_temp.access(pg_temp.org('b'))).monthly_price, (pg_temp.access(pg_temp.org('b'))).user_limit,
-                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[39, 5, 25]::numeric[], 'Pro: 39 € / 5 / 25');
+                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[99, 8, 120]::numeric[], 'Pro: 99 € / 8 / 120');
 select pg_temp.sub(pg_temp.org('b'), 'business');
 select is(array[(pg_temp.access(pg_temp.org('b'))).monthly_price, (pg_temp.access(pg_temp.org('b'))).user_limit,
-                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[89, 15, 100]::numeric[], 'Business: 89 € / 15 / 100');
+                (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[199, 20, 300]::numeric[], 'Business: 199 € / 20 / 300');
 select pg_temp.sub(pg_temp.org('b'), 'custom', null, null, 'Raamleping 2027', 149.5, 40, 300);
 select is(array[(pg_temp.access(pg_temp.org('b'))).monthly_price, (pg_temp.access(pg_temp.org('b'))).user_limit,
                 (pg_temp.access(pg_temp.org('b'))).installation_limit]::numeric[], array[149.5, 40, 300]::numeric[], 'Custom: the entered price and limits');
@@ -224,21 +223,22 @@ select throws_ok($$ delete from public.organisation_members where organisation_i
   'P0001', 'last_owner', 'the last owner can still never be removed');
 select lives_ok($$ select pg_temp.invite(pg_temp.org('c'), 'c.three@example.ee') $$, 'the freed seat can be used');
 
--- Pro and Business allow exactly 5 and 15 (members of every role and invitations count).
-select pg_temp.sub(pg_temp.org('a'), 'pro');
-select is(private.seats_used(pg_temp.org('a')), 5, 'company A: owner, admin, operator, viewer and multi = 5');
-select throws_ok($$ select pg_temp.invite(pg_temp.org('a'), 'kuues@example.ee') $$, 'P0001', 'plan_user_limit', 'Pro: a sixth user is refused');
-update public.organisation_members set role = 'viewer' where organisation_id = pg_temp.org('a') and user_id = pg_temp.uid('a_operator');
-select is(private.seats_used(pg_temp.org('a')), 5, 'changing a role does not change the count');
-select pg_temp.sub(pg_temp.org('a'), 'business');
-create function pg_temp.invite_many(p_n int) returns int language plpgsql as $$
+-- Pro and Business allow exactly 8 and 20 (members of every role and invitations count).
+create function pg_temp.invite_many(p_from int, p_to int) returns int language plpgsql as $$
 declare i int;
 begin
-  for i in 1..p_n loop perform pg_temp.invite(pg_temp.org('a'), 'lisa' || i || '@example.ee'); end loop;
+  for i in p_from..p_to loop perform pg_temp.invite(pg_temp.org('a'), 'lisa' || i || '@example.ee'); end loop;
   return private.seats_used(pg_temp.org('a'));
 end $$;
-select is(pg_temp.invite_many(10), 15, 'Business: 15 users');
-select throws_ok($$ select pg_temp.invite(pg_temp.org('a'), 'liiga@example.ee') $$, 'P0001', 'plan_user_limit', 'Business: the 16th is refused');
+select pg_temp.sub(pg_temp.org('a'), 'pro');
+select is(private.seats_used(pg_temp.org('a')), 5, 'company A: owner, admin, operator, viewer and multi = 5');
+select is(pg_temp.invite_many(1, 3), 8, 'Pro: 5 members + 3 pending invitations = 8');
+select throws_ok($$ select pg_temp.invite(pg_temp.org('a'), 'yheksas@example.ee') $$, 'P0001', 'plan_user_limit', 'Pro: a ninth user is refused');
+update public.organisation_members set role = 'viewer' where organisation_id = pg_temp.org('a') and user_id = pg_temp.uid('a_operator');
+select is(private.seats_used(pg_temp.org('a')), 8, 'changing a role does not change the count');
+select pg_temp.sub(pg_temp.org('a'), 'business');
+select is(pg_temp.invite_many(4, 15), 20, 'Business: 20 users');
+select throws_ok($$ select pg_temp.invite(pg_temp.org('a'), 'liiga@example.ee') $$, 'P0001', 'plan_user_limit', 'Business: the 21st is refused');
 update public.organisation_invitations set revoked_at = now() where organisation_id = pg_temp.org('a') and email like 'lisa%';
 
 -- ===========================================================================
@@ -253,30 +253,30 @@ begin
   return private.installations_active(p_org);
 end $$;
 select pg_temp.sub(pg_temp.org('a'), 'start');
-select is(pg_temp.fill(pg_temp.org('a'), 3), 5, 'Start: up to 5 active installations');
+select is(pg_temp.fill(pg_temp.org('a'), 8), 10, 'Start: up to 10 active installations');
 select pg_temp.login('a_admin');
-select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'Kuues') $$, 'P0001', 'plan_installation_limit', 'Start: the 6th is refused (admin, through RLS)');
+select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'Kuues') $$, 'P0001', 'plan_installation_limit', 'Start: the 11th is refused (admin, through RLS)');
 select pg_temp.root();
-select is(private.installations_active(pg_temp.org('a')), 5, 'nothing was added');
+select is(private.installations_active(pg_temp.org('a')), 10, 'nothing was added');
 select lives_ok($$ update public.electrical_installations set name = name || ' (muudetud)' where id = pg_temp.inst('a1') $$,
   'existing installations keep working at the limit');
 
 update public.electrical_installations set archived_at = now() where id = pg_temp.inst('a2');
-select is(private.installations_active(pg_temp.org('a')), 4, 'archived installations do not count');
+select is(private.installations_active(pg_temp.org('a')), 9, 'archived installations do not count');
 select lives_ok($$ select pg_temp.install(pg_temp.org('a'), 'Vaba koht') $$, 'archiving frees capacity');
 select throws_ok($$ update public.electrical_installations set archived_at = null where id = pg_temp.inst('a2') $$, 'P0001', 'plan_installation_limit',
   'bringing an archived installation back checks the limit');
 select is((select archived_at is not null from public.electrical_installations where id = pg_temp.inst('a2')), true, 'it stays archived');
 
 select pg_temp.sub(pg_temp.org('a'), 'team');
-select is(pg_temp.fill(pg_temp.org('a'), 5), 10, 'Team: 10');
-select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'X') $$, 'P0001', 'plan_installation_limit', 'Team: the 11th is refused');
+select is(pg_temp.fill(pg_temp.org('a'), 30), 40, 'Team: 40');
+select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'X') $$, 'P0001', 'plan_installation_limit', 'Team: the 41st is refused');
 select pg_temp.sub(pg_temp.org('a'), 'pro');
-select is(pg_temp.fill(pg_temp.org('a'), 15), 25, 'Pro: 25');
-select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'X') $$, 'P0001', 'plan_installation_limit', 'Pro: the 26th is refused');
+select is(pg_temp.fill(pg_temp.org('a'), 80), 120, 'Pro: 120');
+select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'X') $$, 'P0001', 'plan_installation_limit', 'Pro: the 121st is refused');
 select pg_temp.sub(pg_temp.org('a'), 'business');
-select is(pg_temp.fill(pg_temp.org('a'), 75), 100, 'Business: 100');
-select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'X') $$, 'P0001', 'plan_installation_limit', 'Business: the 101st is refused');
+select is(pg_temp.fill(pg_temp.org('a'), 180), 300, 'Business: 300');
+select throws_ok($$ select pg_temp.install(pg_temp.org('a'), 'X') $$, 'P0001', 'plan_installation_limit', 'Business: the 301st is refused');
 update public.electrical_installations set archived_at = now() where organisation_id = pg_temp.org('a') and name = 'Täide 1' and archived_at is null;
 select lives_ok($$ update public.electrical_installations set archived_at = null where id = pg_temp.inst('a2') $$, 'reactivation fits after another is archived');
 

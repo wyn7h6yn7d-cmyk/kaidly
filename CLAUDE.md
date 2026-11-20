@@ -27,6 +27,13 @@ Work one phase at a time. Don't start a phase that hasn't been approved.
 - Pärast muudatust käivita build ja testid ning anna lühike kokkuvõte: mida muutsid ja mida
   omanik peab ise brauseris kontrollima.
 
+## Ootel tööd
+
+- **Next 16.4 "blocking-prerender-runtime" hoiatus** (`npm run dev`, ~30 marsruuti, nt `/`,
+  `/o/[org]`, `/auth/login`): `getT()`/`cookies()`/`params` loetakse väljaspool `<Suspense>`.
+  Build ja testid on rohelised; parandus (Suspense või `export const instant = false`) tehakse
+  omaniku otsusel **pärast punkti g** (audit ja auditipakett), eraldi plaaniga.
+
 ## Ülevaade (seis 2026-11-20)
 
 1. **Tehnoloogiapinu.** Next.js 16 (App Router, Turbopack, `proxy.ts`), React 19, TypeScript,

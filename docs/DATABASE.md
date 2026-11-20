@@ -532,7 +532,8 @@ Model, rules and admin workflow: docs/SUBSCRIPTIONS.md.
   pre-existing companies).
 - Personal trial: `private.user_trials` (user → started_at, ends_at, first_organisation_id;
   backfilled from each existing creator's earliest company). `private.organisation_access_on_create`
-  copies it (locked) into a user-created company with limits 1 user / 5 installations;
+  copies it (locked) into a user-created company with limits 1 user / 10 installations
+  (5 before migration `20261120100000_pricing_2026_11`, which also set the 2026-11 catalogue);
   `public.my_trial()` returns the caller's own trial.
 - Usage: `private.seats_used(org)` (members of every role + live invitations),
   `private.installations_active(org)` (not archived).

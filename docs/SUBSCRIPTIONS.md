@@ -1,6 +1,7 @@
 # KAIDLY — Plans, limits and manual subscriptions
 
-Migration `20261007100000_subscription_plans.sql`. Tests: `supabase/tests/210_subscription_plans.test.sql`,
+Migrations `20261007100000_subscription_plans.sql` and `20261120100000_pricing_2026_11.sql`
+(current prices and limits, trial 10 installations). Tests: `supabase/tests/210_subscription_plans.test.sql`,
 `scripts/test-plan-concurrency.mjs`, `e2e/subscriptions.spec.ts`, `e2e/pricing.spec.ts`,
 `tests/unit/plans.test.ts`.
 
@@ -11,7 +12,7 @@ existing access row `private.organisation_access` — there is no second access 
 
 | Concept | Where |
 |---|---|
-| Trial (14 days, every feature; 1 user, 5 active installations) | `trial_started_at`, `trial_ends_at` (unchanged); limits set at creation |
+| Trial (14 days, every feature; 1 user, 10 active installations) | `trial_started_at`, `trial_ends_at` (unchanged); limits set at creation |
 | Paid period | `full_access_from` … `full_access_until` (unchanged meaning) |
 | Plan | `plan` (`start`, `team`, `pro`, `business`, `custom`), `plan_label` (Custom) |
 | Agreed price (EUR / month, VAT excl.) | `monthly_price` — admin only |
@@ -19,16 +20,22 @@ existing access row `private.organisation_access` — there is no second access 
 | Internal billing note, invoice reference | `admin_notes`, `invoice_reference` — admin only |
 | Status | derived by `private.organisation_access_state()`: trial / active / expired / deactivated |
 
-Fixed plans (`private.subscription_plans`, mirrored for display in `lib/plans.ts`, kept equal
-by a unit test):
+Fixed plans (pricing 2026-11). `lib/plans.ts` is the one configuration for the website and
+the app; the database copy `private.subscription_plans` enforces the limits and a unit test
+keeps the two equal. The yearly price is 10 × monthly ("2 kuud tasuta"), invoiced, and is
+display-only (no online payments):
 
-| Plan | € / month + VAT | Users (total) | Active installations |
-|---|---|---|---|
-| Start | 19 | 1 | 5 |
-| Team | 29 | 3 | 10 |
-| Pro | 39 | 5 | 25 |
-| Business | 89 | 15 | 100 |
-| Custom | agreed | set by admin | set by admin |
+| Plan | € / month + VAT | € / year + VAT | Users (total) | Active installations | For |
+|---|---|---|---|---|---|
+| Start | 19 | 190 | 1 | 10 | Üksik käidukorraldaja |
+| Team | 49 | 490 | 3 | 40 | Väike elektrifirma |
+| Pro | 99 | 990 | 8 | 120 | Käidukorraldusega tegelev ettevõte |
+| Business | 199 | 1 990 | 20 | 300 | Suurem hooldusettevõte |
+| Ettevõte (`custom`) | by agreement | — | set by admin | 300+ | Suured portfellid |
+
+Pro is marked "Soovitatud" (`RECOMMENDED_PLAN`). The founder-offer banner above the pricing
+table is switched by `FOUNDER_OFFER_ENABLED`. Companies that existed before 2026-11-20 keep
+the limits and price copied when their plan was assigned (all were test accounts).
 
 Every plan has every feature; plans differ only by the two limits.
 
@@ -63,7 +70,7 @@ Every plan has every feature; plans differ only by the two limits.
   is locked while a company is created, so concurrent creation cannot produce two trials
   (`scripts/test-plan-concurrency.mjs`). The client never supplies trial data; "Uus
   ettevõte" shows what the new company will get (`my_trial()`).
-- **Trial limits:** every feature, **1 user** (the owner) and **5 active installations** —
+- **Trial limits:** every feature, **1 user** (the owner) and **10 active installations** —
   no invitations during the trial; assigning any plan replaces the trial limits.
 - Companies created by the database owner (seed, fixtures, support) get a company trial
   without limits. Users who created companies before this migration have their trial dated
