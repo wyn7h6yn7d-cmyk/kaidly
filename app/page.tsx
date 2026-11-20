@@ -8,6 +8,7 @@ import { TaglineConnector } from "@/components/marketing/tagline-connector";
 import { LogPreview } from "@/components/marketing/log-preview";
 import { PhonePreview } from "@/components/marketing/phone-preview";
 import { Pricing } from "@/components/marketing/pricing";
+import { RegulationSections } from "@/components/marketing/regulation-sections";
 import { ReminderExample } from "@/components/marketing/reminder-example";
 import { ScrollToTop } from "@/components/marketing/scroll-to-top";
 import { SectionHashCleanup, SectionLink } from "@/components/marketing/section-link";
@@ -122,6 +123,9 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {/* Who needs an operations manager, and the periodic audit (owner text, official links) */}
+        <RegulationSections />
 
         {/* "Excel ei ole käiduraamat." — the product interface is the proof */}
         <section className="k-grain bg-k-green text-white">

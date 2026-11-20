@@ -296,6 +296,24 @@ export const et = {
       figureNotes: ["kontroll tehtud", "mõõtmine 04/2027", "järgmine hooldus", "puudus kõrvaldatud"],
       figureDate: "12.03.",
     },
+    whoNeeds: {
+      title: "Kes vajab käidukorraldajat?",
+      intro: "Elektripaigaldise omanik peab määrama käidukorraldaja ja korraldama paigaldise käitu käidukava järgi, kui tegemist on näiteks:",
+      items: [
+        "madalpingepaigaldisega, mille peakaitse on üle 100 A;",
+        "kõrgepingepaigaldisega, sh alajaamad ning keskpingel liitunud päikese- ja akupargid;",
+        "plahvatusohtliku keskkonna paigaldisega või teatud meditsiiniruumidega.",
+      ],
+      note: "Täpsed nõuded on seadmete ohutuse seaduses ja selle alusel antud määrustes.",
+      lawLink: "Seadmete ohutuse seadus",
+      ttjaLink: "TTJA",
+      newWindow: "avaneb uues aknas",
+    },
+    auditReady: {
+      title: "Valmis korraliseks auditiks",
+      body: "TTJA auditi juhendmaterjali järgi ei saa korraline audit olla positiivne, kui paigaldisel puudub käidukorraldaja või käidukava. KAIDLY hoiab käidukava, käidupäeviku, puudused ja dokumendid ühes kohas, nii et audiitorile on kõik korraga näidata.",
+      guideLink: "TTJA auditi juhendmaterjal",
+    },
     excel: {
       title: "Excel ei ole käiduraamat.",
       body: "Käidupäevik, käidukava, puudused ja dokumendid ühe objekti all, ilma failide, e-kirjade ja paberite tagaajamiseta.",

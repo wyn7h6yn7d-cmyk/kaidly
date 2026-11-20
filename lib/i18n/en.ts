@@ -302,6 +302,25 @@ export const en: Messages = {
       figureNotes: ["inspection done", "measurement 04/2027", "next service", "deficiency cleared"],
       figureDate: "12.03.",
     },
+    // TÕLGE ÜLE VAADATA (whoNeeds, auditReady — legal statements, translated without additions)
+    whoNeeds: {
+      title: "Who needs an operations manager?",
+      intro: "The owner of an electrical installation must appoint an operations manager and organise the operation of the installation according to an operating plan when it is, for example:",
+      items: [
+        "a low-voltage installation with a main fuse above 100 A;",
+        "a high-voltage installation, including substations and solar and battery parks connected at medium voltage;",
+        "an installation in an explosive atmosphere or certain medical locations.",
+      ],
+      note: "The exact requirements are set out in the Estonian Equipment Safety Act and the regulations issued under it.",
+      lawLink: "Equipment Safety Act (Seadmete ohutuse seadus)",
+      ttjaLink: "TTJA",
+      newWindow: "opens in a new window",
+    },
+    auditReady: {
+      title: "Ready for the periodic audit",
+      body: "According to the TTJA audit guidance, a periodic audit cannot be positive if the installation has no operations manager or no operating plan. KAIDLY keeps the operating plan, operating log, deficiencies and documents in one place, so you can show the auditor everything at once.",
+      guideLink: "TTJA audit guidance",
+    },
     excel: {
       title: "Excel is not an operating log.",
       body: "Operating log, operating plan, deficiencies and documents under one site, with no more chasing files, emails and paper.",
