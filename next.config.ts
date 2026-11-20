@@ -71,7 +71,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: indexable ? security : [...security, noindex] },
       // The application is never indexed, even in production.
-      ...["/o/:path*", "/admin/:path*", "/konto", "/auth/:path*", "/invite/:path*", "/otsing", "/teavitused/:path*", "/teavitused", "/admin", "/o", "/api/:path*"].map(
+      ...["/o/:path*", "/admin/:path*", "/konto", "/auth/:path*", "/invite/:path*", "/otsing", "/teavitused/:path*", "/teavitused", "/admin", "/o", "/api/:path*", "/vaade", "/vaade/:path*", "/vaataja-kutse/:path*"].map(
         (source) => ({ source, headers: [noindex] }),
       ),
     ];

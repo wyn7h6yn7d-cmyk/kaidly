@@ -36,6 +36,13 @@ export const RECOMMENDED_PLAN: FixedPlan = "pro";
 export const TRIAL = { days: 14, users: 1, installations: 10 } as const;
 export const TRIAL_DAYS = TRIAL.days;
 
+/**
+ * Objekti vaatajad (site viewers) count towards the plan's users only when this is true.
+ * The database enforces its own copy (private.plan_settings, migration site_viewers);
+ * tests/unit/plans.test.ts keeps the two equal. Changing it needs a migration too.
+ */
+export const SITE_VIEWERS_COUNT_AS_USERS = false;
+
 /** Founder offer banner above the pricing table. Set to false to hide it. */
 export const FOUNDER_OFFER_ENABLED = true;
 

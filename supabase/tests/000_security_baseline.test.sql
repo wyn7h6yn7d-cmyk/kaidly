@@ -5,7 +5,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(21);
+select plan(22);
 
 -- Every table in the API-exposed schema has RLS enabled.
 select is_empty(
@@ -53,6 +53,7 @@ select results_eq(
       order by 1 $$,
   $$ values
        ('accept_invitation(text)'),
+       ('accept_site_viewer_invitation(text)'),
        ('admin_access_overview()'),
        ('admin_audit_entries(integer,integer)'),
        ('admin_companies(text,integer,integer)'),
@@ -82,22 +83,29 @@ select results_eq(
        ('confirm_document_file_removed(uuid)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
+       ('create_site_viewer_invitation(uuid,text,uuid[])'),
        ('deactivate_organisation(uuid,text)'),
        ('delete_document_file(uuid)'),
        ('delete_organisation(uuid,text)'),
        ('import_company_data(uuid,text,jsonb,uuid)'),
        ('invitation_preview(text)'),
        ('my_notifications(boolean,integer,integer)'),
+       ('my_site_access()'),
        ('my_trial()'),
        ('organisation_access(uuid)'),
        ('organisation_plan(uuid)'),
        ('private.co_member_ids()'),
        ('private.org_ids_readable(org_role)'),
        ('private.org_ids(org_role)'),
+       ('private.viewer_site_ids()'),
        ('reactivate_organisation(uuid)'),
        ('resolve_deficiency(uuid,text,log_entry_type,timestamp with time zone,text)'),
        ('revoke_invitation(uuid)'),
-       ('search_kaidly(text,log_entry_type[],integer)') $$,
+       ('revoke_site_viewer_invitation(uuid)'),
+       ('revoke_site_viewer(uuid)'),
+       ('search_kaidly(text,log_entry_type[],integer)'),
+       ('site_viewer_invitation_preview(text)'),
+       ('site_viewers_overview(uuid)') $$,
   'authenticated can execute exactly the reviewed functions'
 );
 
@@ -164,7 +172,7 @@ select results_eq(
       order by c.relname::text collate "C" $$,
   $$ values ('activity_history'), ('deficiencies'), ('documents'), ('electrical_installations'), ('log_entries'),
             ('notification_preferences'), ('notifications'), ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
-            ('scheduled_activities'), ('sites') $$,
+            ('scheduled_activities'), ('site_viewer_invitation_sites'), ('site_viewer_invitations'), ('site_viewers'), ('sites') $$,
   'public tables are exactly the reviewed set'
 );
 
@@ -173,6 +181,7 @@ select results_eq(
       where n.nspname in ('public', 'private') and p.prosecdef order by 1 $$,
   $$ values
        ('accept_invitation(text)'),
+       ('accept_site_viewer_invitation(text)'),
        ('admin_access_overview()'),
        ('admin_audit_entries(integer,integer)'),
        ('admin_companies(text,integer,integer)'),
@@ -202,11 +211,13 @@ select results_eq(
        ('confirm_document_file_removed(uuid)'),
        ('create_invitation(uuid,text,org_role)'),
        ('create_organisation(text,text)'),
+       ('create_site_viewer_invitation(uuid,text,uuid[])'),
        ('deactivate_organisation(uuid,text)'),
        ('delete_document_file(uuid)'),
        ('delete_organisation(uuid,text)'),
        ('import_company_data(uuid,text,jsonb,uuid)'),
        ('invitation_preview(text)'),
+       ('my_site_access()'),
        ('my_trial()'),
        ('organisation_access(uuid)'),
        ('organisation_plan(uuid)'),
@@ -249,21 +260,35 @@ select results_eq(
        ('private.session_active()'),
        ('private.subscription_compute(uuid,text,text,numeric,integer,integer,integer,date,date)'),
        ('private.sync_profile_email()'),
+       ('private.viewer_site_ids()'),
        ('reactivate_organisation(uuid)'),
        ('resolve_deficiency(uuid,text,log_entry_type,timestamp with time zone,text)'),
-       ('revoke_invitation(uuid)') $$,
+       ('revoke_invitation(uuid)'),
+       ('revoke_site_viewer_invitation(uuid)'),
+       ('revoke_site_viewer(uuid)'),
+       ('site_viewer_invitation_preview(text)'),
+       ('site_viewers_overview(uuid)') $$,
   'security definer functions are exactly the reviewed set'
 );
 
 -- Tenant tables: every policy is scoped through private.org_ids() (members are also
--- allowed to remove themselves), and every tenant table has a select policy.
+-- allowed to remove themselves) or is a reviewed READ-ONLY site-viewer policy through
+-- private.viewer_site_ids(), and every tenant table has a select policy.
 select is_empty(
   $$ select tablename || '.' || policyname from pg_policies
       where schemaname = 'public'
         and tablename in (select table_name from information_schema.columns
                            where table_schema = 'public' and column_name = 'organisation_id')
-        and coalesce(qual, '') || coalesce(with_check, '') not like '%org_ids%' $$,
-  'every policy on a tenant table is scoped through private.org_ids()'
+        and coalesce(qual, '') || coalesce(with_check, '') not like '%org_ids%'
+        and not (cmd = 'SELECT' and coalesce(qual, '') like '%viewer_site_ids%') $$,
+  'every policy on a tenant table is scoped through private.org_ids() or a read-only viewer policy'
+);
+select is_empty(
+  $$ select tablename || '.' || policyname from pg_policies
+      where schemaname = 'public'
+        and coalesce(qual, '') || coalesce(with_check, '') like '%viewer_site_ids%'
+        and cmd <> 'SELECT' $$,
+  'site-viewer policies only ever allow SELECT'
 );
 select is_empty(
   $$ select c.table_name from information_schema.columns c

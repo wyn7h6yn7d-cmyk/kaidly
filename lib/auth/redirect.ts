@@ -16,6 +16,8 @@ const ALLOWED_PATHS: RegExp[] = [
   new RegExp(`^/admin(/${SEGMENT})*$`), // platform administration (404 unless platform admin)
   /^\/auth\/update-password$/, // after a password recovery link
   new RegExp(`^/invite/${SEGMENT}$`), // invitation landing (Phase 2)
+  new RegExp(`^/vaataja-kutse/${SEGMENT}$`), // site viewer invitation
+  new RegExp(`^/vaade(/${SEGMENT})?$`), // site viewer pages
 ];
 
 export function isAllowedRedirectPath(path: string): boolean {

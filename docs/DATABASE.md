@@ -785,3 +785,14 @@ npm run db:types     # regenerate lib/supabase/database.types.ts
 ```
 
 The seed is fictional demo data for local use only (README). `supabase db push` never runs it.
+
+## 5l. Site viewers (migration `site_viewers`)
+
+Read-only access for people outside the company to specific sites — docs/SITE_VIEWERS.md.
+Tables `site_viewers`, `site_viewer_invitations`, `site_viewer_invitation_sites`,
+`private.plan_settings`; helper `private.viewer_site_ids()` (active grant, live session, company
+active and paid); SELECT-only policies on sites, installations, plan, log, deficiencies and
+document links; RPCs `create_site_viewer_invitation`, `site_viewer_invitation_preview`,
+`accept_site_viewer_invitation`, `revoke_site_viewer`, `revoke_site_viewer_invitation`,
+`site_viewers_overview`, `my_site_access`. `private.seats_used()` counts viewers only when
+`plan_settings.site_viewers_count_as_users` is true (default false).

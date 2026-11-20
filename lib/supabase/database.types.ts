@@ -943,6 +943,193 @@ export type Database = {
           },
         ]
       }
+      site_viewer_invitation_sites: {
+        Row: {
+          invitation_id: string
+          organisation_id: string
+          site_id: string
+        }
+        Insert: {
+          invitation_id: string
+          organisation_id: string
+          site_id: string
+        }
+        Update: {
+          invitation_id?: string
+          organisation_id?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_viewer_invitation_sites_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "site_viewer_invitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewer_invitation_sites_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "site_viewer_invitation_sites_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
+      site_viewer_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          organisation_id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          organisation_id: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          organisation_id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_viewer_invitations_accepted_by_fkey"
+            columns: ["accepted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewer_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewer_invitations_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewer_invitations_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_viewers: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          organisation_id: string
+          revoked_at: string | null
+          revoked_by: string | null
+          site_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organisation_id: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          site_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          organisation_id?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          site_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_viewers_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewers_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewers_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_viewers_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "site_viewers_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "site_viewers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sites: {
         Row: {
           address: string | null
@@ -1096,6 +1283,10 @@ export type Database = {
     }
     Functions: {
       accept_invitation: { Args: { p_token: string }; Returns: string }
+      accept_site_viewer_invitation: {
+        Args: { p_token: string }
+        Returns: string
+      }
       admin_access_overview: { Args: never; Returns: Json }
       admin_audit_entries: {
         Args: { p_limit?: number; p_offset?: number }
@@ -1234,6 +1425,18 @@ export type Database = {
         Args: { p_name: string; p_registry_code?: string }
         Returns: string
       }
+      create_site_viewer_invitation: {
+        Args: {
+          p_email: string
+          p_organisation_id: string
+          p_site_ids: string[]
+        }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          token: string
+        }[]
+      }
       deactivate_organisation: {
         Args: { p_confirm_name: string; p_organisation_id: string }
         Returns: undefined
@@ -1251,6 +1454,15 @@ export type Database = {
       my_notifications: {
         Args: { p_limit?: number; p_offset?: number; p_unread_only?: boolean }
         Returns: Json
+      }
+      my_site_access: {
+        Args: never
+        Returns: {
+          organisation_id: string
+          organisation_name: string
+          site_id: string
+          site_name: string
+        }[]
       }
       my_trial: { Args: never; Returns: Json }
       organisation_access: { Args: { p_org: string }; Returns: Json }
@@ -1273,6 +1485,11 @@ export type Database = {
         Args: { p_invitation_id: string }
         Returns: undefined
       }
+      revoke_site_viewer: { Args: { p_viewer_id: string }; Returns: undefined }
+      revoke_site_viewer_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
+      }
       search_kaidly: {
         Args: {
           p_entry_types?: Database["public"]["Enums"]["log_entry_type"][]
@@ -1281,6 +1498,11 @@ export type Database = {
         }
         Returns: Json
       }
+      site_viewer_invitation_preview: {
+        Args: { p_token: string }
+        Returns: Json
+      }
+      site_viewers_overview: { Args: { p_site_id: string }; Returns: Json }
     }
     Enums: {
       activity_frequency: "once" | "recurring"

@@ -11,6 +11,8 @@ const RAISED: Record<string, ErrorCode> = {
   not_found: "not_found",
   last_owner: "last_owner",
   already_member: "already_member",
+  invalid_sites: "invalid_sites",
+  invalid_email: "invalid_email",
   email_not_confirmed: "email_not_confirmed",
   invitation_invalid: "invitation_invalid",
   invitation_expired: "invitation_expired",

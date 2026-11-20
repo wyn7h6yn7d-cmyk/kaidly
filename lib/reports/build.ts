@@ -1,5 +1,7 @@
 import "server-only";
-import type { OrgContext } from "@/lib/data/organisations";
+
+/** What a report needs from its company: id and name (members and site viewers alike). */
+export type ReportContext = { org: { id: string; name: string } };
 import type { T } from "@/lib/i18n";
 import { countdown, countdownText, dueStateRange } from "@/lib/schedule";
 import { linkHost } from "@/lib/external-links";
@@ -83,7 +85,7 @@ function filterFacts(t: T, f: ReportFilters, p: Awaited<ReturnType<typeof places
   return out;
 }
 
-function base(kind: ReportKind, t: T, ctx: OrgContext, orientation: Report["orientation"]): Omit<Report, "scope" | "filters" | "sections" | "truncated" | "fileScope"> {
+function base(kind: ReportKind, t: T, ctx: ReportContext, orientation: Report["orientation"]): Omit<Report, "scope" | "filters" | "sections" | "truncated" | "fileScope"> {
   return { kind, title: t.reports.types[kind].title, company: ctx.org.name, generatedAt: new Date().toISOString(), orientation };
 }
 
@@ -91,7 +93,7 @@ function base(kind: ReportKind, t: T, ctx: OrgContext, orientation: Report["orie
 // Käidupäevik
 // ---------------------------------------------------------------------------
 
-async function logReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
+async function logReport(ctx: ReportContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
   const supabase = await createClient();
   const org = ctx.org.id;
   const p = await places(supabase, org);
@@ -235,7 +237,7 @@ async function lastCompletions(supabase: Client, org: string) {
   return latest;
 }
 
-async function planReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
+async function planReport(ctx: ReportContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
   const supabase = await createClient();
   const org = ctx.org.id;
   const today = todayInTallinn();
@@ -336,7 +338,7 @@ async function planReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number):
 // Puudused
 // ---------------------------------------------------------------------------
 
-async function deficiencyReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
+async function deficiencyReport(ctx: ReportContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
   const supabase = await createClient();
   const org = ctx.org.id;
   const p = await places(supabase, org);
@@ -437,7 +439,7 @@ async function deficiencyReport(ctx: OrgContext, t: T, f: ReportFilters, cap: nu
 // Dokumendiregister
 // ---------------------------------------------------------------------------
 
-async function documentReport(ctx: OrgContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
+async function documentReport(ctx: ReportContext, t: T, f: ReportFilters, cap: number): Promise<Report> {
   const supabase = await createClient();
   const org = ctx.org.id;
   const p = await places(supabase, org);
@@ -618,7 +620,7 @@ function logTable(t: T, rows: LogRow[], inst: Map<string, Place>, withInstallati
   };
 }
 
-async function siteReport(ctx: OrgContext, t: T, f: ReportFilters): Promise<Report | null> {
+async function siteReport(ctx: ReportContext, t: T, f: ReportFilters): Promise<Report | null> {
   if (!f.site) return null;
   const supabase = await createClient();
   const org = ctx.org.id;
@@ -691,7 +693,7 @@ async function siteReport(ctx: OrgContext, t: T, f: ReportFilters): Promise<Repo
   };
 }
 
-async function installationReport(ctx: OrgContext, t: T, f: ReportFilters): Promise<Report | null> {
+async function installationReport(ctx: ReportContext, t: T, f: ReportFilters): Promise<Report | null> {
   if (!f.installation) return null;
   const supabase = await createClient();
   const org = ctx.org.id;
@@ -762,7 +764,7 @@ async function installationReport(ctx: OrgContext, t: T, f: ReportFilters): Prom
 }
 
 /** Builds a report; null when a summary's required site/installation is missing or not readable. */
-export async function buildReport(kind: ReportKind, ctx: OrgContext, t: T, f: ReportFilters, cap = MAX_EXPORT_ROWS): Promise<Report | null> {
+export async function buildReport(kind: ReportKind, ctx: ReportContext, t: T, f: ReportFilters, cap = MAX_EXPORT_ROWS): Promise<Report | null> {
   switch (kind) {
     case "log":
       return logReport(ctx, t, f, cap);

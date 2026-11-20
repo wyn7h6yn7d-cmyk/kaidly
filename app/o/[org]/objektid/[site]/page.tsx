@@ -9,12 +9,13 @@ import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
 
 import { ConfirmForm } from "@/components/forms/confirm-form";
+import { SiteViewersPanel } from "@/components/sites/site-viewers-panel";
 import { ArchivedBadge, StatusMark } from "@/components/sites/status-mark";
 import { Button } from "@/components/ui/button";
 import { setSiteArchived } from "@/lib/actions/sites";
 import { hasRole } from "@/lib/auth/roles";
 import { listDocuments } from "@/lib/data/documents";
-import { getSite, listSiteInstallations } from "@/lib/data/sites";
+import { getSite, listActiveSiteOptions, listSiteInstallations } from "@/lib/data/sites";
 import { getT } from "@/lib/i18n/server";
 
 
@@ -28,13 +29,15 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
   return (
     <OrgPage
       params={params}
-      render={async ({ org, role }) => {
+      render={async ({ org, role, memberRole, access }) => {
         const { site: siteId } = await params;
         const site = await getSite(org.id, siteId);
         if (!site) notFound();
-        const [installations, documents] = await Promise.all([
+        const canManageViewers = hasRole(memberRole, "admin");
+        const [installations, documents, siteOptions] = await Promise.all([
           listSiteInstallations(org.id, site.id),
           listDocuments(org.id, { siteId: site.id, siteLevelOnly: true }),
+          canManageViewers ? listActiveSiteOptions(org.id) : Promise.resolve([]),
         ]);
         const active = installations.filter((i) => !i.archivedAt);
         const archived = installations.filter((i) => i.archivedAt);
@@ -186,6 +189,15 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
                 </Link>
               </p>
             </section>
+
+            {canManageViewers && (
+              <SiteViewersPanel
+                orgSlug={org.slug}
+                siteId={site.id}
+                sites={siteOptions.some((s) => s.id === site.id) ? siteOptions : [{ id: site.id, name: site.name }, ...siteOptions]}
+                writable={access.writable && !site.archivedAt && !org.deactivatedAt}
+              />
+            )}
 
             <section aria-labelledby="site-details" className="mt-12">
               <h2 id="site-details" className="mb-4 text-xl font-bold">

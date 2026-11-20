@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
-import { ENTERPRISE_PLAN, FIXED_PLANS, FOUNDER_OFFER_ENABLED, PLAN_DETAILS, RECOMMENDED_PLAN, TRIAL, TRIAL_DAYS } from "../../lib/plans.ts";
+import { ENTERPRISE_PLAN, FIXED_PLANS, FOUNDER_OFFER_ENABLED, PLAN_DETAILS, RECOMMENDED_PLAN, SITE_VIEWERS_COUNT_AS_USERS, TRIAL, TRIAL_DAYS } from "../../lib/plans.ts";
 import { en } from "../../lib/i18n/en.ts";
 import { et } from "../../lib/i18n/et.ts";
 import { ru } from "../../lib/i18n/ru.ts";
@@ -24,7 +24,7 @@ test("plan display values equal the database catalogue", () => {
 
 test("no later migration changes the catalogue or the trial limits without updating this test", () => {
   const dir = new URL("../../supabase/migrations/", import.meta.url);
-  const later = readdirSync(dir).filter((f) => f > "20261120100000_pricing_2026_11.sql");
+  const later = readdirSync(dir).filter((f) => f > "20261120100000_pricing_2026_11.sql" && f !== "20261120200000_site_viewers.sql");
   for (const file of later) {
     const sql = readFileSync(new URL(file, dir), "utf8");
     assert.doesNotMatch(sql, /subscription_plans|organisation_access_on_create/, `${file} touches plans: update CATALOGUE_MIGRATION`);
@@ -115,4 +115,16 @@ test("pricing copy: exact Estonian wording and natural plural forms", () => {
   assert.deepEqual([10, 40, 120, 300].map(ru.landing.pricing.installations), [
     "10 активных электроустановок", "40 активных электроустановок", "120 активных электроустановок", "300 активных электроустановок",
   ]);
+});
+
+test("site viewers do not count as users — the same in lib/plans.ts and in the database", () => {
+  assert.equal(SITE_VIEWERS_COUNT_AS_USERS, false);
+  const dir = new URL("../../supabase/migrations/", import.meta.url);
+  const setters = readdirSync(dir)
+    .sort()
+    .map((f) => readFileSync(new URL(f, dir), "utf8"))
+    .flatMap((sql) => [...sql.matchAll(/plan_settings \(id, site_viewers_count_as_users\) values \(true, (true|false)\)|set site_viewers_count_as_users = (true|false)/g)])
+    .map((m) => (m[1] ?? m[2]) === "true");
+  assert.ok(setters.length >= 1, "the migration sets the database value");
+  assert.equal(setters.at(-1), SITE_VIEWERS_COUNT_AS_USERS);
 });

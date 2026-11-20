@@ -9,6 +9,7 @@ import { PlainPage } from "@/components/app/plain-page";
 import { EmptyState, LoadingBlock } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import { listMyOrganisations } from "@/lib/data/organisations";
+import { getMySiteAccess } from "@/lib/data/site-viewers";
 import { LAST_ORG_COOKIE } from "@/lib/org-cookie";
 import { getT } from "@/lib/i18n/server";
 
@@ -23,10 +24,21 @@ async function OrganisationList({
   searchParams: Promise<{ vali?: string }>;
 }) {
   const t = await getT();
-  const [{ vali }, all, cookieStore] = await Promise.all([searchParams, listMyOrganisations(), cookies()]);
+  const [{ vali }, all, cookieStore, viewerSites] = await Promise.all([searchParams, listMyOrganisations(), cookies(), getMySiteAccess()]);
   // Deactivated organisations are out of normal use: never a landing target, listed apart.
   const organisations = all.filter((org) => !org.deactivatedAt);
   const deactivated = all.filter((org) => org.deactivatedAt);
+
+  // A site viewer without a company of their own goes to their sites.
+  if (all.length === 0 && viewerSites.length > 0) redirect("/vaade");
+  const viewerLink =
+    viewerSites.length > 0 ? (
+      <p className="mt-8">
+        <Link href="/vaade?vali=1" className="inline-flex min-h-11 items-center font-semibold text-k-green underline underline-offset-4">
+          {t.app.viewer.viewerSitesLink}
+        </Link>
+      </p>
+    ) : null;
 
   // Go straight to the last used (or only) organisation unless the user asked to choose.
   if (vali === undefined) {
@@ -77,6 +89,7 @@ async function OrganisationList({
           }
         />
         {deactivatedList}
+        {viewerLink}
       </>
     );
   }
@@ -102,6 +115,7 @@ async function OrganisationList({
         ))}
       </ul>
       {deactivatedList}
+      {viewerLink}
     </>
   );
 }

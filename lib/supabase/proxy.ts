@@ -28,7 +28,7 @@ const PUBLIC_PATHS = new Set([
  * them (and not public) goes to login as before; any other path is not a KAIDLY page and
  * gets the ordinary 404 instead of a login redirect.
  */
-const APP_ROOTS = new Set(["o", "konto", "teavitused", "otsing", "admin", "invite", "auth", "api"]);
+const APP_ROOTS = new Set(["o", "konto", "teavitused", "otsing", "admin", "invite", "auth", "api", "vaade", "vaataja-kutse"]);
 
 /** Public routes a signed-in user has no reason to see. */
 const SIGNED_IN_REDIRECT_PATHS = new Set(["/auth/login", "/auth/sign-up"]);
