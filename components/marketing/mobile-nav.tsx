@@ -5,7 +5,7 @@ import { Menu, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { useT } from "@/lib/i18n/client";
-import { PUBLIC_LINKS } from "./public-nav";
+import { NEEDS_LINKS, PUBLIC_LINKS } from "./public-nav";
 import { SectionLink } from "./section-link";
 
 const ITEM =
@@ -72,7 +72,19 @@ export function MobileNav() {
         hidden={!open}
         className="absolute inset-x-0 top-full z-40 border-b border-k-line bg-k-paper lg:hidden"
       >
-        <nav aria-label={t.landing.nav.label} className="k-container flex flex-col gap-1 py-3">
+        <nav aria-label={t.landing.nav.label} className="k-container flex max-h-[calc(100svh-4rem)] flex-col gap-1 overflow-y-auto py-3">
+          <p id={`${panelId}-needs`} className="px-3 pt-1 text-xs font-bold uppercase tracking-[0.1em] text-k-green">
+            {t.landing.nav.needs}
+          </p>
+          <ul aria-labelledby={`${panelId}-needs`} className="flex flex-col gap-1 border-b border-k-line pb-2">
+            {NEEDS_LINKS.map((link) => (
+              <li key={link.key}>
+                <SectionLink section={link.section} onClick={close} className={ITEM}>
+                  {t.landing.nav[link.key]}
+                </SectionLink>
+              </li>
+            ))}
+          </ul>
           {PUBLIC_LINKS.map((link) => (
             <SectionLink key={link.key} section={link.section} onClick={close} className={ITEM}>
               {t.landing.nav[link.key]}

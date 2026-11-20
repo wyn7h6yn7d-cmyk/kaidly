@@ -37,7 +37,7 @@ export async function Pricing() {
   });
 
   return (
-    <section id="hinnad" tabIndex={-1} aria-labelledby="hinnad-title" className="scroll-mt-4 outline-none border-b border-k-line bg-k-paper">
+    <section id="hinnad" tabIndex={-1} aria-labelledby="hinnad-title" className="scroll-mt-16 outline-none sm:scroll-mt-[72px] lg:scroll-mt-20 border-b border-k-line bg-k-paper">
       <div className="k-container k-section">
         <div className="grid gap-8 lg:grid-cols-12 lg:gap-12">
           <div className="min-w-0 lg:col-span-7">

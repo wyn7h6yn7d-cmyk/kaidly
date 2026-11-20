@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, type ComponentProps } from "react";
 
 /** Landing-page sections reachable from the public navigation. */
-export const LANDING_SECTIONS = ["kuidas-toimib", "hinnad"] as const;
+export const LANDING_SECTIONS = ["kes-vajab", "audit", "kellele", "kuidas-toimib", "hinnad", "meist"] as const;
 export type LandingSection = (typeof LANDING_SECTIONS)[number];
 
 /**

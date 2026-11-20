@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 export function LanguageSelector({
   tone = "dark",
   compact = false,
+  compactUntil = "lg",
   large = false,
   className,
 }: {
@@ -22,6 +23,8 @@ export function LanguageSelector({
   large?: boolean;
   /** Below 1024 px: a compact native select instead of three buttons (saves header width). */
   compact?: boolean;
+  /** Width from which the three buttons replace the compact select (public header: xl). */
+  compactUntil?: "lg" | "xl";
   className?: string;
 }) {
   const t = useT();
@@ -35,7 +38,7 @@ export function LanguageSelector({
     });
 
   const buttons = (
-    <div role="group" aria-label={t.common.language} className={cn("flex items-center", compact && "hidden lg:flex", className)}>
+    <div role="group" aria-label={t.common.language} className={cn("flex items-center", compact && (compactUntil === "xl" ? "hidden xl:flex" : "hidden lg:flex"), className)}>
       {LOCALES.map((locale) => {
         const active = locale === t.locale;
         return (
@@ -70,7 +73,7 @@ export function LanguageSelector({
   return (
     <>
       {buttons}
-      <label className="relative flex h-11 shrink-0 items-center lg:hidden">
+      <label className={cn("relative flex h-11 shrink-0 items-center", compactUntil === "xl" ? "xl:hidden" : "lg:hidden")}>
         <span className="sr-only">{t.common.language}</span>
         <select
           value={t.locale}

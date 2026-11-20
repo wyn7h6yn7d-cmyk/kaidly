@@ -41,19 +41,22 @@ test.describe("Avalik päis ja sektsioonilingid", () => {
       await expect(right.getByRole("link", { name: "Logi sisse", exact: true })).toBeVisible();
       await expect(nav.getByRole("link", { name: "Kuidas töötab?", exact: true })).toBeVisible();
       await expect(nav.getByRole("link", { name: "Hinnakiri", exact: true })).toBeVisible();
+      await expect(nav.getByRole("link", { name: "Meist", exact: true })).toBeVisible();
       await expect(right.getByRole("link", { name: "Registreeru", exact: true })).toBeVisible();
       await expect(right.getByRole("group", { name: "Keel" })).toBeVisible();
       // Nothing informational on the right, nothing account-related on the left.
-      await expect(right.getByRole("link", { name: /Kuidas töötab|Hinnakiri/ })).toHaveCount(0);
+      await expect(right.getByRole("link", { name: /Kuidas töötab|Hinnakiri|Meist/ })).toHaveCount(0);
       await expect(left.getByRole("link", { name: /Logi sisse|Registreeru/ })).toHaveCount(0);
 
-      // Geometry: the links sit right after the logo, the groups are pushed apart.
+      // Geometry: "Kas mul on vaja?" sits right after the logo, then the links; the groups are pushed apart.
       const logo = (await left.getByRole("link", { name: "KAIDLY", exact: true }).boundingBox())!;
+      const needs = (await nav.getByRole("button", { name: "Kas mul on vaja?" }).boundingBox())!;
+      expect(needs.x).toBeGreaterThan(logo.x + logo.width);
+      expect(needs.x - (logo.x + logo.width)).toBeLessThan(80);
       const howItWorks = (await nav.getByRole("link", { name: "Kuidas töötab?" }).boundingBox())!;
       const pricing = (await nav.getByRole("link", { name: "Hinnakiri" }).boundingBox())!;
       const signIn = (await right.getByRole("link", { name: "Logi sisse" }).boundingBox())!;
-      expect(howItWorks.x).toBeGreaterThan(logo.x + logo.width);
-      expect(howItWorks.x - (logo.x + logo.width)).toBeLessThan(80);
+      expect(howItWorks.x).toBeGreaterThan(needs.x + needs.width);
       expect(pricing.x).toBeGreaterThan(howItWorks.x);
       expect(signIn.x - (pricing.x + pricing.width)).toBeGreaterThan(200);
       expect(Math.abs(howItWorks.y + howItWorks.height / 2 - (signIn.y + signIn.height / 2))).toBeLessThan(4);
@@ -62,7 +65,7 @@ test.describe("Avalik päis ja sektsioonilingid", () => {
       await expect(right.getByRole("link", { name: "Logi sisse", exact: true })).toBeVisible();
       await expect(right.getByRole("combobox", { name: "Keel" })).toBeVisible();
       await expect(right.getByRole("button", { name: "Menüü" })).toBeVisible();
-      for (const name of ["Kuidas töötab?", "Hinnakiri", "Registreeru"]) {
+      for (const name of ["Kuidas töötab?", "Hinnakiri", "Meist", "Registreeru"]) {
         await expect(banner.getByRole("link", { name, exact: true })).toBeHidden();
       }
     }
@@ -80,6 +83,16 @@ test.describe("Avalik päis ja sektsioonilingid", () => {
     expect(await page.evaluate(() => window.history.length)).toBe(historyBefore);
     await expect(page.locator("#hinnad")).toBeFocused();
     await expectNoHorizontalScroll(page);
+  });
+
+  test("Meist scrolls to the about section and the URL stays clean @responsive", async ({ page }) => {
+    await page.goto("/");
+    const wide = (page.viewportSize()?.width ?? 0) >= 1024;
+    const banner = page.getByRole("banner");
+    if (!wide) await banner.getByRole("button", { name: "Menüü" }).click();
+    await banner.getByRole("link", { name: "Meist", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Meist", level: 2 })).toBeInViewport();
+    await expect.poll(() => new URL(page.url()).hash).toBe("");
   });
 
   test("Kuidas töötab? (header and hero) scrolls without leaving a hash", async ({ page }) => {
@@ -156,7 +169,7 @@ test.describe("Mobiilimenüü @responsive @cross-browser", () => {
     await openLanding(page);
   });
 
-  const ITEMS = ["Kuidas töötab?", "Hinnakiri", "Registreeru"];
+  const ITEMS = ["Kuidas töötab?", "Hinnakiri", "Meist", "Registreeru"];
 
   test("Logi sisse stays in the closed bar at 320, 375 and 430 px, on one row, in ET/EN/RU", async ({ page, context }) => {
     const labels = [
@@ -228,7 +241,7 @@ test.describe("Mobiilimenüü @responsive @cross-browser", () => {
     await expect(button).toHaveAttribute("aria-expanded", "true");
     // Safari moves Tab focus to links only with Option+Tab (its default setting).
     await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
-    await expect(page.getByRole("banner").getByRole("link", { name: "Kuidas töötab?", exact: true })).toBeFocused();
+    await expect(page.getByRole("banner").getByRole("link", { name: "Kes vajab käidukorraldajat?", exact: true })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(button).toHaveAttribute("aria-expanded", "false");
     await expect(page.getByRole("banner").getByRole("navigation", { name: "Põhimenüü" })).toBeHidden();

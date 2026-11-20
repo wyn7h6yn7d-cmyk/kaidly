@@ -258,6 +258,11 @@ export const ru: Messages = {
       label: "Главное меню",
       howItWorks: "Как это работает?",
       pricing: "Цены",
+      about: "О нас", // TÕLGE ÜLE VAADATA
+      needs: "Нужно ли мне?", // TÕLGE ÜLE VAADATA
+      whoNeeds: "Кому нужен ответственный за эксплуатацию?", // TÕLGE ÜLE VAADATA
+      audit: "Готовы к плановому аудиту", // TÕLGE ÜLE VAADATA
+      audiences: "Кому подходит KAIDLY", // TÕLGE ÜLE VAADATA
       signUp: "Регистрация",
       trial: "14 дней бесплатно",
     },
@@ -341,6 +346,15 @@ export const ru: Messages = {
     },
     about: {
       title: "О нас",
+      // TÕLGE ÜLE VAADATA
+      facts: [
+        { value: "почти 10 лет", label: "опыта управления эксплуатацией" },
+        { value: "Инженер-электрик", label: "автор KAIDLY" },
+        { value: "Крупные энергетические объекты", label: "эксплуатация и обслуживание" },
+      ],
+      principlesTitle: "Принципы", // TÕLGE ÜLE VAADATA
+      contactTitle: "Вопросы или отзывы?", // TÕLGE ÜLE VAADATA
+      contactSubject: "KAIDLY: вопрос", // TÕLGE ÜLE VAADATA
       body: "KAIDLY создан инженером-электриком почти с 10-летним опытом управления эксплуатацией, а также организации эксплуатации и обслуживания крупных энергетических объектов. Инструмент появился из необходимости вести оперативный журнал так, чтобы всё было записано, а не держалось в чьей-то голове.",
     },
     testimonials: { title: "Отзывы клиентов" },

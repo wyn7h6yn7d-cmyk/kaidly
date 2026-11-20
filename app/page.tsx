@@ -179,7 +179,7 @@ export default async function Home() {
         </section>
 
         {/* System structure, drawn like an engineering sheet */}
-        <section id="kuidas-toimib" tabIndex={-1} className="relative scroll-mt-4 outline-none border-y border-k-line bg-k-paper-2">
+        <section id="kuidas-toimib" tabIndex={-1} className="relative scroll-mt-16 outline-none sm:scroll-mt-[72px] lg:scroll-mt-20 border-y border-k-line bg-k-paper-2">
           <div aria-hidden="true" className="k-grid pointer-events-none absolute inset-0 text-k-ink/[0.045]" />
           <div className="k-container k-section relative">
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">

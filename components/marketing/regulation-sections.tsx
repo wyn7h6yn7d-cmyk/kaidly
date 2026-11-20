@@ -31,7 +31,7 @@ export async function RegulationSections() {
 
   return (
     <>
-      <section aria-labelledby="kes-vajab-title" data-section="who-needs" className="border-b border-k-line bg-k-paper">
+      <section id="kes-vajab" tabIndex={-1} aria-labelledby="kes-vajab-title" data-section="who-needs" className="scroll-mt-16 outline-none sm:scroll-mt-[72px] lg:scroll-mt-20 border-b border-k-line bg-k-paper">
         <div className="k-container k-section grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
           <h2 id="kes-vajab-title" className="min-w-0 font-display text-display-2 font-extrabold [overflow-wrap:break-word] lg:col-span-5">
             {w.title}
@@ -59,7 +59,7 @@ export async function RegulationSections() {
         </div>
       </section>
 
-      <section aria-labelledby="audit-title" data-section="audit-ready" className="border-b border-k-line bg-k-paper-2">
+      <section id="audit" tabIndex={-1} aria-labelledby="audit-title" data-section="audit-ready" className="scroll-mt-16 outline-none sm:scroll-mt-[72px] lg:scroll-mt-20 border-b border-k-line bg-k-paper-2">
         <div className="k-container k-section grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
           <h2 id="audit-title" className="min-w-0 font-display text-display-2 font-extrabold [overflow-wrap:break-word] lg:col-span-5">
             {a.title}

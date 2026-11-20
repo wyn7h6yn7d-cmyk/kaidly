@@ -245,6 +245,11 @@ export const en: Messages = {
       label: "Main menu",
       howItWorks: "How does it work?",
       pricing: "Pricing",
+      about: "About us", // TÕLGE ÜLE VAADATA
+      needs: "Do I need it?", // TÕLGE ÜLE VAADATA
+      whoNeeds: "Who needs an operations manager?", // TÕLGE ÜLE VAADATA
+      audit: "Ready for the periodic audit", // TÕLGE ÜLE VAADATA
+      audiences: "Who KAIDLY is for", // TÕLGE ÜLE VAADATA
       signUp: "Sign up",
       trial: "14 days free",
     },
@@ -328,6 +333,15 @@ export const en: Messages = {
     },
     about: {
       title: "About us",
+      // TÕLGE ÜLE VAADATA
+      facts: [
+        { value: "almost 10 years", label: "of operations management experience" },
+        { value: "Electrical engineer", label: "creator of KAIDLY" },
+        { value: "Large energy assets", label: "operation and maintenance" },
+      ],
+      principlesTitle: "Principles", // TÕLGE ÜLE VAADATA
+      contactTitle: "Questions or feedback?", // TÕLGE ÜLE VAADATA
+      contactSubject: "KAIDLY: question", // TÕLGE ÜLE VAADATA
       body: "KAIDLY was created by an electrical engineer with almost 10 years of experience in operations management and in organising the operation and maintenance of large energy assets. The tool was born from the need to keep an operating log in which everything is written down, not in someone's head.",
     },
     testimonials: { title: "Customer experiences" },

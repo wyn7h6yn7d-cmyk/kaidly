@@ -45,6 +45,10 @@ test.describe("Avaleht: kellele sobib, ettevõtte andmed", () => {
     await expect(about).toContainText("KAIDLY on loonud elektriinsener, kellel on ligi 10 aastat kogemust käidujuhtimises");
     const aboutTop = await about.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
     expect(aboutTop).toBeGreaterThan(tops.pricing);
+    await expect(about.getByTestId("about-facts")).toContainText("ligi 10 aastat");
+    await expect(about.getByTestId("about-facts")).toContainText("Elektriinsener");
+    await expect(about.getByRole("heading", { name: "Põhimõtted" })).toBeVisible();
+    await expect(about.getByRole("link", { name: "Võta ühendust" })).toHaveAttribute("href", /^mailto:info@kaidly\.ee\?/);
     await expect(page.locator('[data-section="testimonials"]')).toHaveCount(0);
     await expect(page.locator("body")).not.toContainText(/\[NIMI\]|TÄIDAB KENNETH/);
 

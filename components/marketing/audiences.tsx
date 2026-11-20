@@ -19,7 +19,7 @@ export async function Audiences() {
   const a = t.landing.audiences;
 
   return (
-    <section aria-labelledby="kellele-title" data-section="audiences" className="border-b border-k-line bg-k-paper">
+    <section id="kellele" tabIndex={-1} aria-labelledby="kellele-title" data-section="audiences" className="scroll-mt-16 outline-none sm:scroll-mt-[72px] lg:scroll-mt-20 border-b border-k-line bg-k-paper">
       <div className="k-container k-section">
         <h2 id="kellele-title" className="font-display text-display-2 font-extrabold [overflow-wrap:break-word]">
           {a.title}
