@@ -796,3 +796,11 @@ document links; RPCs `create_site_viewer_invitation`, `site_viewer_invitation_pr
 `accept_site_viewer_invitation`, `revoke_site_viewer`, `revoke_site_viewer_invitation`,
 `site_viewers_overview`, `my_site_access`. `private.seats_used()` counts viewers only when
 `plan_settings.site_viewers_count_as_users` is true (default false).
+
+## 5m. Periodic audits (migration `installation_audits`)
+
+`public.installation_audits` (append-only audit history per installation; members read,
+owners/admins insert, site viewers read their sites' rows; BEFORE trigger checks membership
+first, sets the author, refuses future dates). `scheduled_activities.kind`
+(`regular` | `periodic_audit`, one live `periodic_audit` per installation via a partial unique
+index) holds the next audit deadline with 90/30-day reminders. docs/AUDITS.md.

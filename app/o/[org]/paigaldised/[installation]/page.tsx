@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarPlus, FilePlus, Pencil, Plus, TriangleAlert } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
+import { AuditPanel } from "@/components/audits/audit-panel";
 import { OrgPage } from "@/components/app/org-page";
 import { ConfirmForm } from "@/components/forms/confirm-form";
 import { StatusMark } from "@/components/sites/status-mark";
@@ -130,6 +131,8 @@ export default async function InstallationOverviewPage({
                 </div>
               </section>
             )}
+
+            <AuditPanel orgId={org.id} orgSlug={org.slug} installationId={installation.id} canManage={isAdmin && !installation.archivedAt} />
 
             <DetailList
               items={[

@@ -172,7 +172,7 @@ select results_eq(
       where n.nspname = 'public' and c.relkind in ('r', 'p')
         and c.relname <> '__default_privileges_probe' -- created earlier in this file
       order by c.relname::text collate "C" $$,
-  $$ values ('activity_history'), ('deficiencies'), ('documents'), ('electrical_installations'), ('log_entries'),
+  $$ values ('activity_history'), ('deficiencies'), ('documents'), ('electrical_installations'), ('installation_audits'), ('log_entries'),
             ('notification_preferences'), ('notifications'), ('organisation_invitations'), ('organisation_members'), ('organisations'), ('profiles'),
             ('scheduled_activities'), ('site_viewer_invitation_sites'), ('site_viewer_invitations'), ('site_viewers'), ('sites') $$,
   'public tables are exactly the reviewed set'
@@ -240,6 +240,7 @@ select results_eq(
        ('private.generate_activity_reminders(date,uuid)'),
        ('private.handle_new_user()'),
        ('private.has_org_role(uuid,org_role)'),
+       ('private.installation_audit_before_insert()'),
        ('private.installation_plan_limit()'),
        ('private.installations_active(uuid)'),
        ('private.invitation_seat_limit()'),

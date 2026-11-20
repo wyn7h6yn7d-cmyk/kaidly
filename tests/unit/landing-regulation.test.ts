@@ -31,8 +31,9 @@ test("'Valmis korraliseks auditiks' is the owner's exact Estonian text, without 
     "TTJA auditi juhendmaterjali järgi ei saa korraline audit olla positiivne, kui paigaldisel puudub käidukorraldaja või käidukava. KAIDLY hoiab käidukava, käidupäeviku, puudused ja dokumendid ühes kohas, nii et audiitorile on kõik korraga näidata.",
   );
   assert.equal(a.guideLink, "TTJA auditi juhendmaterjal");
-  // The audit package comes later (owner): no such claim in any language yet.
-  for (const m of [et, en, ru]) assert.doesNotMatch(JSON.stringify(m.landing.auditReady), /auditipakett|audit package|пакет/i);
+  // Added once the audit package existed in the app (owner's sentence, 2026-11-21).
+  assert.equal(a.package, "Ühe nupuvajutusega saad auditipaketi: käidukava, käidupäevik, puudused ja dokumendid ühes PDF-is.");
+  assert.doesNotMatch(a.body, /auditipakett/i, "the owner's paragraph itself is unchanged");
 });
 
 test("official links are the owner-provided addresses", () => {

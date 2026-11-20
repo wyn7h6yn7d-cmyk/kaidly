@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { Download, ExternalLink, Eye } from "lucide-react";
+import { Download, ExternalLink, Eye, FileCheck } from "lucide-react";
 import { PageHeader } from "@/components/app/page-header";
 import { PlainPage } from "@/components/app/plain-page";
 import { LoadingBlock } from "@/components/app/states";
 import { DueMark } from "@/components/schedule/due-mark";
 import { Button } from "@/components/ui/button";
+import { getSiteNearestAudit } from "@/lib/data/audits";
 import { getViewerSite } from "@/lib/data/site-viewers";
 import { getT } from "@/lib/i18n/server";
 import { todayInTallinn } from "@/lib/time";
@@ -45,6 +46,7 @@ async function SiteView({ params, searchParams }: { params: Promise<{ site: stri
   const open = data.deficiencies.filter((d) => d.status !== "resolved");
   const closed = data.deficiencies.filter((d) => d.status === "resolved");
   const base = `/vaade/${data.site.id}`;
+  const nearestAudit = await getSiteNearestAudit(data.site.id);
 
   return (
     <>
@@ -53,18 +55,35 @@ async function SiteView({ params, searchParams }: { params: Promise<{ site: stri
         description={[data.site.address, `${v.manager}: ${data.access.organisationName}`].filter(Boolean).join(" · ")}
         back={{ href: "/vaade?vali=1", label: v.back }}
         actions={
-          <Button asChild>
-            <a href={`${base}/aruanne`} download>
-              <Download aria-hidden="true" />
-              {v.download}
-            </a>
-          </Button>
+          <>
+            <Button asChild>
+              <a href={`${base}/auditipakett`} download>
+                <FileCheck aria-hidden="true" />
+                {t.app.auditPackage.button}
+              </a>
+            </Button>
+            <Button asChild variant="outline">
+              <a href={`${base}/aruanne`} download>
+                <Download aria-hidden="true" />
+                {v.download}
+              </a>
+            </Button>
+          </>
         }
       />
       <p className="-mt-4 mb-10 inline-flex items-center gap-2 bg-k-paper-2 px-3 py-1.5 text-sm font-semibold" data-testid="read-only">
         <Eye aria-hidden="true" className="size-4" />
         {v.readOnly}
       </p>
+
+      {nearestAudit && (
+        <p className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-l-4 border-k-volt bg-k-surface px-4 py-3" data-testid="nearest-audit">
+          <span className="font-semibold">{t.app.audits.nearest}:</span>
+          <span>{t.fmt.date(nearestAudit.nextDueOn)}</span>
+          <span className="text-k-muted">{nearestAudit.installation}</span>
+          <DueMark nextDueOn={nearestAudit.nextDueOn} today={today} />
+        </p>
+      )}
 
       <Section id="v-installations" title={v.sections.installations}>
         {data.installations.length === 0 ? (

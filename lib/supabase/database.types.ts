@@ -404,6 +404,84 @@ export type Database = {
           },
         ]
       }
+      installation_audits: {
+        Row: {
+          audited_on: string
+          auditor: string
+          created_at: string
+          created_by: string
+          created_by_name: string
+          document_url: string | null
+          electrical_installation_id: string
+          id: string
+          organisation_id: string
+          result: string
+          site_id: string
+        }
+        Insert: {
+          audited_on: string
+          auditor: string
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          document_url?: string | null
+          electrical_installation_id: string
+          id?: string
+          organisation_id: string
+          result: string
+          site_id: string
+        }
+        Update: {
+          audited_on?: string
+          auditor?: string
+          created_at?: string
+          created_by?: string
+          created_by_name?: string
+          document_url?: string | null
+          electrical_installation_id?: string
+          id?: string
+          organisation_id?: string
+          result?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_audits_electrical_installation_id_organisatio_fkey"
+            columns: ["electrical_installation_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "installation_audits_electrical_installation_id_site_id_fkey"
+            columns: ["electrical_installation_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "electrical_installations"
+            referencedColumns: ["id", "site_id"]
+          },
+          {
+            foreignKeyName: "installation_audits_organisation_id_fkey"
+            columns: ["organisation_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_audits_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "site_attention"
+            referencedColumns: ["site_id", "organisation_id"]
+          },
+          {
+            foreignKeyName: "installation_audits_site_id_organisation_id_fkey"
+            columns: ["site_id", "organisation_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id", "organisation_id"]
+          },
+        ]
+      }
       log_entries: {
         Row: {
           correction_of_id: string | null
@@ -849,6 +927,7 @@ export type Database = {
           id: string
           interval_unit: Database["public"]["Enums"]["interval_unit"] | null
           interval_value: number | null
+          kind: string
           next_due_on: string | null
           organisation_id: string
           priority: Database["public"]["Enums"]["activity_priority"]
@@ -869,6 +948,7 @@ export type Database = {
           id?: string
           interval_unit?: Database["public"]["Enums"]["interval_unit"] | null
           interval_value?: number | null
+          kind?: string
           next_due_on?: string | null
           organisation_id: string
           priority?: Database["public"]["Enums"]["activity_priority"]
@@ -889,6 +969,7 @@ export type Database = {
           id?: string
           interval_unit?: Database["public"]["Enums"]["interval_unit"] | null
           interval_value?: number | null
+          kind?: string
           next_due_on?: string | null
           organisation_id?: string
           priority?: Database["public"]["Enums"]["activity_priority"]

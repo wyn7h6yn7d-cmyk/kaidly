@@ -49,7 +49,8 @@ test.describe("Avaleht: käidukorraldaja ja audit", () => {
       await expect(link).toHaveAttribute("rel", "noopener noreferrer");
     }
     await expect(audit.getByRole("link", { name: /^TTJA auditi juhendmaterjal/ })).toHaveAttribute("href", GUIDE);
-    // No audit-package button yet (comes later as its own change).
+    // The landing page describes the audit package; the button itself is in the app.
+    await expect(audit).toContainText("Ühe nupuvajutusega saad auditipaketi: käidukava, käidupäevik, puudused ja dokumendid ühes PDF-is.");
     await expect(audit.getByRole("button")).toHaveCount(0);
     await expect(audit.getByRole("link")).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Excel ei ole käiduraamat." })).toBeVisible();

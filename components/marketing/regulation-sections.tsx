@@ -66,6 +66,7 @@ export async function RegulationSections() {
           </h2>
           <div className="min-w-0 border-l-4 border-k-volt pl-5 lg:col-span-7">
             <p className="text-lead">{a.body}</p>
+            <p className="mt-4 text-lead font-semibold">{a.package}</p>
             <p className="mt-4 text-sm">
               <OfficialLink href={OFFICIAL_LINKS.ttjaAuditGuide} newWindow={w.newWindow}>
                 {a.guideLink}

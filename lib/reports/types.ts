@@ -21,7 +21,7 @@ export type Section =
     };
 
 export type Report = {
-  kind: ReportKind;
+  kind: ReportKind | "audit";
   title: string;
   company: string;
   /** What the report covers, e.g. "Tallinna tehas · PK-01". */

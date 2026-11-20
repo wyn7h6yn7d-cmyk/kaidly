@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, ClipboardList, Pencil, Plus } from "lucide-react";
+import { ChevronRight, ClipboardList, FileCheck, Pencil, Plus } from "lucide-react";
 import { DetailList } from "@/components/app/detail-list";
 import { DocumentList } from "@/components/documents/document-list";
+import { DueMark } from "@/components/schedule/due-mark";
+import { getSiteNearestAudit } from "@/lib/data/audits";
+import { todayInTallinn } from "@/lib/time";
 import { GuidedEmptyState } from "@/components/app/guided-empty";
 import { OrgPage } from "@/components/app/org-page";
 import { PageHeader } from "@/components/app/page-header";
@@ -34,10 +37,11 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
         const site = await getSite(org.id, siteId);
         if (!site) notFound();
         const canManageViewers = hasRole(memberRole, "admin");
-        const [installations, documents, siteOptions] = await Promise.all([
+        const [installations, documents, siteOptions, nearestAudit] = await Promise.all([
           listSiteInstallations(org.id, site.id),
           listDocuments(org.id, { siteId: site.id, siteLevelOnly: true }),
           canManageViewers ? listActiveSiteOptions(org.id) : Promise.resolve([]),
+          getSiteNearestAudit(site.id),
         ]);
         const active = installations.filter((i) => !i.archivedAt);
         const archived = installations.filter((i) => i.archivedAt);
@@ -54,6 +58,12 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
               back={{ href: `${base}/objektid`, label: copy.title }}
               actions={
                 <>
+                  <Button asChild variant="outline">
+                    <Link href={`${base}/objektid/${site.id}/auditipakett`}>
+                      <FileCheck aria-hidden="true" />
+                      {t.app.auditPackage.button}
+                    </Link>
+                  </Button>
                   <Button asChild variant="outline">
                     <Link href={`${base}/aruanded/site?objekt=${site.id}`}>
                       <ClipboardList aria-hidden="true" />
@@ -91,6 +101,15 @@ export default async function SitePage({ params }: { params: Promise<{ org: stri
                   />
                 )}
               </div>
+            )}
+
+            {nearestAudit && (
+              <p className="mb-8 flex flex-wrap items-center gap-x-3 gap-y-1 border-l-4 border-k-volt bg-k-surface px-4 py-3" data-testid="nearest-audit">
+                <span className="font-semibold">{t.app.audits.nearest}:</span>
+                <span>{t.fmt.date(nearestAudit.nextDueOn)}</span>
+                <span className="text-k-muted">{nearestAudit.installation}</span>
+                <DueMark nextDueOn={nearestAudit.nextDueOn} today={todayInTallinn()} />
+              </p>
             )}
 
             <section aria-labelledby="installations">
