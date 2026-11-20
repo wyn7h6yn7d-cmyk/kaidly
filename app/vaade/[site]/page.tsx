@@ -13,6 +13,10 @@ import { getViewerSite } from "@/lib/data/site-viewers";
 import { getT } from "@/lib/i18n/server";
 import { todayInTallinn } from "@/lib/time";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return { title: t.app.viewer.title, referrer: "no-referrer" };

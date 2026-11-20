@@ -8,6 +8,10 @@ import { adminSubscriptions, PAGE_SIZE } from "@/lib/data/admin";
 import { planName, statusTone } from "@/components/admin/subscription-labels";
 import { cn } from "@/lib/utils";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Search = Promise<{ q?: string; lk?: string; filter?: string }>;
 
 const s = ADMIN.subs;

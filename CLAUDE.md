@@ -27,12 +27,13 @@ Work one phase at a time. Don't start a phase that hasn't been approved.
 - Pärast muudatust käivita build ja testid ning anna lühike kokkuvõte: mida muutsid ja mida
   omanik peab ise brauseris kontrollima.
 
-## Ootel tööd
+## Next 16.4 instant validation
 
-- **Next 16.4 "blocking-prerender-runtime" hoiatus** (`npm run dev`, ~30 marsruuti, nt `/`,
-  `/o/[org]`, `/auth/login`): `getT()`/`cookies()`/`params` loetakse väljaspool `<Suspense>`.
-  Build ja testid on rohelised; parandus (Suspense või `export const instant = false`) tehakse
-  omaniku otsusel **pärast punkti g** (audit ja auditipakett), eraldi plaaniga.
+Every `page.tsx` reads request data (session, language cookie, params) and declares
+`export const instant = false;` (allowed to block on navigation; still prerendered and
+streamed). New pages do the same unless they are made instant with Suspense/`use cache`
+(node_modules/next/dist/docs/01-app/02-guides/instant-navigation.md). Dev logs: 1388 →
+0 "blocking-prerender-runtime" warnings over the e2e suite (2026-11-21).
 
 ## Ülevaade (seis 2026-11-20)
 

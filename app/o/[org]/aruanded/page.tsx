@@ -6,6 +6,10 @@ import { PageHeader } from "@/components/app/page-header";
 import { getT } from "@/lib/i18n/server";
 import { REPORT_KINDS } from "@/lib/reports/types";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return { title: t.reports.title };

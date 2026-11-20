@@ -13,6 +13,10 @@ import { adminSubscription, type AdminSubscriptionSnapshot } from "@/lib/data/ad
 import { uuid } from "@/lib/validation/common";
 import { planName, statusTone } from "@/components/admin/subscription-labels";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Params = Promise<{ company: string }>;
 const s = ADMIN.subs;
 

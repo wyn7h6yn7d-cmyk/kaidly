@@ -6,6 +6,10 @@ import { fmtBytes, fmtNumber } from "@/lib/admin/format";
 import { ADMIN } from "@/lib/admin/strings";
 import { adminAccessOverview, adminOverview } from "@/lib/data/admin";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 async function Overview() {
   const [o, access] = await Promise.all([adminOverview(), adminAccessOverview()]);
   const s = ADMIN.overview;

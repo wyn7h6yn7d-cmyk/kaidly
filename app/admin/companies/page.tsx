@@ -7,6 +7,10 @@ import { ADMIN } from "@/lib/admin/strings";
 import { ACCESS_FILTERS, type AccessFilter, adminCompanies, adminCompanyAccessList, PAGE_SIZE } from "@/lib/data/admin";
 import { cn } from "@/lib/utils";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Search = Promise<{ q?: string; lk?: string; ligipaas?: string }>;
 
 async function Companies({ searchParams }: { searchParams: Search }) {

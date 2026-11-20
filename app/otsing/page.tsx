@@ -10,6 +10,10 @@ import { SEARCH_GROUPS, SEARCH_PER_GROUP, searchKaidly, type SearchResults } fro
 import type { T } from "@/lib/i18n";
 import { getT } from "@/lib/i18n/server";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return { title: t.search.title };

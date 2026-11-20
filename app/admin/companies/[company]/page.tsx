@@ -9,6 +9,10 @@ import { ADMIN } from "@/lib/admin/strings";
 import { adminCompany, adminCompanyAccess } from "@/lib/data/admin";
 import { uuid } from "@/lib/validation/common";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Params = Promise<{ company: string }>;
 
 async function CompanyDetail({ params }: { params: Params }) {

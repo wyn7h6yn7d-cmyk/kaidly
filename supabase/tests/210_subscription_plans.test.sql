@@ -374,7 +374,7 @@ select pg_temp.root();
 -- Platform admin: list, detail with history.
 select pg_temp.login('platform');
 select ok((public.admin_subscriptions('Kohtade', null, 50, 0) -> 'rows' -> 0 ->> 'name') = 'Kohtade OÜ', 'search by name');
-select is((public.admin_subscriptions(null, 'custom', 50, 0) ->> 'total')::int, 0, 'filter by plan');
+select is((public.admin_subscriptions('Kohtade', 'custom', 50, 0) ->> 'total')::int, 0, 'filter by plan (only this test''s companies: e2e leftovers in a shared local DB do not count)');
 select is((public.admin_subscriptions('Kohtade', null, 50, 0) -> 'rows' -> 0 ->> 'seats_used')::int, 2, 'usage in the list');
 select ok(jsonb_array_length(public.admin_subscription(pg_temp.org('c')) -> 'history') >= 5, 'subscription history in the detail');
 select is(public.admin_subscription(pg_temp.org('c')) -> 'history' -> 0 -> 'before' ->> 'plan', 'pro', 'history: previous plan');

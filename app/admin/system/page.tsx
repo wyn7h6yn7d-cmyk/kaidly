@@ -5,6 +5,10 @@ import { fmtBytes, fmtNumber } from "@/lib/admin/format";
 import { ADMIN } from "@/lib/admin/strings";
 import { adminSystem } from "@/lib/data/admin";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 async function System() {
   const sys = await adminSystem();
   const s = ADMIN.system;

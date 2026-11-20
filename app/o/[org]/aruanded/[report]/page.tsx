@@ -13,6 +13,10 @@ import { buildReport } from "@/lib/reports/build";
 import { filtersQuery, parseFilters } from "@/lib/reports/filters";
 import { MAX_EXPORT_ROWS, PREVIEW_ROWS, REPORT_KINDS, type ReportKind, TABULAR } from "@/lib/reports/types";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Params = Promise<{ org: string; report: string }>;
 type Search = Promise<Record<string, string | string[] | undefined>>;
 

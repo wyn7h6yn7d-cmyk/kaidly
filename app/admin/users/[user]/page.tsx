@@ -16,6 +16,10 @@ import { ADMIN } from "@/lib/admin/strings";
 import { adminUser, requirePlatformAdmin } from "@/lib/data/admin";
 import { uuid } from "@/lib/validation/common";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Params = Promise<{ user: string }>;
 
 async function UserDetail({ params }: { params: Params }) {

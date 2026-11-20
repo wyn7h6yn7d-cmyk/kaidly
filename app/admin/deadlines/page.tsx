@@ -7,6 +7,10 @@ import { ADMIN } from "@/lib/admin/strings";
 import { adminCompanyOptions, adminDeadlines, type AdminDeadlineFilters } from "@/lib/data/admin";
 import { uuid } from "@/lib/validation/common";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 type Search = Promise<Record<string, string | undefined>>;
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;

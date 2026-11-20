@@ -12,6 +12,10 @@ import { listNotifications, NOTIFICATION_PAGE_SIZE } from "@/lib/data/notificati
 import { getT } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
+// Reads request data (session, language cookie, params): allowed to block on navigation
+// instead of claiming an instant static shell (Next 16.4 instant validation).
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return { title: t.notifications.title };
