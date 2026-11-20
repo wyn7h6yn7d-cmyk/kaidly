@@ -63,7 +63,10 @@ test("'Kellele KAIDLY sobib': the owner's exact text, four audiences", () => {
     },
     parks: { title: "Päikese- ja akupargid", body: "Kontrollid, lülitamised ja puudused on kirjas ka keskpingel liitunud pargis." },
     buildings: { title: "Ärihooned ja tootmine", body: "Kilbid, hooldused ja auditi tähtajad ühes kohas, mitte kellegi peas." },
-    housing: { title: "Korteriühistud ja haldusfirmad", body: "Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata." },
+    housing: {
+      title: "Korteriühistud ja haldusfirmad",
+      body: "Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata. Juhatus näeb tehtud töid ja puudusi oma kontolt.",
+    },
   });
   for (const m of [en, ru]) assert.deepEqual(Object.keys(m.landing.audiences.items), Object.keys(a.items));
 });

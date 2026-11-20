@@ -18,7 +18,7 @@ test.describe("Avaleht: kellele sobib, ettevõtte andmed", () => {
       "Ärihooned ja tootmine",
       "Korteriühistud ja haldusfirmad",
     ]);
-    await expect(items.nth(3)).toContainText("Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata.");
+    await expect(items.nth(3)).toContainText("Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata. Juhatus näeb tehtud töid ja puudusi oma kontolt.");
     // Icons are decoration (the heading says it all).
     await expect(items.locator("svg").first()).toHaveAttribute("aria-hidden", "true");
 

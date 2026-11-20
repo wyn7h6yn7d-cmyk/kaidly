@@ -327,7 +327,7 @@ export const en: Messages = {
         },
         housing: {
           title: "Apartment associations and property managers",
-          body: "An operating log you can show during the audit and at the general meeting.",
+          body: "An operating log you can show during the audit and at the general meeting. The board sees the work done and the deficiencies from its own account.", // TÕLGE ÜLE VAADATA
         },
       },
     },

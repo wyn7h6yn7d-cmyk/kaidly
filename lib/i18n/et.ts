@@ -320,7 +320,7 @@ export const et = {
         },
         housing: {
           title: "Korteriühistud ja haldusfirmad",
-          body: "Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata.",
+          body: "Käidupäevik, mida saab auditi ajal ja üldkoosolekul näidata. Juhatus näeb tehtud töid ja puudusi oma kontolt.",
         },
       },
     },
