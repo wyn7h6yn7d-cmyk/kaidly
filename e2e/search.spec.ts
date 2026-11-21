@@ -36,7 +36,7 @@ test.describe("Otsing", () => {
     await page.waitForLoadState("networkidle");
     await page.keyboard.press("Control+k");
     await expect(page).toHaveURL(/\/otsing$/);
-    await expect(page.getByLabel("Otsi KAIDLYst")).toBeFocused();
+    await expect(page.getByLabel("Otsi KAIDLY-st")).toBeFocused();
 
     const search = async (q: string) => {
       await page.goto(`/otsing?q=${encodeURIComponent(q)}`);
@@ -75,7 +75,7 @@ test.describe("Otsing", () => {
     sql(`update private.organisation_access set trial_started_at = now() - interval '20 days', trial_ends_at = now() - interval '6 days' where organisation_id = '${org.id}';`);
     await login(page, org.users.owner, `/o/${org.slug}`);
     await page.locator('a[href="/otsing"]:visible').first().click();
-    await page.getByLabel("Otsi KAIDLYst").fill(tag);
+    await page.getByLabel("Otsi KAIDLY-st").fill(tag);
     await page.getByRole("button", { name: "Otsi", exact: true }).click();
     await expect(page.getByRole("link", { name: `Klemm ${tag}` })).toBeVisible();
     await expectNoHorizontalScroll(page);

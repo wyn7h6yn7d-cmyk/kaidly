@@ -45,7 +45,7 @@ export const LEGAL_CONTENT: Record<Locale, Docs> = {
           heading: "Teenuse osutaja ja vastutav töötleja",
           body: [
             "{operatorName}, registrikood {registryCode}, {address}. Privaatsusküsimused: {privacyEmail}.",
-            "KAIDLY on vastutav töötleja kasutajakontode andmete osas. Andmete osas, mida kliendid (ettevõtted) KAIDLYsse oma töö käigus sisestavad, on vastutav töötleja klient ja KAIDLY on volitatud töötleja — vt [andmetöötlusleping](/andmetootlusleping).",
+            "KAIDLY on vastutav töötleja kasutajakontode andmete osas. Andmete osas, mida kliendid (ettevõtted) KAIDLY-sse oma töö käigus sisestavad, on vastutav töötleja klient ja KAIDLY on volitatud töötleja — vt [andmetöötlusleping](/andmetootlusleping).",
           ],
         },
         {
@@ -111,7 +111,7 @@ export const LEGAL_CONTENT: Record<Locale, Docs> = {
           heading: "Prooviperiood ja ligipääs",
           body: [
             "Kasutaja esimesel ettevõttel on 14-päevane prooviperiood täieliku ligipääsuga. Seejärel jääb ettevõte ainult vaatamiseks: andmed säilivad ja neid saab vaadata ning eksportida, kuid uusi kirjeid lisada ei saa.",
-            "Täiskasutus aktiveeritakse kokkuleppel KAIDLYga.",
+            "Täiskasutus aktiveeritakse kokkuleppel KAIDLY-ga.",
           ],
         },
         {
@@ -124,7 +124,7 @@ export const LEGAL_CONTENT: Record<Locale, Docs> = {
         {
           heading: "Isikuandmete töötlemine",
           body: [
-            "Isikuandmete osas, mida klient KAIDLYsse sisestab, on klient vastutav töötleja ja KAIDLY volitatud töötleja. Töötlemise tingimused on kirjas [andmetöötluslepingus](/andmetootlusleping), mis on nende kasutustingimuste osa.",
+            "Isikuandmete osas, mida klient KAIDLY-sse sisestab, on klient vastutav töötleja ja KAIDLY volitatud töötleja. Töötlemise tingimused on kirjas [andmetöötluslepingus](/andmetootlusleping), mis on nende kasutustingimuste osa.",
           ],
         },
         { heading: "Kättesaadavus", body: ["Teenust osutatakse parima võimaliku hoolega; hooldustöödest ja katkestustest teavitatakse võimaluse korral ette."] },
@@ -139,7 +139,7 @@ export const LEGAL_CONTENT: Record<Locale, Docs> = {
         {
           heading: "Pooled",
           body: [
-            "Vastutav töötleja on klient — ettevõte, kes kasutab KAIDLYt. Volitatud töötleja on {operatorName}, registrikood {registryCode}, {address}.",
+            "Vastutav töötleja on klient — ettevõte, kes kasutab KAIDLY-t. Volitatud töötleja on {operatorName}, registrikood {registryCode}, {address}.",
             "See leping on [kasutustingimuste](/kasutustingimused) osa.",
           ],
         },

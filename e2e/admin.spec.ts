@@ -47,7 +47,7 @@ test.describe("KAIDLY Admin", () => {
     }
     await page.locator(`button[aria-label="Konto"]:visible`).first().click();
     await page.getByRole("menuitem", { name: "KAIDLY Admin" }).click();
-    await expect(page.getByRole("heading", { name: "Mis toimub KAIDLYs?" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Mis toimub KAIDLY-s?" })).toBeVisible();
     await expectNoHorizontalScroll(page);
 
     await page.goto(`/admin/companies?q=${encodeURIComponent(name)}`);

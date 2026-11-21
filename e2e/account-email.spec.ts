@@ -164,14 +164,14 @@ test.describe("Tähtaegade e-posti teavitused", () => {
     const toggle = page.getByRole("switch", { name: "Tähtaegade e-posti teavitused" });
     await expect(page.getByRole("heading", { name: "Teavitused" })).toBeVisible();
     await expect(toggle).toBeChecked();
-    await expect(page.getByText("Saada mulle e-post, kui KAIDLYs tekib uus tähtajaga seotud teavitus.")).toBeVisible();
+    await expect(page.getByText("Saada mulle e-post, kui KAIDLY-s tekib uus tähtajaga seotud teavitus.")).toBeVisible();
     await expect(page.getByText(/Konto ja turvalisusega seotud kirjad/)).toBeVisible();
     expect(sql(`select count(*) from public.notification_preferences where user_id = '${user.id}'`)).toBe("0");
 
     // Keyboard: Space toggles the switch.
     await toggle.focus();
     await page.keyboard.press("Space");
-    await expect(page.getByText("E-posti teavitused on välja lülitatud. Teavitused jäävad KAIDLYs endiselt nähtavaks.")).toBeVisible();
+    await expect(page.getByText("E-posti teavitused on välja lülitatud. Teavitused jäävad KAIDLY-s endiselt nähtavaks.")).toBeVisible();
     await expect(toggle).toBeEnabled();
     await expect
       .poll(() => sql(`select email_deadline_reminders from public.notification_preferences where user_id = '${user.id}'`))

@@ -42,7 +42,7 @@ test.describe("UX polish", () => {
     const example = page.getByRole("img", { name: "Näide KAIDLY teavitusest" });
     await expect(example).toBeVisible();
     await expect(example.getByRole("link")).toHaveCount(0); // a static mock-up, not a fake link
-    await expect(page.getByText("Teavitused on KAIDLYs, kellukese all.")).toBeVisible();
+    await expect(page.getByText("Teavitused on KAIDLY-s, kellukese all.")).toBeVisible();
   });
 
   test("onboarding progress, reminders card and Help section", async ({ page }) => {

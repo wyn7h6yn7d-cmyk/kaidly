@@ -101,7 +101,7 @@ test("pricing copy: exact Estonian wording and natural plural forms", () => {
   });
   assert.equal(
     p.trialBody,
-    "Proovi KAIDLYt 14 päeva kõigi funktsioonidega: prooviperioodil 1 kasutaja ja kuni 10 aktiivset elektripaigaldist. Seejärel vali sobiv pakett — arve saadame e-postiga.",
+    "Proovi KAIDLY-t 14 päeva kõigi funktsioonidega: prooviperioodil 1 kasutaja ja kuni 10 aktiivset elektripaigaldist. Pärast prooviperioodi jäävad andmed alles ja neid saab vaadata ning eksportida. Andmete lisamiseks ja muutmiseks vali pakett, arve saadame e-postiga.",
   );
   // Owner rule: no "most popular" label in any language.
   for (const messages of [et, en, ru]) {
@@ -127,4 +127,19 @@ test("site viewers do not count as users — the same in lib/plans.ts and in the
     .map((m) => (m[1] ?? m[2]) === "true");
   assert.ok(setters.length >= 1, "the migration sets the database value");
   assert.equal(setters.at(-1), SITE_VIEWERS_COUNT_AS_USERS);
+});
+
+test("Estonian case forms of the name are written with a hyphen (KAIDLY-t, KAIDLY-s, …)", () => {
+  for (const file of ["lib/i18n/et.ts", "lib/legal/content.ts", "lib/admin/strings.ts", "scripts/email-templates.mjs"]) {
+    const text = readFileSync(new URL(`../../${file}`, import.meta.url), "utf8");
+    assert.doesNotMatch(text, /KAIDLY(t|s|ga|sse|st)\b/, file);
+  }
+  assert.equal(
+    et.landing.pricing.trialBody,
+    "Proovi KAIDLY-t 14 päeva kõigi funktsioonidega: prooviperioodil 1 kasutaja ja kuni 10 aktiivset elektripaigaldist. Pärast prooviperioodi jäävad andmed alles ja neid saab vaadata ning eksportida. Andmete lisamiseks ja muutmiseks vali pakett, arve saadame e-postiga.",
+  );
+  for (const item of ["Auditipakett (PDF)", "Objekti vaatajad (ei lähe kasutajate arvu hulka)", "Kaheastmeline sisselogimine"]) {
+    assert.ok((et.landing.pricing.features as readonly string[]).includes(item), item);
+  }
+  assert.match(et.landing.pricing.note, /Objekti vaatajad ei lähe arvesse\.$/);
 });

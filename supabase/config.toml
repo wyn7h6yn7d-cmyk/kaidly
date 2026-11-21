@@ -260,7 +260,7 @@ subject = "{{ $l := \"et\" }}{{ with .Data }}{{ with .locale }}{{ $l = . }}{{ en
 content_path = "./supabase/templates/email_change.html"
 
 [auth.email.template.invite]
-subject = "{{ $l := \"et\" }}{{ with .Data }}{{ with .locale }}{{ $l = . }}{{ end }}{{ end }}{{ if eq $l \"en\" }}You've been invited to KAIDLY{{ else if eq $l \"ru\" }}Вас пригласили в KAIDLY{{ else }}Sind kutsuti KAIDLYsse{{ end }}"
+subject = "{{ $l := \"et\" }}{{ with .Data }}{{ with .locale }}{{ $l = . }}{{ end }}{{ end }}{{ if eq $l \"en\" }}You've been invited to KAIDLY{{ else if eq $l \"ru\" }}Вас пригласили в KAIDLY{{ else }}Sind kutsuti KAIDLY-sse{{ end }}"
 content_path = "./supabase/templates/invite.html"
 
 [auth.email.template.magic_link]

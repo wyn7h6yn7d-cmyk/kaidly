@@ -258,7 +258,7 @@ export const en: Messages = {
       title: "Simple pricing. Everything you need is in every plan.",
       body: "Every plan includes the operating log, operating plan, deficiencies, documents, notifications, reports and search. Plans differ only by team size and the number of active electrical installations.",
       trial: "14 days free",
-      trialBody: "Try every KAIDLY feature for 14 days: the trial includes 1 user and up to 10 active electrical installations. Then choose the plan that fits — we invoice by email.", // TÕLGE ÜLE VAADATA
+      trialBody: "Try every KAIDLY feature for 14 days: the trial includes 1 user and up to 10 active electrical installations. After the trial your data stays and can be viewed and exported. To add and change data, choose a plan — we invoice by email.", // TÕLGE ÜLE VAADATA
       perMonth: "€ / month + VAT",
       perYear: "€ / year + VAT", // TÕLGE ÜLE VAADATA
       billingLabel: "Billing period", // TÕLGE ÜLE VAADATA
@@ -292,8 +292,8 @@ export const en: Messages = {
       vatNote: "Prices exclude VAT.", // TÕLGE ÜLE VAADATA
       startCta: "Start free",
       featuresTitle: "In every plan",
-      features: ["Operating log", "Operating plan and notifications", "Deficiencies", "Document register and photo links", "PDF and CSV reports", "Search", "Roles and permissions", "Estonian, English and Russian"],
-      note: "Every member, including the owner, and every pending invitation counts as a user. Archived installations don't count.",
+      features: ["Operating log", "Operating plan and notifications", "Deficiencies", "Document register and photo links", "PDF and CSV reports", "Search", "Roles and permissions", "Audit package (PDF)", "Site viewers (not counted as users)", "Two-step sign-in", "Estonian, English and Russian"], // TÕLGE ÜLE VAADATA
+      note: "Every member, including the owner, and every pending invitation counts as a user. Archived installations don't count. Site viewers don't count.", // TÕLGE ÜLE VAADATA
     },
     hero: {
       eyebrow: "Digital operating log for electrical installations",

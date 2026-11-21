@@ -166,7 +166,7 @@ test.describe("Prooviperiood", () => {
 
     // No second user during the trial.
     await page.goto(`/o/${slug}/seaded/liikmed`);
-    await expect(page.getByText("Prooviperioodil kasutab KAIDLYt üks kasutaja")).toBeVisible();
+    await expect(page.getByText("Prooviperioodil kasutab KAIDLY-t üks kasutaja")).toBeVisible();
     await expect(page.getByRole("button", { name: "Loo kutse link" })).toHaveCount(0);
 
     // Ten installations, then the eleventh is refused; archiving frees a slot.

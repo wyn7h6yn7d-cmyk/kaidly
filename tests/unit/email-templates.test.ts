@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { isAllowedRedirectPath } from "../../lib/auth/redirect.ts";
 import { appEmail, appTemplatesSql, configToml, LANGS, preview, TEMPLATES, templateHtml, templateSubject } from "../../scripts/email-templates.mjs";
 
@@ -151,8 +151,15 @@ test("previews use fake values and leave no placeholder", () => {
 // Deadline reminder e-mail (application, docs/EMAIL_NOTIFICATIONS.md)
 // ---------------------------------------------------------------------------
 
-test("deadline reminder: the migration stores exactly the generated templates", () => {
-  const migration = readFileSync(repo("supabase/migrations/20261006100000_email_reminders.sql"), "utf8");
+test("deadline reminder: the latest template migration stores exactly the generated templates", () => {
+  // The newest migration that writes private.email_templates is what the database holds.
+  const dir = repo("supabase/migrations/");
+  const latest = readdirSync(dir)
+    .filter((f) => readFileSync(new URL(f, dir), "utf8").includes("insert into private.email_templates"))
+    .sort()
+    .at(-1)!;
+  assert.equal(latest, "20261121300000_email_template_hyphen.sql");
+  const migration = readFileSync(new URL(latest, dir), "utf8");
   assert.ok(migration.includes(appTemplatesSql()), "run node scripts/email-templates.mjs --sql and update the migration");
 });
 

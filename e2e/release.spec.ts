@@ -103,7 +103,7 @@ test.describe("Väljalase", () => {
     await login(page, user, "/konto");
     const section = page.getByRole("region", { name: "Konto kustutamise taotlus" });
     await expect(section).toContainText("Midagi ei kustutata automaatselt.");
-    await expect(section).toContainText("Taotluse saatmiseks võta KAIDLYga ühendust.");
+    await expect(section).toContainText("Taotluse saatmiseks võta KAIDLY-ga ühendust.");
     await expect(section.locator('a[href^="mailto:"]')).toHaveCount(0);
   });
 

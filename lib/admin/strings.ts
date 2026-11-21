@@ -19,7 +19,7 @@ export const ADMIN = {
   },
   notice: "Platvormi haldus. Näed tugiteenuse metaandmeid, mitte klientide dokumente ega sissekannete sisu. Iga muudatus logitakse.",
   overview: {
-    title: "Mis toimub KAIDLYs?",
+    title: "Mis toimub KAIDLY-s?",
     users: "Kasutajaid",
     usersActive: "Sisse loginud viimase 30 päeva jooksul",
     companies: "Ettevõtteid",

@@ -168,11 +168,11 @@ test.describe("Prooviperiood ja ligipääs", () => {
     expire(org);
     await login(page, org.users.admin, `/o/${org.slug}`);
     const guide = page.getByRole("region", { name: "Alustamise juhend" });
-    await expect(guide.getByText("Prooviperiood on lõppenud. Täiskasutuse taastamiseks võta KAIDLYga ühendust.").first()).toBeVisible();
+    await expect(guide.getByText("Prooviperiood on lõppenud. Täiskasutuse taastamiseks võta KAIDLY-ga ühendust.").first()).toBeVisible();
     await expect(guide.getByText("Seda sammu teeb ettevõtte omanik või administraator.")).toHaveCount(0);
     // KAIDLY_CONTACT_EMAIL is not set for the test server: plain message, no mailto link.
     const banner = page.getByTestId("access-banner");
-    await expect(banner).toContainText("Täiskasutuse jätkamiseks võta ühendust KAIDLYga.");
+    await expect(banner).toContainText("Täiskasutuse jätkamiseks võta ühendust KAIDLY-ga.");
     await expect(banner.locator('a[href^="mailto:"]')).toHaveCount(0);
   });
 
