@@ -804,3 +804,9 @@ owners/admins insert, site viewers read their sites' rows; BEFORE trigger checks
 first, sets the author, refuses future dates). `scheduled_activities.kind`
 (`regular` | `periodic_audit`, one live `periodic_audit` per installation via a partial unique
 index) holds the next audit deadline with 90/30-day reminders. docs/AUDITS.md.
+
+## 5n. Archive limits (migration `archive_limits`)
+
+Archive cap = active limit, restore needs a free slot, archived installations locked, no
+reminders for them, `delete_installation()` (empty / archived with history after export,
+history note without content), `admin_archive_churn()`. docs/ARCHIVE.md.

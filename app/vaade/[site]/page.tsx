@@ -215,6 +215,26 @@ async function SiteView({ params, searchParams }: { params: Promise<{ site: stri
         )}
       </Section>
 
+      {data.archivedInstallations.length > 0 && (
+        <Section id="v-archived" title={v.archivedInstallations}>
+          <ul className="divide-y divide-k-line border border-k-line bg-k-surface" data-testid="viewer-archived">
+            {data.archivedInstallations.map((i) => (
+              <li key={i.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                <span className="min-w-0 break-words font-semibold">{[i.identifier, i.name].filter(Boolean).join(" ")}</span>
+                <span className="flex flex-wrap gap-x-4">
+                  <a href={`${base}/auditipakett?paigaldis=${i.id}&alates=1990-01-01`} download className="inline-flex min-h-11 items-center font-semibold text-k-green underline underline-offset-4">
+                    {v.packagePdf}
+                  </a>
+                  <a href={`${base}/eksport?paigaldis=${i.id}`} download className="inline-flex min-h-11 items-center font-semibold text-k-green underline underline-offset-4">
+                    {v.logCsv}
+                  </a>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       <Section id="v-documents" title={v.sections.documents}>
         {data.documents.length === 0 ? (
           <p className="text-k-muted">{v.none}</p>

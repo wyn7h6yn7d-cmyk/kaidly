@@ -16,7 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const access = (await getMySiteAccess()).find((s) => s.siteId === site);
   if (!access) notFound();
   const q = request.nextUrl.searchParams;
-  const data = await loadAuditPackage({ id: access.organisationId, name: access.organisationName }, site, { from: q.get("alates"), to: q.get("kuni") });
+  const data = await loadAuditPackage({ id: access.organisationId, name: access.organisationName }, site, { from: q.get("alates"), to: q.get("kuni") }, isUuid(q.get("paigaldis") ?? "") ? q.get("paigaldis") : null);
   if (!data) notFound();
   const t = await getT();
   const pdf = await reportPdf(buildAuditPackage(data, t), t);

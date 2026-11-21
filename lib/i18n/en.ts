@@ -293,7 +293,7 @@ export const en: Messages = {
       startCta: "Start free",
       featuresTitle: "In every plan",
       features: ["Operating log", "Operating plan and notifications", "Deficiencies", "Document register and photo links", "PDF and CSV reports", "Search", "Roles and permissions", "Audit package (PDF)", "Site viewers (not counted as users)", "Two-step sign-in", "Estonian, English and Russian"], // TÕLGE ÜLE VAADATA
-      note: "Every member, including the owner, and every pending invitation counts as a user. Archived installations don't count. Site viewers don't count.", // TÕLGE ÜLE VAADATA
+      note: "Every member, including the owner, and every pending invitation counts as a user. Site viewers don't count. The archive can hold as many installations as the plan allows active ones.", // TÕLGE ÜLE VAADATA
     },
     hero: {
       eyebrow: "Digital operating log for electrical installations",
@@ -514,6 +514,11 @@ export const en: Messages = {
     },
   },
   errors: {
+    plan_restore_limit: "There is no free slot in the plan to restore the installation. Archive an active installation or choose a larger plan.", // TÕLGE ÜLE VAADATA
+    plan_archive_limit: "The archive is full ({arv}/{piir}). To archive, export and delete an archived installation or choose a larger plan.", // TÕLGE ÜLE VAADATA
+    installation_not_archived: "An installation with history can only be deleted from the archive (Export and delete).", // TÕLGE ÜLE VAADATA
+    confirm_name_mismatch: "The name you entered does not match the installation's name.", // TÕLGE ÜLE VAADATA
+    installation_has_files: "The installation still has stored files. Delete them before deleting the installation.", // TÕLGE ÜLE VAADATA
     audit_in_future: "The audit date cannot be in the future.", // TÕLGE ÜLE VAADATA
     mfa_code_invalid: "The code is not valid. Check that your phone's clock is correct and try a new code.", // TÕLGE ÜLE VAADATA
     import_name_required: "Name is missing.",
@@ -881,6 +886,9 @@ export const en: Messages = {
       openLink: "Open link",
       older: "Older entries",
       newer: "Newer entries",
+      archivedInstallations: "Archived installations", // TÕLGE ÜLE VAADATA
+      packagePdf: "Audit package (PDF)", // TÕLGE ÜLE VAADATA
+      logCsv: "Operating log (CSV)", // TÕLGE ÜLE VAADATA
       viewerSitesLink: "Sites you can view",
     },
     viewerInvite: {
@@ -977,6 +985,27 @@ export const en: Messages = {
       archiveBody: "An archived installation disappears from the site's list, but all its data is kept.",
       archiveConfirm: "Archive this installation?",
       restore: "Restore installation",
+      // TÕLGE ÜLE VAADATA (archive limits, delete)
+      archiveWarning: (deficiencies: number, activities: number) =>
+        `The installation has ${deficiencies} open deficiencies and ${activities} upcoming activities. An archived installation gets no reminders and cannot be changed. Archive it?`,
+      archivedReadOnly: "An archived installation cannot be changed. Restore it to make changes.",
+      deleteEmpty: "Delete installation",
+      deleteEmptyBody: "The installation has no entries, activities, deficiencies, documents or audits, so it can be deleted.",
+      deleteEmptyConfirm: "Delete this installation permanently?",
+      exportDelete: "Export and delete",
+      purge: {
+        title: "Export and delete installation",
+        intro: "Deleting is final: the installation and its whole history (entries, activities, deficiencies, document links, audits) disappear from KAIDLY. Download the audit package and the operating log first.",
+        counts: (entries: number, deficiencies: number, documents: number) => `${entries} entries · ${deficiencies} deficiencies · ${documents} documents`,
+        step1: "1. Download the audit package (PDF, whole history)",
+        step2: "2. Download the operating log (CSV)",
+        step3: "3. To confirm, enter the installation's name",
+        nameLabel: "Installation name",
+        submit: "Delete permanently",
+        submitting: "Deleting…",
+        note: "The change history keeps only a note: installation name, site, number of entries, who deleted it and when.",
+        downloadFirst: "Download both files before deleting.",
+      },
       submitCreate: "Add installation",
       submitting: "Saving…",
     },

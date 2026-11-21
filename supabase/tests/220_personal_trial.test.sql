@@ -173,7 +173,7 @@ select lives_ok($$ update public.electrical_installations set archived_at = now(
 select lives_ok($$ insert into public.electrical_installations (organisation_id, site_id, name, installation_type)
                    values (pg_temp.o('full'), '5f000000-0000-4000-8000-0000000000f1', 'Uus kilp', 'switchboard') $$, 'the freed slot can be used');
 select throws_ok($$ update public.electrical_installations set archived_at = null where organisation_id = pg_temp.o('full') and name like 'Kilp 3%' $$,
-  'P0001', 'plan_installation_limit', 'restoring above the limit is refused');
+  'P0001', 'plan_restore_limit', 'restoring above the limit is refused');
 select pg_temp.root();
 
 -- Roles that may not deactivate/delete still cannot; the owner can, at the limit.

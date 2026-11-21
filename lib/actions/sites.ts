@@ -194,10 +194,43 @@ export async function setInstallationArchived(
     .eq("organisation_id", ctx.org.id)
     .eq("id", installationId)
     .select("id, site_id");
-  if (error) return failure(dbErrorCode(error));
+  if (error) {
+    const code = dbErrorCode(error);
+    if (code === "plan_archive_limit") {
+      // "Arhiiv on täis ({arv}/{piir})": the numbers come from the same plan the database used.
+      const [{ count }, { data: plan }] = await Promise.all([
+        supabase.from("electrical_installations").select("id", { count: "exact", head: true }).eq("organisation_id", ctx.org.id).not("archived_at", "is", null),
+        supabase.rpc("organisation_plan", { p_org: ctx.org.id }),
+      ]);
+      const limit = (plan as { installation_limit?: number } | null)?.installation_limit;
+      return { ok: false, errorCode: code, errorValues: { arv: count ?? 0, piir: limit ?? count ?? 0 } };
+    }
+    return failure(code);
+  }
   if (!data?.length) return failure("not_found");
 
   if (archive) redirect(`/o/${ctx.org.slug}/objektid/${data[0].site_id}`);
   refresh();
   return { ok: true };
+}
+
+
+/**
+ * Deletes an installation (delete_installation): an empty one at once; an archived one with
+ * history only with its exact name (after the export on the "Ekspordi ja kustuta" page).
+ */
+export async function deleteInstallation(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const access = await actionContext(formData, "admin");
+  if (!access.ok) return access.error;
+  const installationId = field(formData, "installationId");
+  if (!isUuid(installationId)) return failure("not_found");
+  const confirmName = field(formData, "confirmName");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("delete_installation", {
+    p_installation_id: installationId,
+    p_confirm_name: confirmName || undefined,
+  });
+  if (error) return failure(dbErrorCode(error));
+  const siteId = (data as { site_id?: string } | null)?.site_id;
+  redirect(siteId ? `/o/${access.ctx.org.slug}/objektid/${siteId}` : `/o/${access.ctx.org.slug}/paigaldised`);
 }

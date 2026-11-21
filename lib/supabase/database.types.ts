@@ -1369,6 +1369,10 @@ export type Database = {
         Returns: string
       }
       admin_access_overview: { Args: never; Returns: Json }
+      admin_archive_churn: {
+        Args: { p_days?: number; p_min_cycles?: number }
+        Returns: Json
+      }
       admin_audit_entries: {
         Args: { p_limit?: number; p_offset?: number }
         Returns: Json
@@ -1523,6 +1527,10 @@ export type Database = {
         Returns: undefined
       }
       delete_document_file: { Args: { p_document_id: string }; Returns: string }
+      delete_installation: {
+        Args: { p_confirm_name?: string; p_installation_id: string }
+        Returns: Json
+      }
       delete_organisation: {
         Args: { p_confirm_name: string; p_organisation_id: string }
         Returns: undefined

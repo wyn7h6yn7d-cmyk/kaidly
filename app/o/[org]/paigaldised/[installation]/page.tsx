@@ -52,11 +52,16 @@ export default async function InstallationOverviewPage({
               <div className="mb-8 flex flex-col gap-3 border-l-4 border-k-grey bg-k-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                 <p>{t.app.installations.archivedBanner}</p>
                 {isAdmin && (
-                  <ConfirmForm
-                    action={setInstallationArchived}
-                    fields={{ orgSlug: org.slug, installationId: installation.id, archive: "false" }}
-                    label={t.app.installations.restore}
-                  />
+                  <div className="flex flex-wrap items-start gap-3">
+                    <ConfirmForm
+                      action={setInstallationArchived}
+                      fields={{ orgSlug: org.slug, installationId: installation.id, archive: "false" }}
+                      label={t.app.installations.restore}
+                    />
+                    <Link href={`${base}/kustuta`} className="inline-flex min-h-9 items-center text-sm font-semibold text-k-danger underline underline-offset-4">
+                      {t.app.installations.exportDelete}
+                    </Link>
+                  </div>
                 )}
               </div>
             )}

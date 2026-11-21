@@ -91,6 +91,8 @@ export async function loadAuditPackage(
   org: { id: string; name: string },
   siteId: string,
   period: { from?: string | null; to?: string | null },
+  /** One installation only (also an archived one — "Ekspordi ja kustuta", viewers' archive). */
+  installationId?: string | null,
 ): Promise<AuditPackageData | null> {
   const supabase = await createClient();
   const { data: site } = await supabase
@@ -102,31 +104,35 @@ export async function loadAuditPackage(
   if (!site) return null;
   const today = todayInTallinn();
 
+  const one = installationId ?? null;
+  const installationsQuery = supabase.from("electrical_installations").select("id, name, identifier").eq("site_id", site.id);
+  const scope = <Q extends { eq: (column: "electrical_installation_id", value: string) => Q }>(q: Q): Q => (one ? q.eq("electrical_installation_id", one) : q);
   const [installations, audits, plan, deficiencies, documents] = await Promise.all([
-    supabase.from("electrical_installations").select("id, name, identifier").eq("site_id", site.id).is("archived_at", null).order("name").order("id"),
-    supabase.from("installation_audits").select("electrical_installation_id, audited_on, result, auditor, document_url").eq("site_id", site.id).order("audited_on"),
-    supabase
+    (one ? installationsQuery.eq("id", one) : installationsQuery.is("archived_at", null)).order("name").order("id"),
+    scope(supabase.from("installation_audits").select("electrical_installation_id, audited_on, result, auditor, document_url").eq("site_id", site.id)).order("audited_on"),
+    scope(supabase
       .from("scheduled_activities")
       .select("title, electrical_installation_id, next_due_on, frequency_type, responsible_person_name, kind")
       .eq("site_id", site.id)
-      .is("archived_at", null)
+      .is("archived_at", null))
       .order("next_due_on", { nullsFirst: false })
       .order("id"),
-    supabase
+    scope(supabase
       .from("deficiencies")
       .select("title, electrical_installation_id, severity, status, detected_at, due_on, resolution, resolved_at, photos_url")
-      .eq("site_id", site.id)
+      .eq("site_id", site.id))
       .order("detected_at")
       .order("id"),
-    supabase
+    scope(supabase
       .from("documents")
       .select("title, category, electrical_installation_id, external_url")
       .eq("site_id", site.id)
       .not("external_url", "is", null)
-      .is("archived_at", null)
+      .is("archived_at", null))
       .order("title")
       .order("id"),
   ]);
+  if (one && !installations.data?.length) return null;
   for (const r of [installations, audits, plan, deficiencies, documents]) if (r.error) throw r.error;
 
   const auditRows = (audits.data ?? []).map((a) => ({
@@ -140,10 +146,10 @@ export async function loadAuditPackage(
   const to = period.to && DAY.test(period.to) && period.to >= from ? period.to : today;
 
   // The log of the period, plus the originals of any correction in it.
-  const { data: log, error: logError } = await supabase
+  const { data: log, error: logError } = await scope(supabase
     .from("log_entries")
     .select("id, occurred_at, entry_type, description, result, created_by_name, performed_by_name, correction_of_id, correction_reason, electrical_installation_id, photos_url")
-    .eq("site_id", site.id)
+    .eq("site_id", site.id))
     .gte("occurred_at", localInputToIso(`${from}T00:00`)!)
     .lt("occurred_at", localInputToIso(`${nextDay(to)}T00:00`)!)
     .order("occurred_at")

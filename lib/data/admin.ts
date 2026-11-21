@@ -173,6 +173,12 @@ export const adminDeadlines = (f: AdminDeadlineFilters) =>
     p_site: f.site ?? null,
   });
 export const adminSystem = () => call<AdminSystem>("admin_system");
+/** Companies with more than `minCycles` restore cycles in `days` days (metadata only). */
+export const adminArchiveChurn = (days = 30, minCycles = 5) =>
+  call<{ organisation_id: string; name: string; slug: string; archives: number; restores: number }[]>("admin_archive_churn", {
+    p_days: days,
+    p_min_cycles: minCycles,
+  });
 export const adminAudit = (page: number) =>
   call<AdminAuditEntry[]>("admin_audit_entries", { p_limit: 100, p_offset: page * 100 });
 export const adminCompanyOptions = async () =>

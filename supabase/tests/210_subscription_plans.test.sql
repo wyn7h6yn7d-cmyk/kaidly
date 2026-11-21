@@ -264,7 +264,7 @@ select lives_ok($$ update public.electrical_installations set name = name || ' (
 update public.electrical_installations set archived_at = now() where id = pg_temp.inst('a2');
 select is(private.installations_active(pg_temp.org('a')), 9, 'archived installations do not count');
 select lives_ok($$ select pg_temp.install(pg_temp.org('a'), 'Vaba koht') $$, 'archiving frees capacity');
-select throws_ok($$ update public.electrical_installations set archived_at = null where id = pg_temp.inst('a2') $$, 'P0001', 'plan_installation_limit',
+select throws_ok($$ update public.electrical_installations set archived_at = null where id = pg_temp.inst('a2') $$, 'P0001', 'plan_restore_limit',
   'bringing an archived installation back checks the limit');
 select is((select archived_at is not null from public.electrical_installations where id = pg_temp.inst('a2')), true, 'it stays archived');
 

@@ -48,6 +48,7 @@ Every plan has every feature; plans differ only by the two limits.
   - new member (accepting an invitation, any insert path): refused when members would exceed
     the limit — so an invitation accepted after the limit was lowered is refused safely;
   - role changes never change the count; the last owner can never be removed (unchanged).
+- **Archive** (2026-11-21): at most as many archived installations as the plan allows active ones (docs/ARCHIVE.md).
 - **Active installations** = not archived. A new installation, or bringing an archived one
   back, is refused when it would exceed the limit (`plan_installation_limit`); archiving
   frees capacity; CSV import is all-or-nothing as before.

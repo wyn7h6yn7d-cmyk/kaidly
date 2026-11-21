@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const ctx = await getOrgContext(slug);
   if (!ctx || ctx.org.deactivatedAt) notFound();
   const q = request.nextUrl.searchParams;
-  const data = await loadAuditPackage(ctx.org, site, { from: q.get("alates"), to: q.get("kuni") });
+  const data = await loadAuditPackage(ctx.org, site, { from: q.get("alates"), to: q.get("kuni") }, isUuid(q.get("paigaldis") ?? "") ? q.get("paigaldis") : null);
   if (!data) notFound();
   const t = await getT();
   const pdf = await reportPdf(buildAuditPackage(data, t), t);

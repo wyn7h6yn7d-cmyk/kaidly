@@ -7,6 +7,8 @@ export type ActionState<T = undefined> = {
   ok?: boolean;
   /** Application-controlled error code, translated by the client (never raw database text). */
   errorCode?: ErrorCode;
+  /** Values for {placeholders} in the error message, e.g. {arv}/{piir}. */
+  errorValues?: Record<string, string | number>;
   /** Fields that failed validation. */
   fields?: Record<string, true>;
   data?: T;

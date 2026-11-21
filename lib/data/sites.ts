@@ -189,3 +189,31 @@ export async function getOverviewCounts(
   if (installations.error) throw installations.error;
   return { sites: sites.count ?? 0, installations: installations.count ?? 0 };
 }
+
+/** What an installation holds — for the archive warning and the delete flows (RLS reads). */
+export async function getInstallationRecordCounts(organisationId: string, installationId: string) {
+  const supabase = await createClient();
+  const count = (table: "log_entries" | "scheduled_activities" | "deficiencies" | "documents" | "installation_audits") =>
+    supabase.from(table).select("id", { count: "exact", head: true }).eq("organisation_id", organisationId).eq("electrical_installation_id", installationId);
+  const [entries, activities, deficiencies, documents, audits, openDeficiencies, upcoming] = await Promise.all([
+    count("log_entries"),
+    count("scheduled_activities"),
+    count("deficiencies"),
+    count("documents"),
+    count("installation_audits"),
+    supabase.from("deficiencies").select("id", { count: "exact", head: true }).eq("organisation_id", organisationId).eq("electrical_installation_id", installationId).neq("status", "resolved"),
+    supabase.from("scheduled_activities").select("id", { count: "exact", head: true }).eq("organisation_id", organisationId).eq("electrical_installation_id", installationId).is("archived_at", null).not("next_due_on", "is", null),
+  ]);
+  for (const r of [entries, activities, deficiencies, documents, audits, openDeficiencies, upcoming]) if (r.error) throw r.error;
+  const n = (r: { count: number | null }) => r.count ?? 0;
+  return {
+    entries: n(entries),
+    activities: n(activities),
+    deficiencies: n(deficiencies),
+    documents: n(documents),
+    audits: n(audits),
+    openDeficiencies: n(openDeficiencies),
+    upcomingActivities: n(upcoming),
+    empty: n(entries) + n(activities) + n(deficiencies) + n(documents) + n(audits) === 0,
+  };
+}

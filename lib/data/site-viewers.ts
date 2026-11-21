@@ -32,7 +32,7 @@ export async function getViewerSite(siteId: string, logPage = 0) {
   if (!access) return null;
   const supabase = await createClient();
   const page = Math.max(0, Math.min(logPage, 10_000));
-  const [site, installations, plan, log, deficiencies, documents] = await Promise.all([
+  const [site, installations, plan, log, deficiencies, documents, archived] = await Promise.all([
     supabase.from("sites").select("id, name, address, responsible_person").eq("id", siteId).maybeSingle(),
     supabase
       .from("electrical_installations")
@@ -73,8 +73,15 @@ export async function getViewerSite(siteId: string, logPage = 0) {
       .order("title")
       .order("id")
       .limit(500),
+    supabase
+      .from("electrical_installations")
+      .select("id, name, identifier")
+      .eq("site_id", siteId)
+      .not("archived_at", "is", null)
+      .order("name")
+      .order("id"),
   ]);
-  for (const r of [site, installations, plan, log, deficiencies, documents]) if (r.error) throw r.error;
+  for (const r of [site, installations, plan, log, deficiencies, documents, archived]) if (r.error) throw r.error;
   if (!site.data) return null;
   const logRows = log.data ?? [];
   return {
@@ -87,6 +94,7 @@ export async function getViewerSite(siteId: string, logPage = 0) {
     logHasMore: logRows.length > LOG_PAGE_SIZE,
     deficiencies: deficiencies.data ?? [],
     documents: documents.data ?? [],
+    archivedInstallations: archived.data ?? [],
   };
 }
 

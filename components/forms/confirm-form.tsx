@@ -45,7 +45,7 @@ export function ConfirmForm({
       <Button type="submit" variant={variant} size={size} disabled={pending} aria-label={ariaLabel}>
         {pending && pendingLabel ? pendingLabel : label}
       </Button>
-      <FormMessage code={state.errorCode} />
+      <FormMessage code={state.errorCode} values={state.errorValues} />
     </form>
   );
 }

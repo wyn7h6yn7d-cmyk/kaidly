@@ -141,5 +141,8 @@ test("Estonian case forms of the name are written with a hyphen (KAIDLY-t, KAIDL
   for (const item of ["Auditipakett (PDF)", "Objekti vaatajad (ei lähe kasutajate arvu hulka)", "Kaheastmeline sisselogimine"]) {
     assert.ok((et.landing.pricing.features as readonly string[]).includes(item), item);
   }
-  assert.match(et.landing.pricing.note, /Objekti vaatajad ei lähe arvesse\.$/);
+  assert.equal(
+    et.landing.pricing.note,
+    "Kasutajate hulka loetakse kõik liikmed, ka omanik, ning ootel kutsed. Objekti vaatajad ei lähe arvesse. Arhiivis saab hoida sama palju paigaldisi, kui paketis on aktiivseid.",
+  );
 });

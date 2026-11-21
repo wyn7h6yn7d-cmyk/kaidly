@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/admin/companies", label: ADMIN.nav.companies },
   { href: "/admin/tellimused", label: ADMIN.nav.subscriptions },
   { href: "/admin/deadlines", label: ADMIN.nav.deadlines },
+  { href: "/admin/arhiveerimine", label: ADMIN.nav.archive },
   { href: "/admin/system", label: ADMIN.nav.system },
   { href: "/admin/audit", label: ADMIN.nav.audit },
 ];
